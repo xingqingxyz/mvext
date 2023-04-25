@@ -1,7 +1,7 @@
 {
   "name": "my-extension",
   "displayName": "My Extension",
-  "description": "A pack of my personal using features.",
+  "description": "Transform (multiple) cursor position or selection to many cases. Cases: `capitalCase`, `camelCase`, `constantCase`, `pascalCase`, `paramCase`, `snakeCase`, `sentenceCase`, `dotCase`, `pathCase`, `headerCase`, `noCase`",
   "version": "0.0.1",
   "engines": {
     "vscode": "^1.77.0"
@@ -9,20 +9,136 @@
   "categories": [
     "Other"
   ],
+  "repository": {
+    "url": "https://github.com/xingqingxyz/my-extension.git",
+    "type": "git"
+  },
+  "bugs": {
+    "url": "https://github.com/xingqingxyz/my-extension/issues"
+  },
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
       {
-        "command": "my-extension.invokePowerShellCommand",
-        "title": "Invoke PowerShell Command"
+        "title": "Transform Case: Title",
+        "command": "my-extension.transformToTitleCase"
       },
       {
-        "command": "my-extension.helloWorld",
-        "title": "Hello Wold"
+        "title": "Transform Case: Camel",
+        "command": "my-extension.transformToCamelCase"
       },
       {
-        "command": "my-extension.extended",
-        "title": "Hello Extended"
+        "title": "Transform Case: Constant",
+        "command": "my-extension.transformToConstantCase"
+      },
+      {
+        "title": "Transform Case: Pascal",
+        "command": "my-extension.transformToPascalCase"
+      },
+      {
+        "title": "Transform Case: Kebab",
+        "command": "my-extension.transformToKebabCase"
+      },
+      {
+        "title": "Transform Case: Snake",
+        "command": "my-extension.transformToSnakeCase"
+      },
+      {
+        "title": "Transform Case: Dot",
+        "command": "my-extension.transformToDotCase"
+      },
+      {
+        "title": "Transform Case: Path",
+        "command": "my-extension.transformToPathCase"
+      },
+      {
+        "title": "Transform Case: Sentence",
+        "command": "my-extension.transformToSentenceCase"
+      },
+      {
+        "title": "Transform Case: Nomral",
+        "command": "my-extension.transformToNomralCase"
+      },
+      {
+        "title": "Transform Case: Header",
+        "command": "my-extension.transformToHeaderCase"
+      }
+    ],
+    "keybindings": [
+      {
+        "when": "editorTextFocus && !editorReadonly",
+        "key": "alt+x alt+c",
+        "command": "my-extension.transformToTitleCase"
+      },
+      {
+        "when": "editorTextFocus && !editorReadonly",
+        "key": "alt+x c",
+        "command": "my-extension.transformToCamelCase"
+      },
+      {
+        "key": "alt+x shift+c",
+        "when": "editorTextFocus && !editorReadonly",
+        "command": "my-extension.transformToConstantCase"
+      },
+      {
+        "key": "alt+x p",
+        "when": "editorTextFocus && !editorReadonly",
+        "command": "my-extension.transformToPascalCase"
+      },
+      {
+        "key": "alt+x k",
+        "when": "editorTextFocus && !editorReadonly",
+        "command": "my-extension.transformToKebabCase"
+      },
+      {
+        "key": "alt+x s",
+        "when": "editorTextFocus && !editorReadonly",
+        "command": "my-extension.transformToSnakeCase"
+      },
+      {
+        "key": "alt+x .",
+        "when": "editorTextFocus && !editorReadonly",
+        "command": "my-extension.transformToDotCase"
+      },
+      {
+        "key": "alt+x /",
+        "when": "editorTextFocus && !editorReadonly",
+        "command": "my-extension.transformToPathCase"
+      },
+      {
+        "key": "alt+x space",
+        "when": "editorTextFocus && !editorReadonly",
+        "command": "my-extension.transformToSentenceCase"
+      },
+      {
+        "key": "alt+x n",
+        "when": "editorTextFocus && !editorReadonly",
+        "command": "my-extension.transformToNomralCase"
+      },
+      {
+        "key": "alt+x h",
+        "when": "editorTextFocus && !editorReadonly",
+        "command": "my-extension.transformToHeaderCase"
+      },
+      {
+        "key": "alt+x u",
+        "when": "editorTextFocus && !editorReadonly",
+        "command": "editor.action.transformToUppercase"
+      },
+      {
+        "key": "alt+x l",
+        "when": "editorTextFocus && !editorReadonly",
+        "command": "editor.action.transformToLowercase"
+      },
+      {
+        "key": "alt+x alt+oem_3",
+        "when": "editorTextFocus && !editorReadonly",
+        "command": "editor.action.transposeLetters"
+      },
+      {
+        "key": "alt+oem_3",
+        "when": "editorTextFocus && !editorReadonly",
+        "command": "editor.action.transpose"
       }
     ]
   },
