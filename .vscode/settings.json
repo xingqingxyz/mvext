@@ -1,6 +1,12 @@
-// Place your settings in this file to overwrite default and user settings.
 {
+  "files.watcherExclude": {
+    "out": true
+  },
   "search.exclude": {
-    "out": true // set this to false to include "out" folder in search results
+    "out": true
+  },
+  "files.associations": {
+    "*.json": "jsonc",
+    "*.code-snippets": "jsonc"
   }
 }

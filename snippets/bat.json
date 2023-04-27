@@ -1,0 +1,120 @@
+// cSpell:disable
+{
+  "Batch File Dir": {
+    "prefix": "dp",
+    "body": ["%~dp${0:0}"],
+    "description": "Batch File Dir"
+  },
+  "echo off": {
+    "prefix": "echooff",
+    "body": ["@echo off", ""],
+    "description": "Turn command-echoing off"
+  },
+  "goto EOF": {
+    "prefix": "eof",
+    "body": ["goto :EOF"],
+    "description": "Go to end of file"
+  },
+  "set prompt": {
+    "prefix": "setp",
+    "body": ["set /P ${1:variable}=${2:promptString}"],
+    "description": "set /P variable=[promptString]"
+  },
+  "pushd": {
+    "prefix": "pushd",
+    "body": ["pushd ${1:path}", "\t${2}", "popd"],
+    "description": "Stores the current directory for use by the POPD command"
+  },
+  "enable delay expansion": {
+    "prefix": "enable-delay-expansion",
+    "body": ["setlocal ENABLEDELAYEDEXPANSION", "$1", "endlocal"],
+    "description": "Enable delayed environment variable"
+  },
+  "if errorlevel": {
+    "prefix": "iferr",
+    "body": ["if ERRORLEVEL ${1:number} (", "\t$2", ")$3"],
+    "description": "if ERRORLEVEL number command"
+  },
+  "if exist": {
+    "prefix": "ifexist",
+    "body": ["if exist ${1:filename} (", "\t$2", ")$3"],
+    "description": "if exist filename command"
+  },
+  "if equ": {
+    "prefix": "ifequ",
+    "body": ["if ${1:string1} EQU ${2:string2} (", "\t$3", ")$4"],
+    "description": "if string1 EQU-(equal) string2 command"
+  },
+  "if neq": {
+    "prefix": "ifneq",
+    "body": ["if ${1:string1} NEQ ${2:string2} (", "\t$3", ")$4"],
+    "description": "if string1 NEQ-(not equal) string2 command"
+  },
+  "if lss": {
+    "prefix": "iflss",
+    "body": ["if ${1:string1} LSS ${2:string2} (", "\t$3", ")$4"],
+    "description": "if string1 LSS-(less than) string2 command"
+  },
+  "if LEQ": {
+    "prefix": "ifleq",
+    "body": ["if ${1:string1} LEQ ${2:string2} (", "\t$3", ")$4"],
+    "description": "if string1 LEQ-(less than or equal) string2 command"
+  },
+  "if GTR": {
+    "prefix": "ifgtr",
+    "body": ["if ${1:string1} GTR ${2:string2} (", "\t$3", ")$4"],
+    "description": "if string1 GTR-(greater than) string2 command"
+  },
+  "if GEQ": {
+    "prefix": "ifgeq",
+    "body": ["if ${1:string1} GEQ ${2:string2} (", "\t$3", ")$4"],
+    "description": "if string1 GEQ-(greater than or equal) string2 command"
+  },
+  "if defined": {
+    "prefix": "ifdef",
+    "body": ["if defined ${1:variable} (", "\t$2", ")$3"],
+    "description": "if defined variable command"
+  },
+  "else statement": {
+    "prefix": "el",
+    "body": ["else (", "\t${1}", ")", ""],
+    "description": "else statement"
+  },
+  "for loop": {
+    "prefix": "frl",
+    "body": [
+      "for /L %%${1:i} in (${2:start}, ${3:step}, ${4:end}) do (",
+      "\t$5",
+      ")"
+    ],
+    "description": "for /L %variable in (start,step,end) do command [command-parameters]"
+  },
+  "for direcotry": {
+    "prefix": "frd",
+    "body": ["for /D %%${i} in (${set}) do (", "\t${command}", ")"],
+    "description": "for /D %variable in (set) do command [command-parameters]"
+  },
+  "for r": {
+    "prefix": "frr",
+    "body": [
+      "for /R ${directory} %%${i} in (${set}) do (",
+      "\t${command}",
+      ")"
+    ],
+    "description": "for /R [[drive:]path] %variable in (set) do command [command-parameters]"
+  },
+  "for f": {
+    "prefix": "frf",
+    "body": [
+      "for /F \"eol=${1:end_of_line}, skip=${2:num_of_lines}, delims=${3:delimiter}, tokens=${4:tokens} \" %%${5:i} in (${6:set}) do (",
+      "\t${7}",
+      ")"
+    ],
+    "description": "for /F [\"options\"] %variable in (set) do command"
+  },
+  "function": {
+    "prefix": "fn",
+    "body": [":${1:$TM_FILENAME_BASE}", "\t${0}", "goto :EOF"],
+    "description": "Define a function"
+  }
+}

@@ -2,7 +2,7 @@
   "name": "my-extension",
   "displayName": "My Extension",
   "description": "Transform (multiple) cursor position or selection to many cases. Cases: `capitalCase`, `camelCase`, `constantCase`, `pascalCase`, `paramCase`, `snakeCase`, `sentenceCase`, `dotCase`, `pathCase`, `headerCase`, `noCase`",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "engines": {
     "vscode": "^1.77.0"
   },
@@ -16,12 +16,12 @@
   "bugs": {
     "url": "https://github.com/xingqingxyz/my-extension/issues"
   },
-  "main": "./out/extension.js",
+  "main": "./out/main.js",
   "contributes": {
     "commands": [
       {
         "title": "Transform Case: Title",
-        "command": "my-extension.transformToTitleCase"
+        "command": "my-extension.transformToCapitalCase"
       },
       {
         "title": "Transform Case: Camel",
@@ -37,7 +37,7 @@
       },
       {
         "title": "Transform Case: Kebab",
-        "command": "my-extension.transformToKebabCase"
+        "command": "my-extension.transformToParamCase"
       },
       {
         "title": "Transform Case: Snake",
@@ -56,8 +56,8 @@
         "command": "my-extension.transformToSentenceCase"
       },
       {
-        "title": "Transform Case: Nomral",
-        "command": "my-extension.transformToNomralCase"
+        "title": "Transform Case: No",
+        "command": "my-extension.transformToNoCase"
       },
       {
         "title": "Transform Case: Header",
@@ -68,7 +68,7 @@
       {
         "when": "editorTextFocus && !editorReadonly",
         "key": "alt+x alt+c",
-        "command": "my-extension.transformToTitleCase"
+        "command": "my-extension.transformToCapitalCase"
       },
       {
         "when": "editorTextFocus && !editorReadonly",
@@ -88,7 +88,7 @@
       {
         "key": "alt+x k",
         "when": "editorTextFocus && !editorReadonly",
-        "command": "my-extension.transformToKebabCase"
+        "command": "my-extension.transformToParamCase"
       },
       {
         "key": "alt+x s",
@@ -113,7 +113,7 @@
       {
         "key": "alt+x n",
         "when": "editorTextFocus && !editorReadonly",
-        "command": "my-extension.transformToNomralCase"
+        "command": "my-extension.transformToNoCase"
       },
       {
         "key": "alt+x h",
@@ -140,11 +140,59 @@
         "when": "editorTextFocus && !editorReadonly",
         "command": "editor.action.transpose"
       }
+    ],
+    "snippets": [
+      {
+        "path": "./snippets/global.code-snippets"
+      },
+      {
+        "path": "./snippets/react.code-snippets"
+      },
+      {
+        "path": "./snippets/typescript.code-snippets"
+      },
+      {
+        "path": "./snippets/javascript.code-snippets"
+      },
+      {
+        "path": "./snippets/json.code-snippets"
+      },
+      {
+        "path": "./snippets/stylesheets.code-snippets"
+      },
+      {
+        "language": "html",
+        "path": "./snippets/html.json"
+      },
+      {
+        "language": "jsonc",
+        "path": "./snippets/jsonc.json"
+      },
+      {
+        "language": "vue",
+        "path": "./snippets/vue.json"
+      },
+      {
+        "language": "python",
+        "path": "./snippets/python.json"
+      },
+      {
+        "language": "powershell",
+        "path": "./snippets/powershell.json"
+      },
+      {
+        "language": "bat",
+        "path": "./snippets/bat.json"
+      }
     ]
   },
   "scripts": {
     "lint": "eslint src --ext ts",
-    "test": "node ./out/test/runTest.js"
+    "test": "node ./out/test/runTest.js",
+    "vscode:prepublish": "npm run esbuild-base -- --minify",
+    "esbuild": "npm run esbuild-base -- --sourcemap",
+    "esbuild-watch": "npm run esbuild-base -- --sourcemap --watch",
+    "esbuild-base": "esbuild ./src/extension.ts --bundle --outfile=out/main.js --external:vscode --format=cjs --platform=node"
   },
   "devDependencies": {
     "@types/glob": "^8.0.0",
@@ -154,6 +202,7 @@
     "@typescript-eslint/eslint-plugin": "^5.45.0",
     "@typescript-eslint/parser": "^5.45.0",
     "@vscode/test-electron": "^2.2.0",
+    "esbuild": "^0.17.18",
     "eslint": "^8.28.0",
     "glob": "^8.0.3",
     "mocha": "^10.1.0",

@@ -1,0 +1,72 @@
+{
+  "Block: bracket and brace": {
+    "body": "($1) {\n\t${0:$TM_SELECTED_TEXT}\n}",
+    "description": "Block: bracket and brace",
+    "prefix": "bb"
+  },
+  "RegExp: zh-CN": {
+    "body": "[\\u4e00-\\u9fa5]+",
+    "description": "RegExp: zh-CN",
+    "prefix": "rezh"
+  },
+  "Surround": {
+    "body": "${0:$1$TM_SELECTED_TEXT$1}",
+    "description": "Surround",
+    "prefix": "sur"
+  },
+  "Universal Line Comment": {
+    "body": "$LINE_COMMENT cSpell",
+    "description": "Universal Line Comment",
+    "prefix": "lcom"
+  },
+  "|CHG_SUR|(One Common Word)": {
+    "body": "${0:$1${TM_SELECTED_TEXT/^(.)(.*)\\1$/$2/}$1}",
+    "description": "|CHG_SUR|(One Common Word)",
+    "prefix": "cs"
+  },
+  "|CHG_SUR|Brackets": {
+    "body": "${0:${1|\",',`,(,[,{,<|}${TM_SELECTED_TEXT/^.*?(?:\\((.*)\\)|\\[(.*)\\]|\\{(.*)\\}|<(.*)>)\\s*$/$1$2$3$4/}${1/(\\(?)(\\[?)(\\{?)(<?)(.?)/$5${1:+)}${2:+]}${3:+\\}}${4:+>}/}}",
+    "description": "|CHG_SUR|Brackets",
+    "prefix": "csb"
+  },
+  "|DEL_SUR|(One Common Word)": {
+    "body": "${0:${TM_SELECTED_TEXT/^\\s*(.+)(.*)\\1\\s*$/$2/}}",
+    "description": "|DEL_SUR|(One Common Word)",
+    "prefix": "ds"
+  },
+  "|DEL_SUR|Brackets": {
+    "body": "${0:${TM_SELECTED_TEXT/^.*?(?:\\((.*)\\)|\\[(.*)\\]|\\{(.*)\\}|<(.*)>)\\s*$/$1$2$3$4/}}",
+    "description": "|DEL_SUR|Brackets",
+    "prefix": "dsb"
+  },
+  "|DEL_SUR|Function Call": {
+    "body": "${TM_SELECTED_TEXT/^\\s*.+\\((.*)\\)\\s*$/$1/}",
+    "description": "|DEL_SUR|Function Call",
+    "prefix": "dsfc"
+  },
+  "|SUR|Brackets": {
+    "body": "${0:${1|\",',`,(,[,{,<|}$TM_SELECTED_TEXT${1/(\\(?)(\\[?)(\\{?)(<?)(.?)/${1:+)}${2:+]}${3:+\\}}${4:+>}$5/}}",
+    "description": "|SUR|Brackets",
+    "prefix": "sb"
+  },
+  "|SUR|Function Call": {
+    "body": "$1($TM_SELECTED_TEXT)",
+    "description": "|SUR|Function Call",
+    "prefix": "fc"
+  },
+  "|SUR|Object": {
+    "body": "{\n\t$1: ${2:$TM_SELECTED_TEXT},\n}",
+    "description": "|SUR|Object",
+    "prefix": "so"
+  },
+  "|TR|Double Backslash": {
+    "body": "${CLIPBOARD/(\\\\)/${1:+\\\\\\\\}/g}",
+    "description": "|TR|Double Backslash",
+    "prefix": "db_backslash"
+  },
+  "|TR|Half Backslash": {
+    "body": "${CLIPBOARD/(\\\\\\\\)/${1:+\\\\}/g}",
+    "description": "|TR|Half Backslash",
+    "prefix": "half_backslash"
+  }
+}
