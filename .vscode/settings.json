@@ -4,9 +4,5 @@
   },
   "search.exclude": {
     "out": true
-  },
-  "files.associations": {
-    "*.json": "jsonc",
-    "*.code-snippets": "jsonc"
   }
 }

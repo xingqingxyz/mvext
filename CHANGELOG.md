@@ -2,7 +2,19 @@
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
-## [Release]
+## [0.0.1]
 
-- Initial release 0.0.1
-- Add case tranform commands and keybings.
+- Add case transform commands and keybindings.
+
+## [0.0.2]
+
+- Cleanup codebase
+- integrated with user snippets.
+
+## [0.0.4]
+
+- Add RenameProvider to simply rename tokens.
+
+## [0.1.0]
+
+- Remove unnecessarily dependencies, turn to implement transform case from scratch.

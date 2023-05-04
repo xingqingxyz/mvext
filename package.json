@@ -2,7 +2,7 @@
   "name": "my-extension",
   "displayName": "My Extension",
   "description": "Transform (multiple) cursor position or selection to many cases. Cases: `capitalCase`, `camelCase`, `constantCase`, `pascalCase`, `paramCase`, `snakeCase`, `sentenceCase`, `dotCase`, `pathCase`, `headerCase`, `noCase`",
-  "version": "0.0.2",
+  "version": "0.1.0",
   "engines": {
     "vscode": "^1.77.0"
   },
@@ -10,13 +10,13 @@
     "Other"
   ],
   "repository": {
-    "url": "https://github.com/xingqingxyz/my-extension.git",
+    "url": "git+https://github.com/xingqingxyz/my-extension.git",
     "type": "git"
   },
   "bugs": {
     "url": "https://github.com/xingqingxyz/my-extension/issues"
   },
-  "main": "./out/main.js",
+  "main": "./out/extension.js",
   "contributes": {
     "commands": [
       {
@@ -140,50 +140,6 @@
         "when": "editorTextFocus && !editorReadonly",
         "command": "editor.action.transpose"
       }
-    ],
-    "snippets": [
-      {
-        "path": "./snippets/global.code-snippets"
-      },
-      {
-        "path": "./snippets/react.code-snippets"
-      },
-      {
-        "path": "./snippets/typescript.code-snippets"
-      },
-      {
-        "path": "./snippets/javascript.code-snippets"
-      },
-      {
-        "path": "./snippets/json.code-snippets"
-      },
-      {
-        "path": "./snippets/stylesheets.code-snippets"
-      },
-      {
-        "language": "html",
-        "path": "./snippets/html.json"
-      },
-      {
-        "language": "jsonc",
-        "path": "./snippets/jsonc.json"
-      },
-      {
-        "language": "vue",
-        "path": "./snippets/vue.json"
-      },
-      {
-        "language": "python",
-        "path": "./snippets/python.json"
-      },
-      {
-        "language": "powershell",
-        "path": "./snippets/powershell.json"
-      },
-      {
-        "language": "bat",
-        "path": "./snippets/bat.json"
-      }
     ]
   },
   "scripts": {
@@ -192,23 +148,20 @@
     "vscode:prepublish": "npm run esbuild-base -- --minify",
     "esbuild": "npm run esbuild-base -- --sourcemap",
     "esbuild-watch": "npm run esbuild-base -- --sourcemap --watch",
-    "esbuild-base": "esbuild ./src/extension.ts --bundle --outfile=out/main.js --external:vscode --format=cjs --platform=node"
+    "esbuild-base": "esbuild ./src/extension.ts --bundle --outfile=out/extension.js --external:vscode --format=cjs --platform=node"
   },
   "devDependencies": {
     "@types/glob": "^8.0.0",
     "@types/mocha": "^10.0.1",
     "@types/node": "16.x",
     "@types/vscode": "^1.77.0",
-    "@typescript-eslint/eslint-plugin": "^5.45.0",
-    "@typescript-eslint/parser": "^5.45.0",
+    "@typescript-eslint/eslint-plugin": "^5.59.1",
+    "@typescript-eslint/parser": "^5.59.1",
     "@vscode/test-electron": "^2.2.0",
     "esbuild": "^0.17.18",
     "eslint": "^8.28.0",
     "glob": "^8.0.3",
     "mocha": "^10.1.0",
     "typescript": "^5.0.4"
-  },
-  "dependencies": {
-    "change-case": "^4.1.2"
   }
 }

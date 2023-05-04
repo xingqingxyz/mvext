@@ -4,8 +4,10 @@
     "esModuleInterop": true,
     "module": "CommonJS",
     "lib": ["ES2021"],
+    "declaration": true,
     "outDir": "out",
     "rootDir": "src",
+    "baseUrl": ".",
     "sourceMap": true,
     "strict": true,
     "target": "ES2021"

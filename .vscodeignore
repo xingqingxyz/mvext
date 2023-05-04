@@ -1,7 +1,7 @@
 .vscode
 node_modules
 out/
-!out/main.js
+!out/extension.js
 src/
 tsconfig.json
 tsconfig.tsbuildinfo
