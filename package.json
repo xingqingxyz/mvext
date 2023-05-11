@@ -4,13 +4,13 @@
   "description": "Transform (multiple) cursor position or selection to many cases. Cases: `capitalCase`, `camelCase`, `constantCase`, `pascalCase`, `paramCase`, `snakeCase`, `sentenceCase`, `dotCase`, `pathCase`, `headerCase`, `noCase`",
   "version": "0.1.0",
   "engines": {
-    "vscode": "^1.77.0"
+    "vscode": "^1.78.0"
   },
   "categories": [
     "Other"
   ],
   "repository": {
-    "url": "git+https://github.com/xingqingxyz/my-extension.git",
+    "url": "https://github.com/xingqingxyz/my-extension.git",
     "type": "git"
   },
   "bugs": {
@@ -62,6 +62,10 @@
       {
         "title": "Transform Case: Header",
         "command": "my-extension.transformToHeaderCase"
+      },
+      {
+        "title": "Detect Transform Case",
+        "command": "my-extension.detectTransformCase"
       }
     ],
     "keybindings": [
@@ -121,14 +125,19 @@
         "command": "my-extension.transformToHeaderCase"
       },
       {
+        "key": "alt+x alt+d",
+        "when": "editorTextFocus && !editorReadonly",
+        "command": "my-extension.detectTransformCase"
+      },
+      {
         "key": "alt+x u",
         "when": "editorTextFocus && !editorReadonly",
-        "command": "editor.action.transformToUppercase"
+        "command": "my-extension.transformToUpperCase"
       },
       {
         "key": "alt+x l",
         "when": "editorTextFocus && !editorReadonly",
-        "command": "editor.action.transformToLowercase"
+        "command": "my-extension.transformToLowerCase"
       },
       {
         "key": "alt+x alt+oem_3",
@@ -154,7 +163,7 @@
     "@types/glob": "^8.0.0",
     "@types/mocha": "^10.0.1",
     "@types/node": "16.x",
-    "@types/vscode": "^1.77.0",
+    "@types/vscode": "^1.78.0",
     "@typescript-eslint/eslint-plugin": "^5.59.1",
     "@typescript-eslint/parser": "^5.59.1",
     "@vscode/test-electron": "^2.2.0",

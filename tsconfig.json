@@ -1,9 +1,14 @@
 {
+  "include": [
+    "src"
+  ],
   "compilerOptions": {
-    "allowJs": true,
-    "esModuleInterop": true,
     "module": "CommonJS",
-    "lib": ["ES2021"],
+    "lib": [
+      "ES2021"
+    ],
+    "forceConsistentCasingInFileNames": true,
+    "verbatimModuleSyntax": true,
     "declaration": true,
     "outDir": "out",
     "rootDir": "src",

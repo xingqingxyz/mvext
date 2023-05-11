@@ -9,11 +9,16 @@
       "name": "Run Extension",
       "type": "extensionHost",
       "request": "launch",
-      "args": ["--extensionDevelopmentPath=${workspaceFolder}", "--disable-extensions"],
-      "outFiles": ["${workspaceFolder}/out/**/*.js"],
+      "args": [
+        "--extensionDevelopmentPath=${workspaceFolder}",
+        "--disable-extensions"
+      ],
+      "outFiles": [
+        "${workspaceFolder}/out/**/*.js"
+      ],
       "skipFiles": [
         "<node_internals>/**",
-        "c:\\Users\\cmema\\AppData\\Local\\Programs\\Microsoft VS Code Insiders\\resources\\app\\out\\**\\*.js"
+        "c:\\Users\\cmema\\AppData\\Local\\Programs\\Microsoft VS Code - Insiders\\resources\\app\\**\\*.js"
       ],
       "preLaunchTask": "${defaultBuildTask}"
     },
@@ -26,7 +31,9 @@
         "--extensionTestsPath=${workspaceFolder}/out/test/suite/index",
         "--disable-extensions"
       ],
-      "outFiles": ["${workspaceFolder}/out/test/**/*.js"],
+      "outFiles": [
+        "${workspaceFolder}/out/test/**/*.js"
+      ],
       "preLaunchTask": "${defaultBuildTask}"
     },
     {
@@ -34,8 +41,12 @@
       "type": "node",
       "program": "${workspaceFolder}/src/main.ts",
       "request": "launch",
-      "args": ["${relativeFileDirname}/${fileBasenameNoExtension}"],
-      "outFiles": ["${workspaceFolder}/out/**/*.js"],
+      "args": [
+        "${relativeFileDirname}/${fileBasenameNoExtension}"
+      ],
+      "outFiles": [
+        "${workspaceFolder}/out/**/*.js"
+      ],
       "preLaunchTask": "${defaultBuildTask}"
     }
   ]
