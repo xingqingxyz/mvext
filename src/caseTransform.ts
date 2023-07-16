@@ -1,236 +1,249 @@
-/**
- * Functions transform from the `norm` word array to a target word.
- */
-const dispatchNorm = {
-	dotCase: (norm: string[]) => norm.join('.'),
-	pathCase: (norm: string[]) => norm.join('/'),
-	snakeCase: (norm: string[]) => norm.join('_'),
-	paramCase: (norm: string[]) => norm.join('-'),
-	noCase: (norm: string[]) => norm.join(' '),
-	sentenceCase: (norm: string[]) =>
-		norm.reduce(
-			(pv, cv, ci) => pv + (ci ? ' ' + cv : cv[0].toUpperCase() + cv.substring(1)),
-			''
-		),
-	constantCase: (norm: string[]) =>
-		norm.reduce((pv, cv, ci) => pv + (ci ? '_' : '') + cv.toUpperCase(), ''),
-	pascalCase: (norm: string[]) =>
-		norm.reduce((pv, cv) => pv + cv[0].toUpperCase() + cv.substring(1), ''),
-	camelCase: (norm: string[]) =>
-		norm.reduce(
-			(pv, cv, ci) => pv + (ci ? cv[0].toUpperCase() + cv.substring(1) : cv),
-			''
-		),
-	capitalCase: (norm: string[]) =>
-		norm.reduce(
-			(pv, cv, ci) => pv + (ci ? ' ' : '') + cv[0].toUpperCase() + cv.substring(1),
-			''
-		),
-	headerCase: (norm: string[]) =>
-		norm.reduce(
-			(pv, cv, ci) => pv + (ci ? '-' : '') + cv[0].toUpperCase() + cv.substring(1),
-			''
-		),
-};
-type WordCase = keyof typeof dispatchNorm;
+import type {
+	Disposable,
+	ExtensionContext,
+	QuickPickItem,
+	Range,
+	Selection,
+	WorkspaceEdit,
+	Position,
+} from 'vscode'
+import vscode = require('vscode')
+import transform = require('./utils/caseTransform')
+import type { WordCase } from './utils/caseTransform'
+const { joinCaseActions, caseTransform } = transform
+const { registerTextEditorCommand, executeCommand } = vscode.commands
 
-/**
- * Each word case links a RegExp tuple represents:`['match this case', 'matches of this case']`
- */
-const reCases: Record<WordCase, Record<'re' | 'words', RegExp>> = {
-	// firstChar: l
-	noCase: {
-		get re() {
-			return /^(?:(?!^) [a-z]+|[a-z]+)+$/;
-		},
-		words: /[a-z]+/g,
-	},
-	// firstChar: u; inc: ' '
-	sentenceCase: {
-		get re() {
-			return /^([A-Z][a-z]*)(?: [a-z]+)*$/;
-		},
-		words: /(?<= )[a-z]+/g,
-	},
-	// firstChar: l
-	dotCase: {
-		get re() {
-			return /^(?:(?!^)\.[a-z]+|[a-z]+)+$/;
-		},
-		words: /[a-z]+/g,
-	},
-	// firstChar: l
-	pathCase: {
-		get re() {
-			return /^(?:(?!^)\/[a-z]+|[a-z]+)+$/;
-		},
-		words: /[a-z]+/g,
-	},
-	// firstChar: l
-	snakeCase: {
-		get re() {
-			return /^(?:(?!^)_[a-z]+|[a-z]+)+$/;
-		},
-		words: /[a-z]+/g,
-	},
-	// firstChar: u; inc: '-'
-	headerCase: {
-		get re() {
-			return /^(?:(?!^)-[A-Z][a-z]*|[A-Z][a-z]*)+$/;
-		},
-		words: /[A-Z][a-z]*/g,
-	},
-	// firstChar: l
-	camelCase: {
-		get re() {
-			return /^([a-z]+)(?:[A-Z][a-z]*)*$/;
-		},
-		words: /[A-Z][a-z]*/g,
-	},
-	// firstChar: u; inc: ' '
-	capitalCase: {
-		get re() {
-			return /^(?:(?!^) [A-Z][a-z]*|[A-Z][a-z]*)+$/;
-		},
-		words: /[A-Z][a-z]*/g,
-	},
-	// firstChar: u; inc: '_'
-	constantCase: {
-		get re() {
-			return /^(?:(?!^)_[A-Z]+|[A-Z]+)+$/;
-		},
-		words: /[A-Z]+/g,
-	},
-	// firstChar: l
-	paramCase: {
-		get re() {
-			return /^(?:(?!^)-[a-z]+|[a-z]+)+$/;
-		},
-		words: /[a-z]+/g,
-	},
-	// firstChar: u; inc: ''
-	pascalCase: {
-		get re() {
-			return /^(?:[A-Z][a-z]*)+$/;
-		},
-		words: /[A-Z][a-z]*/g,
-	},
-};
+let subscriptions: Disposable[] = []
 
-/**
- * Transform one word from `wordCase` to `norm` array.
- * @param wordCase
- * @returns transformed word
- */
-function transformToNorm(word: string, wordCase: WordCase) {
-	const res: string[] = [];
-	switch (wordCase) {
-		case 'constantCase':
-		case 'headerCase':
-		case 'capitalCase':
-		case 'pascalCase':
-			for (const match of reCases[wordCase].words[Symbol.matchAll](word)) {
-				res.push(match[0].toLowerCase());
-			}
-			break;
-		case 'sentenceCase': {
-			const re = word.match(reCases[wordCase].re);
-			re && res.push(re[1].toLowerCase());
-			for (const match of reCases[wordCase].words[Symbol.matchAll](word)) {
-				res.push(match[0]);
-			}
-			break;
-		}
-		case 'camelCase': {
-			const re = word.match(reCases[wordCase].re);
-			re && res.push(re[1]);
-			for (const match of reCases[wordCase].words[Symbol.matchAll](word)) {
-				res.push(match[0].toLowerCase());
-			}
-			break;
-		}
-		default:
-			for (const match of reCases[wordCase].words[Symbol.matchAll](word)) {
-				res.push(match[0]);
-			}
-			break;
+function register(ctx: ExtensionContext) {
+	subscriptions = ctx.subscriptions
+	for (const wc in joinCaseActions) {
+		subscriptions.push(
+			registerTextEditorCommand(
+				`mvext.transformTo${wc[0].toUpperCase() + wc.substring(1)}`,
+				(editor, edit) => dispatch(editor, edit, wc as WordCase)
+			)
+		)
 	}
-	return res;
+	subscriptions.push(
+		registerTextEditorCommand('mvext.detectTransformCase', dispatchDetect)
+	)
 }
 
-/**
- * Only transform a word string belongs {@link WordCase}.
- * @param word word to be transform
- * @param targetCase transform target case
- * @returns transformed word
- */
-function dispatchWord(word: string, targetCase: WordCase) {
-	const reLower = /^[a-z]$/;
-	let reWeChar: RegExp;
-	let matches: RegExpMatchArray | null;
-	/**
-	 * Simply transform from `wc` to `targetCase`
-	 * @param wc `word`'s case
-	 * @returns transformed text
-	 */
-	const transform = (wc: WordCase) =>
-		dispatchNorm[targetCase](transformToNorm(word, wc));
+const reSequence = /[a-zA-Z_\-$][\w_\-$]*/
 
-	if (reLower.test(word[0])) {
-		reWeChar = /( )|(_)|(-)|(\.)|(\/)/;
-		matches = word.match(reWeChar);
-
-		if (!matches) {
-			if (reCases.camelCase.re.test(word)) {
-				return transform('camelCase');
-			}
-			return transform('noCase');
-		}
-
-		const idx = matches.findIndex((v, i) => v && i);
-		switch (idx) {
-			case 1:
-				return transform('noCase');
-			case 2:
-				return transform('snakeCase');
-			case 3:
-				return transform('paramCase');
-			case 4:
-				return transform('dotCase');
-			case 5:
-				return transform('pathCase');
+async function dispatch(
+	editor: vscode.TextEditor,
+	edit: vscode.TextEditorEdit,
+	wc: WordCase
+) {
+	const { document, selection, selections } = editor
+	if (selections.length < 2 && selection.isEmpty) {
+		let transformFn: Parameters<typeof renameWord>[3]
+		switch (wc) {
+			case 'lowerCase':
+				transformFn = (s) => s.toLowerCase()
+				break
+			case 'upperCase':
+				transformFn = (s) => s.toUpperCase()
+				break
 			default:
-				break;
+				transformFn = caseTransform
+				break
 		}
-	} else if (/^[A-Z]$/.test(word[0])) {
-		reWeChar = /( )|(_)|(-)/;
-		matches = word.match(reWeChar);
-
-		if (!matches) {
-			if (reCases.constantCase.re.test(word)) {
-				return transform('constantCase');
-			}
-			return transform('pascalCase');
-		}
-
-		const idx = matches.findIndex((v, i) => v && i);
-		switch (idx) {
-			case 1:
-				if (reLower.test(word.split(' ', 2)[1][0])) {
-					return transform('sentenceCase');
+		await renameWord(document, selection.start, editor, transformFn, wc)
+	} else {
+		const rest: Selection[] = []
+		editor.edit(
+			(b) => {
+				for (const selectionIt of selections) {
+					if (selectionIt.isEmpty) {
+						const range = document.getWordRangeAtPosition(
+							selectionIt.start,
+							reSequence
+						)
+						if (range) {
+							const text = document.getText(range)
+							b.replace(range, caseTransform(text, wc))
+						}
+					} else {
+						rest.push(selectionIt)
+					}
 				}
-				return transform('capitalCase');
-			case 2:
-				return transform('constantCase');
-			case 3:
-				return transform('headerCase');
-			default:
-				break;
+			},
+			{ undoStopBefore: true, undoStopAfter: false }
+		)
+		if (rest.length) {
+			editor.edit(
+				(b) => {
+					for (const selectionIt of selections) {
+						const text = editor.document.getText(selectionIt)
+						b.replace(selectionIt, caseTransform(text, wc))
+					}
+				},
+				{
+					undoStopBefore: false,
+					undoStopAfter: true,
+				}
+			)
 		}
 	}
-	return '';
 }
 
-// @ts-ignore type-export
-export = { dispatchNorm, dispatchWord, reCases, transformToNorm };
-export type { WordCase };
+async function renameWord(
+	document: vscode.TextDocument,
+	position: Position,
+	editor: vscode.TextEditor,
+	transformFn: (word: string, ...args: any[]) => string,
+	...args: any[]
+) {
+	const cmdPrepareRename = 'vscode.prepareRename'
+	const cmdRenameProvider = 'vscode.executeDocumentRenameProvider'
+
+	try {
+		const fileUri = document.uri
+		const { placeholder } = (await executeCommand(
+			cmdPrepareRename,
+			fileUri,
+			position
+		)) as { range: Range; placeholder: string }
+		const wspEdit: WorkspaceEdit = await executeCommand(
+			cmdRenameProvider,
+			fileUri,
+			position,
+			transformFn(placeholder, ...args)
+		)
+		await vscode.workspace.applyEdit(wspEdit)
+	} catch {
+		const range = document.getWordRangeAtPosition(position, reSequence)
+		if (range) {
+			const text = document.getText(range)
+			editor.edit((b) => b.replace(range, transformFn(text, ...args)))
+		}
+	}
+}
+
+const caseDetectPickItems: (QuickPickItem & { label: WordCase })[] = [
+	{
+		label: 'camelCase',
+		description: 'loveWorld',
+	},
+	{
+		label: 'capitalCase',
+		description: 'Love World',
+	},
+	{
+		label: 'constantCase',
+		description: 'LOVE_WORLD',
+	},
+	{
+		label: 'dotCase',
+		description: 'love.world',
+	},
+	{
+		label: 'headerCase',
+		description: 'Love-World',
+	},
+	{
+		label: 'noCase',
+		description: 'love world',
+	},
+	{
+		label: 'paramCase',
+		description: 'love-world',
+	},
+	{
+		label: 'pascalCase',
+		description: 'LoveWorld',
+	},
+	{
+		label: 'pathCase',
+		description: 'love/world',
+	},
+	{
+		label: 'sentenceCase',
+		description: 'Love world',
+	},
+	{
+		label: 'snakeCase',
+		description: 'love_world',
+	},
+	{
+		label: 'lowerCase',
+		description: 'loveworld',
+	},
+	{
+		label: 'upperCase',
+		description: 'LOVEWORLD',
+	},
+]
+
+function showDetectPicks(wc: WordCase) {
+	const picks = vscode.window.createQuickPick()
+	picks.items = caseDetectPickItems
+	picks.placeholder = "Please tell me which case of word you'd like to:"
+	picks.title = 'Select Word Case'
+	picks.activeItems = [
+		picks.items.find((v) => v.label === wc) as QuickPickItem,
+	]
+	picks.show()
+
+	return new Promise<WordCase>((resolve) =>
+		picks.onDidAccept(
+			() => {
+				resolve(picks.selectedItems[0].label as WordCase)
+				picks.dispose()
+			},
+			undefined,
+			subscriptions
+		)
+	)
+}
+
+async function dispatchDetect(
+	{ selections, document }: vscode.TextEditor,
+	edit: vscode.TextEditorEdit
+) {
+	if (selections[0].isEmpty) {
+		return
+	}
+	const text = document.getText(selections[0])
+	const reCaseSplitter = /(\/)|(\.)|(-)|(_)|( )/
+	const matches = text.match(reCaseSplitter)
+
+	let wordCase: WordCase
+	if (matches) {
+		const idx = matches.findIndex((v, i) => v && i)
+		switch (idx) {
+			case 1:
+				wordCase = 'pathCase'
+				break
+			case 2:
+				wordCase = 'dotCase'
+				break
+			case 3:
+				wordCase = 'paramCase'
+				break
+			case 4:
+				wordCase = 'snakeCase'
+				break
+			case 5:
+				wordCase = 'sentenceCase'
+				break
+			default:
+				wordCase = 'camelCase'
+				break
+		}
+		try {
+			const picked = await showDetectPicks(wordCase)
+			for (const selectionIt of selections) {
+				const text = document.getText(selectionIt)
+				edit.replace(selectionIt, caseTransform(text, picked))
+			}
+		} catch {}
+	}
+}
+
+export = {
+	register,
+}

@@ -1,176 +1,232 @@
 {
-  "name": "my-extension",
-  "displayName": "My Extension",
-  "description": "Transform (multiple) cursor position or selection to many cases. Cases: `capitalCase`, `camelCase`, `constantCase`, `pascalCase`, `paramCase`, `snakeCase`, `sentenceCase`, `dotCase`, `pathCase`, `headerCase`, `noCase`",
-  "version": "0.1.0",
-  "engines": {
-    "vscode": "^1.78.0"
-  },
-  "categories": [
-    "Other"
-  ],
-  "repository": {
-    "url": "https://github.com/xingqingxyz/my-extension.git",
-    "type": "git"
-  },
-  "bugs": {
-    "url": "https://github.com/xingqingxyz/my-extension/issues"
-  },
-  "main": "./out/extension.js",
-  "contributes": {
-    "commands": [
-      {
-        "title": "Transform Case: Title",
-        "command": "my-extension.transformToCapitalCase"
-      },
-      {
-        "title": "Transform Case: Camel",
-        "command": "my-extension.transformToCamelCase"
-      },
-      {
-        "title": "Transform Case: Constant",
-        "command": "my-extension.transformToConstantCase"
-      },
-      {
-        "title": "Transform Case: Pascal",
-        "command": "my-extension.transformToPascalCase"
-      },
-      {
-        "title": "Transform Case: Kebab",
-        "command": "my-extension.transformToParamCase"
-      },
-      {
-        "title": "Transform Case: Snake",
-        "command": "my-extension.transformToSnakeCase"
-      },
-      {
-        "title": "Transform Case: Dot",
-        "command": "my-extension.transformToDotCase"
-      },
-      {
-        "title": "Transform Case: Path",
-        "command": "my-extension.transformToPathCase"
-      },
-      {
-        "title": "Transform Case: Sentence",
-        "command": "my-extension.transformToSentenceCase"
-      },
-      {
-        "title": "Transform Case: No",
-        "command": "my-extension.transformToNoCase"
-      },
-      {
-        "title": "Transform Case: Header",
-        "command": "my-extension.transformToHeaderCase"
-      },
-      {
-        "title": "Detect Transform Case",
-        "command": "my-extension.detectTransformCase"
-      }
-    ],
-    "keybindings": [
-      {
-        "when": "editorTextFocus && !editorReadonly",
-        "key": "alt+x alt+c",
-        "command": "my-extension.transformToCapitalCase"
-      },
-      {
-        "when": "editorTextFocus && !editorReadonly",
-        "key": "alt+x c",
-        "command": "my-extension.transformToCamelCase"
-      },
-      {
-        "key": "alt+x shift+c",
-        "when": "editorTextFocus && !editorReadonly",
-        "command": "my-extension.transformToConstantCase"
-      },
-      {
-        "key": "alt+x p",
-        "when": "editorTextFocus && !editorReadonly",
-        "command": "my-extension.transformToPascalCase"
-      },
-      {
-        "key": "alt+x k",
-        "when": "editorTextFocus && !editorReadonly",
-        "command": "my-extension.transformToParamCase"
-      },
-      {
-        "key": "alt+x s",
-        "when": "editorTextFocus && !editorReadonly",
-        "command": "my-extension.transformToSnakeCase"
-      },
-      {
-        "key": "alt+x .",
-        "when": "editorTextFocus && !editorReadonly",
-        "command": "my-extension.transformToDotCase"
-      },
-      {
-        "key": "alt+x /",
-        "when": "editorTextFocus && !editorReadonly",
-        "command": "my-extension.transformToPathCase"
-      },
-      {
-        "key": "alt+x space",
-        "when": "editorTextFocus && !editorReadonly",
-        "command": "my-extension.transformToSentenceCase"
-      },
-      {
-        "key": "alt+x n",
-        "when": "editorTextFocus && !editorReadonly",
-        "command": "my-extension.transformToNoCase"
-      },
-      {
-        "key": "alt+x h",
-        "when": "editorTextFocus && !editorReadonly",
-        "command": "my-extension.transformToHeaderCase"
-      },
-      {
-        "key": "alt+x alt+d",
-        "when": "editorTextFocus && !editorReadonly",
-        "command": "my-extension.detectTransformCase"
-      },
-      {
-        "key": "alt+x u",
-        "when": "editorTextFocus && !editorReadonly",
-        "command": "my-extension.transformToUpperCase"
-      },
-      {
-        "key": "alt+x l",
-        "when": "editorTextFocus && !editorReadonly",
-        "command": "my-extension.transformToLowerCase"
-      },
-      {
-        "key": "alt+x alt+oem_3",
-        "when": "editorTextFocus && !editorReadonly",
-        "command": "editor.action.transposeLetters"
-      },
-      {
-        "key": "alt+oem_3",
-        "when": "editorTextFocus && !editorReadonly",
-        "command": "editor.action.transpose"
-      }
-    ]
-  },
-  "scripts": {
-    "lint": "eslint src --ext ts",
-    "test": "node ./out/test/runTest.js",
-    "vscode:prepublish": "npm run esbuild-base -- --minify",
-    "esbuild": "npm run esbuild-base -- --sourcemap",
-    "esbuild-watch": "npm run esbuild-base -- --sourcemap --watch",
-    "esbuild-base": "esbuild ./src/extension.ts --bundle --outfile=out/extension.js --external:vscode --format=cjs --platform=node"
-  },
-  "devDependencies": {
-    "@types/glob": "^8.0.0",
-    "@types/mocha": "^10.0.1",
-    "@types/node": "16.x",
-    "@types/vscode": "^1.78.0",
-    "@typescript-eslint/eslint-plugin": "^5.59.1",
-    "@typescript-eslint/parser": "^5.59.1",
-    "@vscode/test-electron": "^2.2.0",
-    "esbuild": "^0.17.18",
-    "eslint": "^8.28.0",
-    "glob": "^8.0.3",
-    "mocha": "^10.1.0",
-    "typescript": "^5.0.4"
-  }
+	"name": "mvext",
+	"displayName": "My VSCode Extension",
+	"description": "Transform (multiple) cursor position or selection to many cases. Cases: `capitalCase`, `camelCase`, `constantCase`, `pascalCase`, `paramCase`, `snakeCase`, `sentenceCase`, `dotCase`, `pathCase`, `headerCase`, `noCase`",
+	"version": "0.1.1",
+	"l10n": "./l10n",
+	"engines": {
+		"vscode": "^1.78.0"
+	},
+	"categories": [
+		"Programming Languages",
+		"Other"
+	],
+	"repository": {
+		"url": "https://github.com/xingqingxyz/mvext.git",
+		"type": "git"
+	},
+	"bugs": {
+		"url": "https://github.com/xingqingxyz/mvext/issues"
+	},
+	"main": "./out/extension.js",
+	"contributes": {
+		"commands": [
+			{
+				"title": "Transform Case: Title",
+				"command": "mvext.transformToCapitalCase"
+			},
+			{
+				"title": "Transform Case: Camel",
+				"command": "mvext.transformToCamelCase"
+			},
+			{
+				"title": "Transform Case: Constant",
+				"command": "mvext.transformToConstantCase"
+			},
+			{
+				"title": "Transform Case: Pascal",
+				"command": "mvext.transformToPascalCase"
+			},
+			{
+				"title": "Transform Case: Kebab",
+				"command": "mvext.transformToParamCase"
+			},
+			{
+				"title": "Transform Case: Snake",
+				"command": "mvext.transformToSnakeCase"
+			},
+			{
+				"title": "Transform Case: Dot",
+				"command": "mvext.transformToDotCase"
+			},
+			{
+				"title": "Transform Case: Path",
+				"command": "mvext.transformToPathCase"
+			},
+			{
+				"title": "Transform Case: Sentence",
+				"command": "mvext.transformToSentenceCase"
+			},
+			{
+				"title": "Transform Case: No",
+				"command": "mvext.transformToNoCase"
+			},
+			{
+				"title": "Transform Case: Header",
+				"command": "mvext.transformToHeaderCase"
+			},
+			{
+				"title": "Transform Case: Lower",
+				"command": "mvext.transformToLowerCase"
+			},
+			{
+				"title": "Transform Case: Upper",
+				"command": "mvext.transformToUpperCase"
+			},
+			{
+				"title": "Detect Transform Case",
+				"command": "mvext.detectTransformCase"
+			},
+			{
+				"title": "mvext.myCommand",
+				"command": "mvext.myCommand"
+			},
+			{
+				"title": "Switch File: HTML/JS/CSS/TS",
+				"command": "mvext.switchFile"
+			}
+		],
+		"keybindings": [
+			{
+				"when": "editorTextFocus && !editorReadonly",
+				"key": "alt+x alt+c",
+				"command": "mvext.transformToCapitalCase"
+			},
+			{
+				"when": "editorTextFocus && !editorReadonly",
+				"key": "alt+x c",
+				"command": "mvext.transformToCamelCase"
+			},
+			{
+				"key": "alt+x shift+c",
+				"when": "editorTextFocus && !editorReadonly",
+				"command": "mvext.transformToConstantCase"
+			},
+			{
+				"key": "alt+x p",
+				"when": "editorTextFocus && !editorReadonly",
+				"command": "mvext.transformToPascalCase"
+			},
+			{
+				"key": "alt+x k",
+				"when": "editorTextFocus && !editorReadonly",
+				"command": "mvext.transformToParamCase"
+			},
+			{
+				"key": "alt+x s",
+				"when": "editorTextFocus && !editorReadonly",
+				"command": "mvext.transformToSnakeCase"
+			},
+			{
+				"key": "alt+x .",
+				"when": "editorTextFocus && !editorReadonly",
+				"command": "mvext.transformToDotCase"
+			},
+			{
+				"key": "alt+x /",
+				"when": "editorTextFocus && !editorReadonly",
+				"command": "mvext.transformToPathCase"
+			},
+			{
+				"key": "alt+x space",
+				"when": "editorTextFocus && !editorReadonly",
+				"command": "mvext.transformToSentenceCase"
+			},
+			{
+				"key": "alt+x n",
+				"when": "editorTextFocus && !editorReadonly",
+				"command": "mvext.transformToNoCase"
+			},
+			{
+				"key": "alt+x h",
+				"when": "editorTextFocus && !editorReadonly",
+				"command": "mvext.transformToHeaderCase"
+			},
+			{
+				"key": "alt+x u",
+				"when": "editorTextFocus && !editorReadonly",
+				"command": "mvext.transformToUpperCase"
+			},
+			{
+				"key": "alt+x l",
+				"when": "editorTextFocus && !editorReadonly",
+				"command": "mvext.transformToLowerCase"
+			},
+			{
+				"key": "alt+x alt+d",
+				"when": "editorTextFocus && !editorReadonly",
+				"command": "mvext.detectTransformCase"
+			},
+			{
+				"key": "alt+x alt+e",
+				"command": "mvext.myCommand"
+			},
+			{
+				"key": "alt+o",
+				"command": "mvext.switchFile"
+			}
+		],
+		"problemMatchers": [
+			{
+				"name": "esbuild",
+				"label": "esbuild problem matcher",
+				"severity": "error",
+				"applyTo": "closedDocuments",
+				"source": "esbuild",
+				"fileLocation": "relative",
+				"owner": "typescript",
+				"pattern": [
+					{
+						"regexp": "> (.*?):([0-9]+):([0-9]+): (warning|error): (.+)$",
+						"file": 1,
+						"line": 2,
+						"column": 3,
+						"severity": 4,
+						"message": 5
+					}
+				]
+			},
+			{
+				"name": "esbuild-watch",
+				"base": "$esbuild",
+				"label": "esbuild --watch problem matcher",
+				"severity": "error",
+				"applyTo": "closedDocuments",
+				"source": "esbuild",
+				"owner": "typescript",
+				"fileLocation": "relative",
+				"background": {
+					"activeOnStart": true,
+					"beginsPattern": {
+						"regexp": "\\[watch\\] build started"
+					},
+					"endsPattern": {
+						"regexp": "\\[watch\\] build finished, watching for changes..."
+					}
+				}
+			}
+		]
+	},
+	"scripts": {
+		"lint": "eslint src --ext ts",
+		"test": "node ./out/test/runTest.js",
+		"vscode:prepublish": "npm run esbuild-base -- --minify",
+		"esbuild": "npm run esbuild-base -- --sourcemap",
+		"esbuild-watch": "npm run esbuild-base -- --sourcemap --watch",
+		"esbuild-base": "esbuild ./src/extension.ts --bundle --outfile=out/extension.js --external:vscode --format=cjs --platform=node"
+	},
+	"devDependencies": {
+		"glob": "8.1.0",
+		"@types/node": "16.18.38",
+		"mocha": "10.2.0",
+		"@typescript-eslint/eslint-plugin": "5.62.0",
+		"eslint": "8.45.0",
+		"@types/vscode": "1.80.0",
+		"@vscode/test-electron": "2.3.3",
+		"@types/mocha": "10.0.1",
+		"@types/glob": "8.1.0",
+		"typescript": "5.1.6",
+		"esbuild": "0.17.19",
+		"@typescript-eslint/parser": "5.62.0"
+	}
 }

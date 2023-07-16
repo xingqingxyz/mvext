@@ -1,11 +1,12 @@
 {
-  "files.watcherExclude": {
-    "out": true
-  },
-  "search.exclude": {
-    "out": true
-  },
-  "prettier.useTabs": true,
-  "prettier.tabWidth": 4,
-  "editor.insertSpaces": false
+	"files.watcherExclude": {
+		"out": true
+	},
+	"search.exclude": {
+		"out": true
+	},
+	"prettier.useTabs": true,
+	"prettier.tabWidth": 4,
+	"editor.insertSpaces": false,
+	"cSpell.words": ["mvext", "outfile"]
 }

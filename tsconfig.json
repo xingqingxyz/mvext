@@ -1,20 +1,14 @@
 {
-  "include": [
-    "src"
-  ],
-  "compilerOptions": {
-    "module": "CommonJS",
-    "lib": [
-      "ES2021"
-    ],
-    "forceConsistentCasingInFileNames": true,
-    "verbatimModuleSyntax": true,
-    "declaration": true,
-    "outDir": "out",
-    "rootDir": "src",
-    "baseUrl": ".",
-    "sourceMap": true,
-    "strict": true,
-    "target": "ES2021"
-  }
+	"include": ["src"],
+	"compilerOptions": {
+		"module": "CommonJS",
+		"target": "ES2021",
+		"lib": ["ES2021"],
+		"esModuleInterop": true,
+		"outDir": "out",
+		"sourceMap": true,
+		"strict": true,
+		"forceConsistentCasingInFileNames": true,
+		"skipDefaultLibCheck": true
+	}
 }

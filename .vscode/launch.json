@@ -18,7 +18,8 @@
       ],
       "skipFiles": [
         "<node_internals>/**",
-        "c:\\Users\\cmema\\AppData\\Local\\Programs\\Microsoft VS Code - Insiders\\resources\\app\\**\\*.js"
+        "**/node_modules/**",
+        "c:\\Users\\cmema\\AppData\\Local\\Programs\\Microsoft VS Code Insiders\\resources\\app\\**",
       ],
       "preLaunchTask": "${defaultBuildTask}"
     },
@@ -33,6 +34,11 @@
       ],
       "outFiles": [
         "${workspaceFolder}/out/test/**/*.js"
+      ],
+      "skipFiles": [
+        "<node_internals>/**",
+        "**/node_modules/**",
+        "c:\\Users\\cmema\\AppData\\Local\\Programs\\Microsoft VS Code Insiders\\resources\\app\\**",
       ],
       "preLaunchTask": "${defaultBuildTask}"
     },

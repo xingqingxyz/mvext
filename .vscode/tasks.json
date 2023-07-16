@@ -4,14 +4,52 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "type": "typescript",
-      "tsconfig": "tsconfig.json",
-      "option": "watch",
-      "problemMatcher": ["$tsc-watch"],
+      "isBackground": true,
+      "problemMatcher": {
+        "owner": "typescript",
+        "fileLocation": "relative",
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": {
+            "regexp": "^\\[watch\\] build started"
+          },
+          "endsPattern": {
+            "regexp": "^\\[watch\\] build finished"
+          }
+        },
+        "pattern": {
+          "regexp": "^\\[watch\\] build started \\(change: \"(.*?)\"\\)$",
+          "file": 1,
+          "location": 2,
+          "severity": 3,
+          "code": 4,
+          "message": 5
+        },
+      },
       "group": {
         "kind": "build",
         "isDefault": true
       },
+      "type": "npm",
+      "script": "esbuild-watch",
+      "label": "npm: esbuild-watch",
+      "detail": "npm run esbuild-base -- --sourcemap --watch"
+    },
+    {
+      "type": "npm",
+      "script": "esbuild",
+      "problemMatcher": [],
+      "group": "build",
+      "label": "npm: esbuild",
+      "detail": "npm run esbuild-base -- --sourcemap"
+    },
+    {
+      "type": "typescript",
+      "tsconfig": "tsconfig.json",
+      "option": "watch",
+      "problemMatcher": [
+        "$tsc-watch"
+      ],
       "label": "tsc: watch - tsconfig.json"
     }
   ]
