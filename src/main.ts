@@ -1,5 +1,5 @@
-const relative = process.argv[2];
+const relative = process.argv[2]
 if (!relative || relative === 'out/main') {
-	process.exit();
+  process.exit()
 }
-require(`./${relative.substring(4).replaceAll('\\', '/')}.js`);
+require(`./${relative.substring(4).replaceAll('\\', '/')}.js`)

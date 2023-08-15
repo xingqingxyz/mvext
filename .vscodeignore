@@ -4,5 +4,6 @@ out/
 !out/extension.js
 src/
 
+.eslintrc.js
 tsconfig.json
 tsconfig.tsbuildinfo

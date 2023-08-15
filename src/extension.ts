@@ -1,20 +1,15 @@
-import vscode = require('vscode');
-import caseTransform = require('./caseTransform');
-import switchFile = require('./switchFile');
-import tsCodeActions = require('./tsCodeActions');
+import vscode from 'vscode'
+import { registerCaseTransform } from './caseTransform'
+import { registerSwitchFile } from './switchFile'
+import { registerTsCodeActions } from './tsCodeActions'
 
-function activate(context: vscode.ExtensionContext) {
-	console.log('My Extension activated.');
-	caseTransform.register(context);
-	switchFile.register(context);
-	tsCodeActions.register(context);
+export function activate(context: vscode.ExtensionContext) {
+  console.log('My Extension activated.')
+  registerCaseTransform(context)
+  registerSwitchFile(context)
+  registerTsCodeActions(context)
 }
 
-function deactivate() {
-	console.log('My Extension deactivated.');
+export function deactivate() {
+  console.log('My Extension deactivated.')
 }
-
-export = {
-	activate,
-	deactivate,
-};
