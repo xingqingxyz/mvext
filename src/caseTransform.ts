@@ -180,7 +180,7 @@ function showDetectPicks(wc: WordCase) {
   picks.items = caseDetectPickItems
   picks.placeholder = "Please tell me which case of word you'd like to:"
   picks.title = 'Select Word Case'
-  picks.activeItems = [picks.items.find((v) => v.label === wc) as QuickPickItem]
+  picks.activeItems = [picks.items.find((v) => v.label === wc)!]
   picks.show()
 
   return new Promise<WordCase>((resolve) =>

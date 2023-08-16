@@ -1,5 +1,5 @@
 import { strict } from 'assert'
-import { describe } from 'mocha'
+import { describe, it } from 'mocha'
 import type { WordCase } from '../../utils/caseTransformHelper'
 import {
   caseTransform,
@@ -9,49 +9,56 @@ import {
 } from '../../utils/caseTransformHelper'
 
 function testAll(words: string[], casedMap: Record<WordCase, string>) {
-  describe('`joinCaseActions`', function () {
-    casesList.forEach((wc) => {
-      strict.equal(casedMap[wc], joinCaseActions[wc](words))
+  describe('joinCaseActions', function () {
+    it('should match casedMap', function () {
+      casesList.forEach((wc) => {
+        strict.equal(casedMap[wc], joinCaseActions[wc](words))
+      })
     })
   })
 
-  describe('`getWordsByCase`', function () {
-    casesList.forEach((wc) => {
-      if (wc === 'lowerCase' || wc === 'upperCase') {
-        strict.deepEqual(getWordsByCase(casedMap[wc], wc), [casedMap.lowerCase])
-      } else {
-        strict.deepEqual(getWordsByCase(casedMap[wc], wc), words)
-      }
+  describe(`#${getWordsByCase.name}()`, function () {
+    it('should deepEqual words', function () {
+      casesList.forEach((wc) => {
+        if (wc === 'lowerCase' || wc === 'upperCase') {
+          strict.deepEqual(getWordsByCase(casedMap[wc], wc), [
+            casedMap.lowerCase,
+          ])
+        } else {
+          strict.deepEqual(getWordsByCase(casedMap[wc], wc), words)
+        }
+      })
     })
   })
 
-  describe('`casesReMap`', function () {
-    casesList.forEach((wc) => {
-      strict.ok(casesReMap[wc].test(casedMap[wc]))
+  describe('casesReMap', function () {
+    it('should match casedMap', function () {
+      casesList.forEach((wc) => {
+        strict.ok(casesReMap[wc].test(casedMap[wc]))
+      })
     })
   })
 
-  describe('`switchWordCase`', function () {
-    casesList.forEach((wc) => {
-      if (wc === 'lowerCase' || wc === 'upperCase') {
-        return
-      }
-      strict.equal(switchWordCase(casedMap[wc]), wc)
+  describe(`#${switchWordCase.name}()`, function () {
+    it('should return expect word case', function () {
+      casesList.forEach((wc) => {
+        if (wc === 'lowerCase' || wc === 'upperCase') {
+          return
+        }
+        strict.equal(switchWordCase(casedMap[wc]), wc)
+      })
     })
   })
 
-  describe('`caseTransform`', function () {
-    casesList.forEach((wc) => {
-      if (wc === 'lowerCase' || wc === 'upperCase') {
-        return
-      }
-    })
-  })
-
-  describe('', function () {
-    casesList.forEach((wc) => {
-      casesList.forEach((wc2) => {
-        strict.equal(caseTransform(casedMap[wc], wc2), casedMap[wc2])
+  describe(`#${caseTransform.name}()`, function () {
+    it('should return expected cased word', function () {
+      casesList.forEach((wc) => {
+        if (wc === 'lowerCase' || wc === 'upperCase') {
+          return
+        }
+        casesList.forEach((wc2) => {
+          strict.equal(caseTransform(casedMap[wc], wc2), casedMap[wc2])
+        })
       })
     })
   })

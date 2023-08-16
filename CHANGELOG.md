@@ -22,3 +22,8 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 ## [0.1.1]
 
 - Fix some bugs, offer commands which transform word(s) to `lowerCase` or `upperCase`.
+
+## [0.1.2]
+
+- Feature: [`evalWithSelection`](./src/evalWithSelection.ts) eval selection
+  by current resource lang, supports: nodejs | deno, python, lua, pwsh, cmd, bash

@@ -24,6 +24,12 @@
     "url": "https://github.com/xingqingxyz/mvext/issues"
   },
   "main": "./out/extension.js",
+  "keywords": [
+    "case transform",
+    "file",
+    "eval",
+    "typescript"
+  ],
   "contributes": {
     "commands": [
       {
@@ -214,16 +220,18 @@
   },
   "scripts": {
     "dev": "esbuild ./src/_extension.ts --outfile=out/extension.js --external:vscode --format=cjs --platform=node --bundle --watch",
+    "tsc": "tsc -w",
+    "test": "mocha out/test -p",
     "eslint": "eslint src --ext ts --fix --cache",
     "prettier": "prettier -w . --cache",
     "stage": "cross-env NODE_ENV=stage pnpm eslint && pnpm prettier && pwsh install.ps1",
-    "vscode:test": "node ./out/test/runTest.js",
+    "vscode:test": "cross-env VSCODE_TEST=true pnpm test",
     "vscode:prepublish": "esbuild ./src/_extension.ts --outfile=out/extension.js --external:vscode --format=cjs --platform=node --bundle --minify"
   },
   "devDependencies": {
     "@types/glob": "8.1.0",
     "@types/mocha": "10.0.1",
-    "@types/node": "^20.5.0",
+    "@types/node": "^16.18.40",
     "@types/vscode": "1.81.0",
     "@typescript-eslint/eslint-plugin": "^6.4.0",
     "@typescript-eslint/parser": "^6.4.0",

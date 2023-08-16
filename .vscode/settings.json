@@ -5,6 +5,5 @@
   "search.exclude": {
     "out": true
   },
-  "editor.insertSpaces": false,
   "cSpell.words": ["mvext", "outbase", "outdir", "outfile"]
 }

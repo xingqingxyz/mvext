@@ -169,11 +169,11 @@ export function getWordsByCase(sequence: string, wc: WordCase) {
         switch (wc) {
           case 'camelCase':
             return [matchHead[1]].concat(
-              sequence.match(re[1])?.map((w) => w.toLowerCase()) || []
+              sequence.match(re[1])?.map((w) => w.toLowerCase()) ?? []
             )
           case 'sentenceCase':
             return [matchHead[1].toLowerCase()].concat(
-              sequence.match(re[1]) || []
+              sequence.match(re[1]) ?? []
             )
           default:
             return null
@@ -210,7 +210,7 @@ export function caseTransform(sequence: string, targetCase: WordCase) {
       if (piece.length) {
         pushWord(piece)
       }
-      lastIndx = <number>index + value.length
+      lastIndx = index! + value.length
       targets.push(value)
     }
     const piece = sequence.slice(lastIndx)
