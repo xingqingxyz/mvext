@@ -3,6 +3,7 @@ node_modules/
 out/
 !out/extension.js
 src/
+test/
 
 .eslintrc.js
 tsconfig.json

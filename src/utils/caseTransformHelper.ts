@@ -39,6 +39,7 @@ export const joinCaseActions = {
 }
 
 export type WordCase = keyof typeof joinCaseActions
+export const casesList = Object.keys(joinCaseActions) as WordCase[]
 
 /**
  * Switch the sequence case from raw`[a-zA-Z_$][\w$]*`
@@ -142,7 +143,7 @@ export function getWordsByCase(sequence: string, wc: WordCase) {
     default: {
       const re = reGetWordsByCase[wc]
       if (re instanceof RegExp) {
-        let matches = sequence.match(re) as string[]
+        const matches = sequence.match(re)
         if (!matches) {
           return null
         }
@@ -152,15 +153,14 @@ export function getWordsByCase(sequence: string, wc: WordCase) {
           // case 'snakeCase':
           // case 'paramCase':
           // case 'noCase':
-          // 	break;
           case 'capitalCase':
           case 'constantCase':
           case 'pascalCase':
           case 'headerCase':
-            matches = matches.map((w) => w.toLowerCase())
-            break
+            return matches.map((w) => w.toLowerCase())
+          default:
+            return matches
         }
-        return matches
       } else {
         const matchHead = sequence.match(re[0])
         if (!matchHead) {
@@ -175,8 +175,9 @@ export function getWordsByCase(sequence: string, wc: WordCase) {
             return [matchHead[1].toLowerCase()].concat(
               sequence.match(re[1]) || []
             )
+          default:
+            return null
         }
-        return null
       }
     }
   }

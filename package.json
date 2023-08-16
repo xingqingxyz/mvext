@@ -213,12 +213,12 @@
     ]
   },
   "scripts": {
-    "dev": "esbuild ./src/extension.ts --outfile=out/extension.js --external:vscode --format=cjs --platform=node --bundle --watch",
-    "vscode:test": "tsc && node ./out/test/runTest.js",
+    "dev": "esbuild ./src/_extension.ts --outfile=out/extension.js --external:vscode --format=cjs --platform=node --bundle --watch",
     "eslint": "eslint src --ext ts --fix --cache",
     "prettier": "prettier -w . --cache",
     "stage": "cross-env NODE_ENV=stage pnpm eslint && pnpm prettier && pwsh install.ps1",
-    "vscode:prepublish": "esbuild ./src/extension.ts --outfile=out/extension.js --external:vscode --format=cjs --platform=node --bundle --minify"
+    "vscode:test": "node ./out/test/runTest.js",
+    "vscode:prepublish": "esbuild ./src/_extension.ts --outfile=out/extension.js --external:vscode --format=cjs --platform=node --bundle --minify"
   },
   "devDependencies": {
     "@types/glob": "8.1.0",

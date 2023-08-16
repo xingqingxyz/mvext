@@ -1,10 +1,9 @@
 import fs from 'fs'
 import vscode from 'vscode'
+const { registerCommand, executeCommand } = vscode.commands
 
 export function registerSwitchFile(ctx: vscode.ExtensionContext) {
-  ctx.subscriptions.push(
-    vscode.commands.registerCommand('mvext.switchFile', switchFile)
-  )
+  ctx.subscriptions.push(registerCommand('mvext.switchFile', switchFile))
 }
 
 export async function switchFile() {
@@ -77,6 +76,6 @@ export async function switchFile() {
         return
     }
   }
-  console.log(uri)
-  vscode.commands.executeCommand('vscode.open', uri)
+  console.log(uri.fsPath)
+  await executeCommand('vscode.open', uri)
 }

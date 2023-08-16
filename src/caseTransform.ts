@@ -3,13 +3,11 @@ import type {
   ExtensionContext,
   Position,
   QuickPickItem,
-  Range,
   Selection,
   WorkspaceEdit,
 } from 'vscode'
 import vscode from 'vscode'
-import type { WordCase } from './utils/caseTransformHelper'
-import { caseTransform, joinCaseActions } from './utils/caseTransformHelper'
+import { caseTransform, WordCase, casesList } from './utils/caseTransformHelper'
 
 const { registerTextEditorCommand, executeCommand } = vscode.commands
 
@@ -17,26 +15,23 @@ let subscriptions: Disposable[] = []
 
 export function registerCaseTransform(ctx: ExtensionContext) {
   subscriptions = ctx.subscriptions
-  for (const wc in joinCaseActions) {
+  casesList.forEach((wc) => {
     subscriptions.push(
       registerTextEditorCommand(
         `mvext.transformTo${wc[0].toUpperCase() + wc.substring(1)}`,
-        (editor, edit) => dispatch(editor, edit, wc as WordCase)
+        (editor) => void dispatch(editor, wc)
       )
     )
-  }
+  })
   subscriptions.push(
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises
     registerTextEditorCommand('mvext.detectTransformCase', dispatchDetect)
   )
 }
 
 const reSequence = /[a-zA-Z_\-$][\w_\-$]*/
 
-async function dispatch(
-  editor: vscode.TextEditor,
-  edit: vscode.TextEditorEdit,
-  wc: WordCase
-) {
+async function dispatch(editor: vscode.TextEditor, wc: WordCase) {
   const { document, selection, selections } = editor
   if (selections.length < 2 && selection.isEmpty) {
     let transformFn: Parameters<typeof renameWord>[3]
@@ -54,7 +49,7 @@ async function dispatch(
     await renameWord(document, selection.start, editor, transformFn, wc)
   } else {
     const rest: Selection[] = []
-    editor.edit(
+    await editor.edit(
       (b) => {
         for (const selectionIt of selections) {
           if (selectionIt.isEmpty) {
@@ -74,7 +69,7 @@ async function dispatch(
       { undoStopBefore: true, undoStopAfter: false }
     )
     if (rest.length) {
-      editor.edit(
+      await editor.edit(
         (b) => {
           for (const selectionIt of selections) {
             const text = editor.document.getText(selectionIt)
@@ -94,31 +89,33 @@ async function renameWord(
   document: vscode.TextDocument,
   position: Position,
   editor: vscode.TextEditor,
-  transformFn: (word: string, ...args: any[]) => string,
-  ...args: any[]
+  transformFn: (word: string, wc: WordCase) => string,
+  wc: WordCase
 ) {
   const cmdPrepareRename = 'vscode.prepareRename'
   const cmdRenameProvider = 'vscode.executeDocumentRenameProvider'
 
   try {
     const fileUri = document.uri
-    const { placeholder } = (await executeCommand(
+    const { placeholder } = await executeCommand<{ placeholder: string }>(
       cmdPrepareRename,
       fileUri,
       position
-    )) as { range: Range; placeholder: string }
-    const wspEdit: WorkspaceEdit = await executeCommand(
+    )
+    const wspEdit = await executeCommand<WorkspaceEdit>(
       cmdRenameProvider,
       fileUri,
       position,
-      transformFn(placeholder, ...args)
+      transformFn(placeholder, wc)
     )
     await vscode.workspace.applyEdit(wspEdit)
   } catch {
     const range = document.getWordRangeAtPosition(position, reSequence)
     if (range) {
       const text = document.getText(range)
-      editor.edit((b) => b.replace(range, transformFn(text, ...args)))
+      await editor.edit((b) => {
+        b.replace(range, transformFn(text, wc))
+      })
     }
   }
 }
@@ -238,6 +235,8 @@ async function dispatchDetect(
         const text = document.getText(selectionIt)
         edit.replace(selectionIt, caseTransform(text, picked))
       }
-    } catch {}
+    } catch {
+      return
+    }
   }
 }

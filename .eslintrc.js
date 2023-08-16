@@ -1,9 +1,9 @@
 const cfgExtends = [
-  'eslint:recommend',
-  '@typescript-eslint/strict-type-checked',
+  'eslint:recommended',
+  'plugin:@typescript-eslint/strict-type-checked',
 ]
 if (process.env.NODE_ENV === 'stage') {
-  cfgExtends.push('@typescript-eslint/stylistic-type-checked')
+  cfgExtends.push('plugin:@typescript-eslint/stylistic-type-checked')
 }
 
 /** @type {import('eslint').ESLint.ConfigData} */
@@ -22,5 +22,6 @@ module.exports = {
   },
   rules: {
     '@typescript-eslint/non-null-assertion': 'off',
+    '@typescript-eslint/no-explicit-any': 'off',
   },
 }
