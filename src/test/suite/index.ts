@@ -2,29 +2,22 @@ import Mocha from 'mocha'
 import path from 'path'
 import { glob } from 'glob'
 
-export async function run() {
-  // Create the mocha test
+export async function run(
+  testsRoot: string,
+  cb: (err: any, failures?: number) => void,
+) {
   const mocha = new Mocha({
     ui: 'bdd',
     color: true,
   })
-  const testsRoot = path.resolve(__dirname, '..')
   const files = await glob('**/*.test.js', { cwd: testsRoot })
-  console.log('files:', files)
-
-  // Add files to the test suite
   files.forEach((f) => mocha.addFile(path.resolve(testsRoot, f)))
+  console.log('files:', files)
   try {
-    // Run the mocha test
     mocha.run((failures) => {
-      if (failures > 0) {
-        throw Error(`${failures} tests failed.`)
-      }
+      cb(null, failures)
     })
   } catch (err) {
-    console.error(err)
-    throw err
+    cb(err)
   }
 }
-
-void run()

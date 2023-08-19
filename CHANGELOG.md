@@ -25,5 +25,4 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [0.1.2]
 
-- Feature: [`evalWithSelection`](./src/evalWithSelection.ts) eval selection
-  by current resource lang, supports: nodejs | deno, python, lua, pwsh, cmd, bash
+- Feature: [`evalWithSelection`](./src/evalWithSelection.ts) eval selection by `editorLangId`, supports: nodejs | deno, pwsh, cmd, bash

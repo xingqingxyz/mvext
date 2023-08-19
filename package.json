@@ -1,14 +1,15 @@
 {
   "name": "mvext",
   "displayName": "My VSCode Extension",
-  "description": "Transform (multiple) cursor position or selection to many cases. Cases: `capitalCase`, `camelCase`, `constantCase`, `pascalCase`, `paramCase`, `snakeCase`, `sentenceCase`, `dotCase`, `pathCase`, `headerCase`, `noCase`",
-  "version": "0.1.1",
+  "description": "A extension which ships a set of pragmatic web dev features.",
+  "version": "0.1.2",
   "l10n": "./l10n",
   "engines": {
-    "vscode": "^1.78.0"
+    "vscode": "^1.81.1"
   },
   "categories": [
     "Programming Languages",
+    "Keymaps",
     "Other"
   ],
   "author": {
@@ -26,82 +27,95 @@
   "main": "./out/extension.js",
   "keywords": [
     "case transform",
-    "file",
+    "quick switch",
     "eval",
     "typescript"
   ],
   "contributes": {
+    "configuration": {
+      "title": "My VSCode Extension",
+      "properties": {
+        "mvext.evalWithSelection.bashExecutable": {
+          "type": "string",
+          "markdownDescription": "%config.bashExecutable%"
+        },
+        "mvext.evalWithSelection.useDeno": {
+          "type": "boolean",
+          "markdownDescription": "%config.useDeno%"
+        }
+      }
+    },
     "commands": [
       {
-        "title": "Transform Case: Title",
-        "command": "mvext.transformToCapitalCase"
+        "title": "mvext: Transform Case: Title",
+        "command": "mvext.transformToTitleCase"
       },
       {
-        "title": "Transform Case: Camel",
+        "title": "mvext: Transform Case: Camel",
         "command": "mvext.transformToCamelCase"
       },
       {
-        "title": "Transform Case: Constant",
+        "title": "mvext: Transform Case: Constant",
         "command": "mvext.transformToConstantCase"
       },
       {
-        "title": "Transform Case: Pascal",
+        "title": "mvext: Transform Case: Pascal",
         "command": "mvext.transformToPascalCase"
       },
       {
-        "title": "Transform Case: Kebab",
-        "command": "mvext.transformToParamCase"
+        "title": "mvext: Transform Case: Kebab",
+        "command": "mvext.transformToKebabCase"
       },
       {
-        "title": "Transform Case: Snake",
+        "title": "mvext: Transform Case: Snake",
         "command": "mvext.transformToSnakeCase"
       },
       {
-        "title": "Transform Case: Dot",
+        "title": "mvext: Transform Case: Dot",
         "command": "mvext.transformToDotCase"
       },
       {
-        "title": "Transform Case: Path",
+        "title": "mvext: Transform Case: Path",
         "command": "mvext.transformToPathCase"
       },
       {
-        "title": "Transform Case: Sentence",
+        "title": "mvext: Transform Case: Sentence",
         "command": "mvext.transformToSentenceCase"
       },
       {
-        "title": "Transform Case: No",
+        "title": "mvext: Transform Case: No",
         "command": "mvext.transformToNoCase"
       },
       {
-        "title": "Transform Case: Header",
+        "title": "mvext: Transform Case: Header",
         "command": "mvext.transformToHeaderCase"
       },
       {
-        "title": "Transform Case: Lower",
+        "title": "mvext: Transform Case: Lower",
         "command": "mvext.transformToLowerCase"
       },
       {
-        "title": "Transform Case: Upper",
+        "title": "mvext: Transform Case: Upper",
         "command": "mvext.transformToUpperCase"
       },
       {
-        "title": "Detect Transform Case",
+        "title": "mvext: Detect Transform Case",
         "command": "mvext.detectTransformCase"
       },
       {
-        "title": "mvext.myCommand",
-        "command": "mvext.myCommand"
+        "title": "mvext: Eval With Selection",
+        "command": "mvext.evalWithSelection"
       },
       {
-        "title": "Switch File: HTML/JS/CSS/TS",
+        "title": "mvext: Switch File: HTML<->JS/CSS JS<->TS",
         "command": "mvext.switchFile"
       }
     ],
     "keybindings": [
       {
         "when": "editorTextFocus && !editorReadonly",
-        "key": "alt+x alt+c",
-        "command": "mvext.transformToCapitalCase"
+        "key": "alt+x t",
+        "command": "mvext.transformToTitleCase"
       },
       {
         "when": "editorTextFocus && !editorReadonly",
@@ -121,7 +135,7 @@
       {
         "key": "alt+x k",
         "when": "editorTextFocus && !editorReadonly",
-        "command": "mvext.transformToParamCase"
+        "command": "mvext.transformToKebabCase"
       },
       {
         "key": "alt+x s",
@@ -169,11 +183,13 @@
         "command": "mvext.detectTransformCase"
       },
       {
-        "key": "alt+x alt+e",
-        "command": "mvext.myCommand"
+        "key": "ctrl+alt+e",
+        "when": "editorTextFocus && !editorReadonly",
+        "command": "mvext.evalWithSelection"
       },
       {
         "key": "alt+o",
+        "when": "editorTextFocus && editorLangId =~ /html|css|javascript|typescript/",
         "command": "mvext.switchFile"
       }
     ],
@@ -181,30 +197,37 @@
       {
         "name": "esbuild",
         "label": "esbuild problem matcher",
+        "source": "esbuild",
+        "owner": "esbuild",
         "severity": "error",
         "applyTo": "closedDocuments",
-        "source": "esbuild",
         "fileLocation": "relative",
-        "owner": "typescript",
         "pattern": [
           {
-            "regexp": "> (.*?):([0-9]+):([0-9]+): (warning|error): (.+)$",
-            "file": 1,
-            "line": 2,
-            "column": 3,
-            "severity": 4,
-            "message": 5
+            "regexp": "^✘ [(ERROR)] (?<msg>.*)$",
+            "severity": 0,
+            "message": 1
+          },
+          {
+            "regexp": "^\\s+(.*?):(\\d+):(\\d+):",
+            "file": 0,
+            "line": 1,
+            "column": 2
+          },
+          {
+            "regexp": "^\\s+\\d+ │(.*)$",
+            "code": 0
           }
         ]
       },
       {
         "name": "esbuild-watch",
         "base": "$esbuild",
-        "label": "esbuild --watch problem matcher",
+        "source": "esbuild",
+        "owner": "esbuild",
+        "label": "esbuild watch problem matcher",
         "severity": "error",
         "applyTo": "closedDocuments",
-        "source": "esbuild",
-        "owner": "typescript",
         "fileLocation": "relative",
         "background": {
           "activeOnStart": true,
@@ -219,19 +242,19 @@
     ]
   },
   "scripts": {
-    "dev": "esbuild ./src/_extension.ts --outfile=out/extension.js --external:vscode --format=cjs --platform=node --bundle --watch",
-    "tsc": "tsc -w",
-    "test": "mocha out/test -p",
+    "dev": "node ./scripts/build.js",
+    "test": "node ./out/test/runTest.js",
+    "test:local": "cross-env LOCAL_TEST=true node ./out/test/runTest.js",
     "eslint": "eslint src --ext ts --fix --cache",
     "prettier": "prettier -w . --cache",
-    "stage": "cross-env NODE_ENV=stage pnpm eslint && pnpm prettier && pwsh install.ps1",
-    "vscode:test": "cross-env VSCODE_TEST=true pnpm test",
-    "vscode:prepublish": "esbuild ./src/_extension.ts --outfile=out/extension.js --external:vscode --format=cjs --platform=node --bundle --minify"
+    "stage": "cross-env NODE_ENV=stage yarn eslint && tsc --noEmit && yarn prettier && pwsh install.ps1",
+    "prepare": "husky install",
+    "vscode:prepublish": "cross-env NODE_ENV=stage node ./scripts/build.js"
   },
   "devDependencies": {
     "@types/glob": "8.1.0",
     "@types/mocha": "10.0.1",
-    "@types/node": "^16.18.40",
+    "@types/node": "^16.18.41",
     "@types/vscode": "1.81.0",
     "@typescript-eslint/eslint-plugin": "^6.4.0",
     "@typescript-eslint/parser": "^6.4.0",
@@ -239,12 +262,17 @@
     "esbuild": "0.19.2",
     "eslint": "8.45.0",
     "glob": "10.3.3",
-    "mocha": "10.2.0",
-    "typescript": "5.1.6"
+    "husky": "^8.0.3",
+    "iconv-lite": "^0.6.3",
+    "lint-staged": "^14.0.0",
+    "mocha": "10.2.0"
   },
   "prettier": {
     "semi": false,
     "singleQuote": true,
     "bracketSameLine": true
-  }
+  },
+  "lint-staged": [
+    "yarn stage"
+  ]
 }

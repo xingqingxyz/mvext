@@ -10,7 +10,7 @@
       "program": "${relativeFile}",
       "request": "launch",
       "console": "integratedTerminal",
-      "skipFiles": ["<node_internals>/**"],
+      "skipFiles": ["<node_internals>/**", "**/node_modules/**"],
       "type": "node"
     },
     {
@@ -22,24 +22,21 @@
         "--disable-extensions"
       ],
       "outFiles": ["${workspaceFolder}/out/**/*.js"],
-      "skipFiles": ["<node_internals>/**", "**/node_modules/**"],
-      "preLaunchTask": "${defaultBuildTask}"
+      "skipFiles": ["<node_internals>/**", "**/node_modules/**"]
+      // "preLaunchTask": "${defaultBuildTask}"
     },
     {
       "name": "Extension Tests",
       "type": "extensionHost",
       "request": "launch",
-      "env": {
-        "VSCODE_TEST": "true"
-      },
       "args": [
         "--extensionDevelopmentPath=${workspaceFolder}",
-        "--extensionTestsPath=${workspaceFolder}/out/test/suite/index",
+        "--extensionTestsPath=${workspaceFolder}/out/test/suite",
         "--disable-extensions"
       ],
-      "outFiles": ["${workspaceFolder}/out/test/**/*.js"],
-      "skipFiles": ["<node_internals>/**", "**/node_modules/**"],
-      "preLaunchTask": "tsc: 监视 - tsconfig.json"
+      "outFiles": ["${workspaceFolder}/out/**/*.js"],
+      "skipFiles": ["<node_internals>/**", "**/node_modules/**"]
+      // "preLaunchTask": "${defaultBuildTask}"
     }
   ]
 }

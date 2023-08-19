@@ -64,7 +64,7 @@ function testAll(words: string[], casedMap: Record<WordCase, string>) {
   })
 }
 
-const casesReMap = {
+const casesReMap: Record<WordCase, RegExp> = {
   lowerCase: /^[a-z]+$/,
   upperCase: /^[A-Z]+$/,
   noCase: /^(?:(?<!^) [a-z]+|[a-z]+)+$/,
@@ -74,9 +74,9 @@ const casesReMap = {
   snakeCase: /^(?:(?<!^)_[a-z]+|[a-z]+)+$/,
   headerCase: /^(?:(?<!^)-[A-Z][a-z]*|[A-Z][a-z]*)+$/,
   camelCase: /^([a-z]+)(?:[A-Z][a-z]*)*$/,
-  capitalCase: /^(?:(?<!^) [A-Z][a-z]*|[A-Z][a-z]*)+$/,
+  titleCase: /^(?:(?<!^) [A-Z][a-z]*|[A-Z][a-z]*)+$/,
   constantCase: /^(?:(?<!^)_[A-Z]+|[A-Z]+)+$/,
-  paramCase: /^(?:(?<!^)-[a-z]+|[a-z]+)+$/,
+  kebabCase: /^(?:(?<!^)-[a-z]+|[a-z]+)+$/,
   pascalCase: /^(?:[A-Z][a-z]*)+$/,
 }
 const casesList = Object.keys(casesReMap) as WordCase[]
@@ -86,9 +86,9 @@ describe('Low Level', function () {
   const casedMap: Record<WordCase, string> = {
     lowerCase: 'helloworld',
     upperCase: 'HELLOWORLD',
-    capitalCase: 'Hello World',
+    titleCase: 'Hello World',
     noCase: 'hello world',
-    paramCase: 'hello-world',
+    kebabCase: 'hello-world',
     pascalCase: 'HelloWorld',
     sentenceCase: 'Hello world',
     snakeCase: 'hello_world',
@@ -102,12 +102,12 @@ describe('Low Level', function () {
 })
 
 describe('High Level', function () {
-  const casedMap = {
+  const casedMap: Record<WordCase, string> = {
     lowerCase: 'itisagoodweather',
     upperCase: 'ITISAGOODWEATHER',
-    capitalCase: 'It Is A Good Weather',
+    titleCase: 'It Is A Good Weather',
     noCase: 'it is a good weather',
-    paramCase: 'it-is-a-good-weather',
+    kebabCase: 'it-is-a-good-weather',
     pascalCase: 'ItIsAGoodWeather',
     sentenceCase: 'It is a good weather',
     snakeCase: 'it_is_a_good_weather',

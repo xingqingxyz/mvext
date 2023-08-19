@@ -1,20 +1,52 @@
-const strict = require('assert/strict')
+const path = require('path')
 
-function foo() {
-  throw new Error('Hello World')
-}
+const { format } = require('util')
 
-async function asyncFoo() {
-  await new Promise((resolve, reject) => {
-    setTimeout(() => {
-      throw new Error('Hello World')
-    }, 1000)
-  })
-}
+// const { Blob } = require('buffer')
+const { Worker } = require('worker_threads')
 
-strict.throws(foo)
-strict.throws(foo, { message: /Hello World/ })
+// const jsCode = `const { parentPort } = require('worker_threads')
+// const { readdirSync } = require('fs')
 
-console.log(strict)
-strict.rejects(asyncFoo)
-strict.rejects(asyncFoo, { message: /Hello World/ })
+// function main() {
+//   const files = readdirSync(process.cwd())
+//   if (
+//     !(
+//       files.find((v) => v === 'package.json') &&
+//       files.find((v) => v === 'tsconfig.json')
+//     )
+//   ) {
+//     throw Error('Not found')
+//   }
+//   return {
+//     hello: 'world',
+//     num: 42,
+//   }
+// }
+// main()`
+
+// parentPort.postMessage(main())
+// main().then(data=>parentPort.postMessage(data))`
+
+// const objUrl = URL.createObjectURL(new Blob([jsCode]))
+const worker = new Worker(path.resolve(__dirname, './eval.mjs'))
+
+// void(async function () {
+//   const result = await new Promise((resolve, reject) => {
+//     worker.on('message', (result) => {
+//       console.log(result)
+//       resolve(result)
+//       // URL.revokeObjectURL(objUrl)
+//       void worker.terminate()
+//     })
+//     worker.on('error', reject)
+//   })
+
+//   console.log(format('fm: %o',result))
+// })()
+
+worker.on('message', (res) => {
+  console.log(res)
+  console.log(format('%o', res))
+  void worker.terminate()
+})

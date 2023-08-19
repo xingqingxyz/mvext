@@ -9,9 +9,9 @@ if (process.env.NODE_ENV === 'stage') {
 /** @type {import('eslint').ESLint.ConfigData} */
 module.exports = {
   root: true,
-  ignorePatterns: ['/*', '!/src'],
+  ignorePatterns: ['/out/'],
   env: {
-    es2021: true,
+    es2019: true,
     node: true,
     commonjs: true,
   },
@@ -23,5 +23,15 @@ module.exports = {
   rules: {
     '@typescript-eslint/no-non-null-assertion': 'off',
     '@typescript-eslint/no-explicit-any': 'off',
+    '@typescript-eslint/no-namespace': 'off',
   },
+  overrides: [
+    {
+      files: ['*.js', '*.mjs'],
+      extends: ['plugin:@typescript-eslint/disable-type-checked'],
+      rules: {
+        '@typescript-eslint/no-var-requires': 'off',
+      },
+    },
+  ],
 }

@@ -1,10 +1,7 @@
-.vscode/
-node_modules/
-out/
+/*
+!/l10n
 !out/extension.js
-src/
-test/
-
-.eslintrc.js
-tsconfig.json
-tsconfig.tsbuildinfo
+!/CHANGELOG.md
+!/LICENSE.md
+!/README.md
+!/package.json

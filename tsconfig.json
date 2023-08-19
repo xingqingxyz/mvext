@@ -1,12 +1,11 @@
 {
   "include": ["src"],
   "compilerOptions": {
-    "target": "ES2021",
-    "lib": ["ES2021"],
+    "target": "ES2019",
+    "lib": ["ES2019"],
     "module": "Node16",
     "moduleResolution": "Node16",
     "resolveJsonModule": true,
-    "baseUrl": ".",
     "outDir": "out",
     "sourceMap": true,
     "strict": true,

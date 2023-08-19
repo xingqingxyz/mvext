@@ -7,13 +7,13 @@ export const joinCaseActions = {
   dotCase: (words: string[]) => words.join('.'),
   pathCase: (words: string[]) => words.join('/'),
   snakeCase: (words: string[]) => words.join('_'),
-  paramCase: (words: string[]) => words.join('-'),
+  kebabCase: (words: string[]) => words.join('-'),
   noCase: (words: string[]) => words.join(' '),
   sentenceCase: (words: string[]) =>
     words.reduce(
       (pv, cv, ci) =>
         pv + (ci ? ' ' + cv : cv[0].toUpperCase() + cv.substring(1)),
-      ''
+      '',
     ),
   constantCase: (words: string[]) =>
     words.reduce((pv, cv, ci) => pv + (ci ? '_' : '') + cv.toUpperCase(), ''),
@@ -22,19 +22,19 @@ export const joinCaseActions = {
   camelCase: (words: string[]) =>
     words.reduce(
       (pv, cv, ci) => pv + (ci ? cv[0].toUpperCase() + cv.substring(1) : cv),
-      ''
+      '',
     ),
-  capitalCase: (words: string[]) =>
+  titleCase: (words: string[]) =>
     words.reduce(
       (pv, cv, ci) =>
         pv + (ci ? ' ' : '') + cv[0].toUpperCase() + cv.substring(1),
-      ''
+      '',
     ),
   headerCase: (words: string[]) =>
     words.reduce(
       (pv, cv, ci) =>
         pv + (ci ? '-' : '') + cv[0].toUpperCase() + cv.substring(1),
-      ''
+      '',
     ),
 }
 
@@ -69,7 +69,7 @@ export function switchWordCase(sequence: string): WordCase {
       case 2:
         return 'snakeCase'
       case 3:
-        return 'paramCase'
+        return 'kebabCase'
       case 4:
         return 'dotCase'
       case 5:
@@ -93,7 +93,7 @@ export function switchWordCase(sequence: string): WordCase {
         if (reLowerLetter.test(sequence.split(' ', 2)[1][0])) {
           return 'sentenceCase'
         }
-        return 'capitalCase'
+        return 'titleCase'
       case 2:
         return 'constantCase'
       case 3:
@@ -116,11 +116,11 @@ const reGetWordsByCase: Record<
   return {
     noCase: reAllLowerCase,
     snakeCase: reAllLowerCase,
-    paramCase: reAllLowerCase,
+    kebabCase: reAllLowerCase,
     pathCase: reAllLowerCase,
     dotCase: reAllLowerCase,
     constantCase: /[A-Z]+/g,
-    capitalCase: reAllCapitalCase,
+    titleCase: reAllCapitalCase,
     headerCase: reAllCapitalCase,
     pascalCase: reAllCapitalCase,
     // 0=1; 1=0
@@ -148,16 +148,16 @@ export function getWordsByCase(sequence: string, wc: WordCase) {
           return null
         }
         switch (wc) {
+          case 'titleCase':
+          case 'constantCase':
+          case 'pascalCase':
+          case 'headerCase':
+            return matches.map((w) => w.toLowerCase())
           // case 'dotCase':
           // case 'pathCase':
           // case 'snakeCase':
           // case 'paramCase':
           // case 'noCase':
-          case 'capitalCase':
-          case 'constantCase':
-          case 'pascalCase':
-          case 'headerCase':
-            return matches.map((w) => w.toLowerCase())
           default:
             return matches
         }
@@ -169,11 +169,11 @@ export function getWordsByCase(sequence: string, wc: WordCase) {
         switch (wc) {
           case 'camelCase':
             return [matchHead[1]].concat(
-              sequence.match(re[1])?.map((w) => w.toLowerCase()) ?? []
+              sequence.match(re[1])?.map((w) => w.toLowerCase()) ?? [],
             )
           case 'sentenceCase':
             return [matchHead[1].toLowerCase()].concat(
-              sequence.match(re[1]) ?? []
+              sequence.match(re[1]) ?? [],
             )
           default:
             return null

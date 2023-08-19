@@ -23,25 +23,29 @@ const allCodeActionKind = {
   function: vscode.CodeActionKind.RefactorRewrite.append('function'),
 }
 
+const reFunctionCall = /[\w$]+\s*\(.*\)/
 const tsCodeActionProvider: vscode.CodeActionProvider = {
   provideCodeActions(
     document: vscode.TextDocument,
     range: vscode.Range | vscode.Selection,
-    context: vscode.CodeActionContext,
-    token: vscode.CancellationToken
+    // context: vscode.CodeActionContext,
+    // token: vscode.CancellationToken
   ): vscode.ProviderResult<(vscode.CodeAction | vscode.Command)[]> {
+    if (range.isEmpty || !reFunctionCall.test(document.getText(range))) {
+      return
+    }
     const wspEdit = new vscode.WorkspaceEdit()
     wspEdit.set(document.uri, [
       new vscode.SnippetTextEdit(
         range,
         new vscode.SnippetString(
-          '${TM_SELECTED_TEXT/^\\s*.+\\((.*)\\)\\s*$/$1/s}'
-        )
+          '${TM_SELECTED_TEXT/^\\s*.+\\((.*)\\)\\s*$/$1/s}',
+        ),
       ),
     ])
     const codeAction = new vscode.CodeAction(
       vscode.l10n.t('Delete Function Call'),
-      allCodeActionKind.function
+      allCodeActionKind.function,
     )
     codeAction.edit = wspEdit
     return [codeAction]
@@ -49,7 +53,7 @@ const tsCodeActionProvider: vscode.CodeActionProvider = {
 
   resolveCodeAction(
     codeAction: vscode.CodeAction,
-    token: vscode.CancellationToken
+    // token: vscode.CancellationToken
   ): vscode.ProviderResult<vscode.CodeAction> {
     switch (codeAction.kind) {
       case allCodeActionKind.function:
@@ -67,7 +71,7 @@ export function registerTsCodeActions(ctx: vscode.ExtensionContext) {
       tsCodeActionProvider,
       {
         providedCodeActionKinds: [allCodeActionKind.function],
-      }
-    )
+      },
+    ),
   )
 }

@@ -1,0 +1,5 @@
+{
+  "Delete Function Call": "删除函数调用",
+  "config.bashExecutable": "Bash可执行程序路径",
+  "config.useDeno": "是否使用Deno执行JavaScript"
+}

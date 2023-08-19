@@ -4,14 +4,6 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "type": "typescript",
-      "tsconfig": "tsconfig.json",
-      "option": "watch",
-      "problemMatcher": ["$tsc-watch"],
-      "group": "build",
-      "label": "tsc: 监视 - tsconfig.json"
-    },
-    {
       "type": "npm",
       "script": "dev",
       "problemMatcher": {
@@ -39,14 +31,7 @@
         "isDefault": true
       },
       "label": "npm: dev",
-      "detail": "esbuild ./src/main.ts --outfile=out/extension.js --external:vscode --format=cjs --platform=node --bundle --watch"
-    },
-    {
-      "type": "npm",
-      "script": "vscode:test",
-      "problemMatcher": [],
-      "label": "npm: vscode:test",
-      "detail": "node ./out/test/runTest.js"
+      "detail": "node ./scripts/build.js"
     }
   ]
 }

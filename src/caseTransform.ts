@@ -9,7 +9,8 @@ import type {
 import vscode from 'vscode'
 import { caseTransform, WordCase, casesList } from './utils/caseTransformHelper'
 
-const { registerTextEditorCommand, executeCommand } = vscode.commands
+const { registerTextEditorCommand, registerCommand, executeCommand } =
+  vscode.commands
 
 let subscriptions: Disposable[] = []
 
@@ -19,13 +20,12 @@ export function registerCaseTransform(ctx: ExtensionContext) {
     subscriptions.push(
       registerTextEditorCommand(
         `mvext.transformTo${wc[0].toUpperCase() + wc.substring(1)}`,
-        (editor) => void dispatch(editor, wc)
-      )
+        (editor) => void dispatch(editor, wc),
+      ),
     )
   })
   subscriptions.push(
-    // eslint-disable-next-line @typescript-eslint/no-misused-promises
-    registerTextEditorCommand('mvext.detectTransformCase', dispatchDetect)
+    registerCommand('mvext.detectTransformCase', dispatchDetect),
   )
 }
 
@@ -55,7 +55,7 @@ async function dispatch(editor: vscode.TextEditor, wc: WordCase) {
           if (selectionIt.isEmpty) {
             const range = document.getWordRangeAtPosition(
               selectionIt.start,
-              reSequence
+              reSequence,
             )
             if (range) {
               const text = document.getText(range)
@@ -66,7 +66,7 @@ async function dispatch(editor: vscode.TextEditor, wc: WordCase) {
           }
         }
       },
-      { undoStopBefore: true, undoStopAfter: false }
+      { undoStopBefore: true, undoStopAfter: false },
     )
     if (rest.length) {
       await editor.edit(
@@ -79,7 +79,7 @@ async function dispatch(editor: vscode.TextEditor, wc: WordCase) {
         {
           undoStopBefore: false,
           undoStopAfter: true,
-        }
+        },
       )
     }
   }
@@ -90,7 +90,7 @@ async function renameWord(
   position: Position,
   editor: vscode.TextEditor,
   transformFn: (word: string, wc: WordCase) => string,
-  wc: WordCase
+  wc: WordCase,
 ) {
   const cmdPrepareRename = 'vscode.prepareRename'
   const cmdRenameProvider = 'vscode.executeDocumentRenameProvider'
@@ -100,13 +100,13 @@ async function renameWord(
     const { placeholder } = await executeCommand<{ placeholder: string }>(
       cmdPrepareRename,
       fileUri,
-      position
+      position,
     )
     const wspEdit = await executeCommand<WorkspaceEdit>(
       cmdRenameProvider,
       fileUri,
       position,
-      transformFn(placeholder, wc)
+      transformFn(placeholder, wc),
     )
     await vscode.workspace.applyEdit(wspEdit)
   } catch {
@@ -126,7 +126,7 @@ const caseDetectPickItems: (QuickPickItem & { label: WordCase })[] = [
     description: 'loveWorld',
   },
   {
-    label: 'capitalCase',
+    label: 'titleCase',
     description: 'Love World',
   },
   {
@@ -146,7 +146,7 @@ const caseDetectPickItems: (QuickPickItem & { label: WordCase })[] = [
     description: 'love world',
   },
   {
-    label: 'paramCase',
+    label: 'kebabCase',
     description: 'love-world',
   },
   {
@@ -190,15 +190,18 @@ function showDetectPicks(wc: WordCase) {
         picks.dispose()
       },
       undefined,
-      subscriptions
-    )
+      subscriptions,
+    ),
   )
 }
 
-async function dispatchDetect(
-  { selections, document }: vscode.TextEditor,
-  edit: vscode.TextEditorEdit
-) {
+async function dispatchDetect() {
+  const editor = vscode.window.activeTextEditor
+  if (!editor) {
+    return
+  }
+
+  const { selections, document } = editor
   if (selections[0].isEmpty) {
     return
   }
@@ -217,7 +220,7 @@ async function dispatchDetect(
         wordCase = 'dotCase'
         break
       case 3:
-        wordCase = 'paramCase'
+        wordCase = 'kebabCase'
         break
       case 4:
         wordCase = 'snakeCase'
@@ -229,14 +232,17 @@ async function dispatchDetect(
         wordCase = 'camelCase'
         break
     }
+
     try {
       const picked = await showDetectPicks(wordCase)
-      for (const selectionIt of selections) {
-        const text = document.getText(selectionIt)
-        edit.replace(selectionIt, caseTransform(text, picked))
-      }
+      await editor.edit((edit) => {
+        for (const selectionIt of selections) {
+          const text = document.getText(selectionIt)
+          edit.replace(selectionIt, caseTransform(text, picked))
+        }
+      })
     } catch {
-      return
+      /* empty */
     }
   }
 }

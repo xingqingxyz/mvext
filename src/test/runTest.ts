@@ -1,22 +1,21 @@
 import path from 'path'
-import { runTests } from '@vscode/test-electron'
 
-async function main() {
-  if (process.env.VSCODE_TEST !== 'true') {
-    console.log('Running Node.js Tests')
-    require('./suite')
+void (async function main() {
+  if (process.env.LOCAL_TEST === 'true') {
+    console.log('Running Local Tests')
+    await (
+      await import('./suite/index.js')
+    ).run(path.resolve(__dirname, './suite-local'), (err) => {
+      console.error(err)
+    })
     return
   }
 
   console.log('Running VSC Tests')
-  await runTests({
+  await (
+    await import('@vscode/test-electron')
+  ).runTests({
     extensionDevelopmentPath: process.cwd(),
-    extensionTestsPath: path.resolve(__dirname, './suite/index'),
-  }).catch((err: unknown) => {
-    console.error(err)
-    console.error('Failed to run VSC Tests')
-    process.exit(1)
+    extensionTestsPath: path.resolve(__dirname, './suite'),
   })
-}
-
-void main()
+})()
