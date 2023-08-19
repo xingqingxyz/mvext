@@ -1,4 +1,4 @@
-import { execFile } from 'child_process'
+import { ExecFileOptions, execFile } from 'child_process'
 import util from 'util'
 import vscode from 'vscode'
 import { getExtConfig } from './utils/getExtConfig'
@@ -60,36 +60,38 @@ function formatObj(result: unknown) {
 }
 
 export async function evalByLangId(text: string, langId: LangId) {
+  const documentUri = vscode.window.activeTextEditor?.document.uri
+  const options: ExecFileOptions = {}
+  if (documentUri) {
+    options.cwd = vscode.workspace.getWorkspaceFolder(documentUri)?.uri.fsPath
+  }
+
   switch (langId) {
     case 'cjs':
       return formatObj(await cjsEval(text))
     case 'mjs':
       return formatObj(await mjsEval(text))
-    case 'deno': {
-      const result = await execFilePm(langId, ['eval', '-p', text])
-      return result.stdout
-    }
-    case 'pwsh': {
-      const result = await execFilePm(getExtConfig().pwshExec, [
-        '-NoProfile',
-        '-C',
-        text,
-      ])
-      return result.stdout
-    }
-    case 'bash': {
-      const result = await execFilePm(getExtConfig().bashExec, ['-c', text])
-      return result.stdout
-    }
-    case 'cmd': {
-      const result = await execFilePm(langId, [
-        '/D',
-        '/C',
-        'chcp 65001 && ' + text.replace(/\\n/g, ' && '),
-      ])
-      console.log(result.stderr)
-      return result.stdout
-    }
+    case 'deno':
+      return (await execFilePm(langId, ['eval', '-p', text], options)).stdout
+    case 'pwsh':
+      return (
+        await execFilePm(
+          getExtConfig().pwshExec,
+          ['-NoProfile', '-C', text],
+          options,
+        )
+      ).stdout
+    case 'bash':
+      return (await execFilePm(getExtConfig().bashExec, ['-c', text], options))
+        .stdout
+    case 'cmd':
+      return (
+        await execFilePm(
+          langId,
+          ['/D', '/C', 'chcp 65001 && ' + text.replace(/\\n/g, ' && ')],
+          options,
+        )
+      ).stdout
     default:
       throw Error('[Eval] not identified langId: ' + (langId as string))
   }
@@ -109,6 +111,8 @@ function matchLangId(editorLangId: string, text: string): LangId {
       return 'cmd'
     case 'shellscript':
       return 'bash'
+    case 'ignore':
+      return process.platform === 'win32' ? 'pwsh' : 'bash'
     default:
       throw Error('[Match] not supported editorLangId: ' + editorLangId)
   }

@@ -2,7 +2,7 @@
   "name": "mvext",
   "displayName": "My VSCode Extension",
   "description": "A extension which ships a set of pragmatic web dev features.",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "l10n": "./l10n",
   "engines": {
     "vscode": "^1.81.1"
@@ -12,14 +12,10 @@
     "Keymaps",
     "Other"
   ],
-  "author": {
-    "email": "cm.email@qq.com",
-    "name": "Ming.Chen.",
-    "url": "https://github.com/xingqingxyz"
-  },
+  "author": "Ming.Chen <cm.email@qq.com> (https://github.com/xingqingxyz)",
   "license": "MIT",
   "repository": {
-    "url": "https://github.com/xingqingxyz/mvext.git",
+    "url": "git+https://github.com/xingqingxyz/mvext.git",
     "type": "git"
   },
   "bugs": {
@@ -38,19 +34,19 @@
       "properties": {
         "mvext.evalWithSelection.bashExecutable": {
           "type": "string",
-          "markdownDescription": "%config.bashExecutable%"
+          "markdownDescription": "%ext.config.bashExecutable%"
         },
         "mvext.evalWithSelection.pwshExecutable": {
           "type": "string",
-          "markdownDescription": "%config.pwshExecutable%"
+          "markdownDescription": "%ext.config.pwshExecutable%"
         },
         "mvext.evalWithSelection.experimentalReceiveTimeout": {
           "type": "number",
-          "markdownDescription": "%config.experimentalReceiveTimeout%"
+          "markdownDescription": "%ext.config.experimentalReceiveTimeout%"
         },
         "mvext.evalWithSelection.useDeno": {
           "type": "boolean",
-          "markdownDescription": "%config.useDeno%"
+          "markdownDescription": "%ext.config.useDeno%"
         }
       }
     },
@@ -126,8 +122,8 @@
         "command": "mvext.detectTransformCase"
       },
       {
-        "category": "mvext",
         "title": "Eval With Selection",
+        "category": "mvext",
         "command": "mvext.evalWithSelection"
       },
       {
@@ -136,13 +132,13 @@
         "command": "mvext.experimentalEvalByShellIntegration"
       },
       {
-        "title": "mvext",
-        "category": "Quickly Switch Test File",
+        "title": "Quickly Switch Test File",
+        "category": "mvext",
         "command": "mvext.quicklySwitchTestFile"
       },
       {
-        "title": "mvext",
-        "category": "Quickly Switch File",
+        "title": "Quickly Switch File",
+        "category": "mvext",
         "command": "mvext.quicklySwitchFile"
       }
     ],

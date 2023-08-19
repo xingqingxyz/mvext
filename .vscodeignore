@@ -1,9 +1,24 @@
-/*
-!/l10n
+.husky
+.vscode
+.vscode-test
+# l10n
+node_modules
+out
 !out/extension.js
-!/CHANGELOG.md
-!/LICENSE.md
-!/README.md
-!/package.json
-!/package.nls.json
-!/package.nls.zh-cn.json
+scripts
+src
+.eslintcache
+.eslintrc.js
+.gitignore
+.nvmrc
+.vscodeignore
+# CHANGELOG.md
+install.ps1
+# LICENSE
+mvext-0.1.2.vsix
+# package.json
+# package.nls.json
+# package.nls.zh-cn.json
+# README.md
+tsconfig.json
+yarn.lock
