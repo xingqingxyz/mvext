@@ -1,5 +1,17 @@
 import vscode from 'vscode'
 
+export function registerTsCodeActions(ctx: vscode.ExtensionContext) {
+  ctx.subscriptions.push(
+    vscode.languages.registerCodeActionsProvider(
+      tsSelector,
+      tsCodeActionProvider,
+      {
+        providedCodeActionKinds: Object.values(allCodeActionKind),
+      },
+    ),
+  )
+}
+
 const tsSelector: vscode.DocumentSelector = [
   {
     language: 'typescript',
@@ -23,7 +35,8 @@ const allCodeActionKind = {
   function: vscode.CodeActionKind.RefactorRewrite.append('function'),
 }
 
-const reFunctionCall = /[\w$]+\s*\(.*\)/
+const reFunctionCall = /[\w$[\]]+\s*\(.*\)/
+
 const tsCodeActionProvider: vscode.CodeActionProvider = {
   provideCodeActions(
     document: vscode.TextDocument,
@@ -34,20 +47,23 @@ const tsCodeActionProvider: vscode.CodeActionProvider = {
     if (range.isEmpty || !reFunctionCall.test(document.getText(range))) {
       return
     }
+
     const wspEdit = new vscode.WorkspaceEdit()
     wspEdit.set(document.uri, [
       new vscode.SnippetTextEdit(
         range,
         new vscode.SnippetString(
-          '${TM_SELECTED_TEXT/^\\s*.+\\((.*)\\)\\s*$/$1/s}',
+          '${TM_SELECTED_TEXT/^\\s*.+?\\((.*)\\)\\s*$/$1/s}',
         ),
       ),
     ])
+
     const codeAction = new vscode.CodeAction(
       vscode.l10n.t('Delete Function Call'),
       allCodeActionKind.function,
     )
     codeAction.edit = wspEdit
+
     return [codeAction]
   },
 
@@ -62,16 +78,4 @@ const tsCodeActionProvider: vscode.CodeActionProvider = {
         break
     }
   },
-}
-
-export function registerTsCodeActions(ctx: vscode.ExtensionContext) {
-  ctx.subscriptions.push(
-    vscode.languages.registerCodeActionsProvider(
-      tsSelector,
-      tsCodeActionProvider,
-      {
-        providedCodeActionKinds: [allCodeActionKind.function],
-      },
-    ),
-  )
 }

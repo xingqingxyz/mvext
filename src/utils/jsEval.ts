@@ -5,8 +5,8 @@ import { Worker } from 'worker_threads'
 export async function mjsEval(text: string) {
   const mjsFile = path.resolve(__dirname, 'eval.mjs')
   const jsCode = `import { parentPort } from 'worker_threads'
-  ;${text}
-  parentPort.postMessage(await main())`
+;${text}
+parentPort.postMessage(await main())`
 
   await writeFile(mjsFile, jsCode, 'utf8')
   const worker = new Worker(mjsFile)

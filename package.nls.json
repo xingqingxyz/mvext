@@ -1,0 +1,6 @@
+{
+  "config.pwshExecutable": "`pwsh` executable file path",
+  "config.bashExecutable": "`bash` executable file path",
+  "config.experimentalReceiveTimeout": "Experimental eval Shell snippet by `Shell Integration` receiving result timeout (ms)",
+  "config.useDeno": "Use `Deno` rather `Node.js` to eval JavaScript"
+}

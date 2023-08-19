@@ -1,0 +1,6 @@
+{
+  "config.bashExecutable": "`bash`可执行程序路径",
+  "config.pwshExecutable": "`pwsh`可执行程序路径",
+  "config.experimentalReceiveTimeout": "实验性使用`Shell集成`执行shell代码段接收结果延时 (毫秒)",
+  "config.useDeno": "使用`Deno`而不是`Node.js`执行JavaScript"
+}

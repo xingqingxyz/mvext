@@ -1,7 +1,6 @@
-out
-node_modules
 .vscode-test
+node_modules
+out
 
-*.vsix
-tsconfig.tsbuildinfo
 .eslintcache
+*.vsix

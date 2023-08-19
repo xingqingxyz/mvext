@@ -190,36 +190,30 @@ export function getWordsByCase(sequence: string, wc: WordCase) {
  * @returns transformed sequence
  */
 export function caseTransform(sequence: string, targetCase: WordCase) {
-  const reSpiltChar = /[\d$]/g
-  const targets: string[] = []
+  switch (targetCase) {
+    case 'lowerCase':
+      return sequence.toLowerCase()
+    case 'upperCase':
+      return sequence.toUpperCase()
+    default: {
+      const reSpiltChar = /[\d$]|$/g
+      const targets: string[] = []
 
-  function pushWord(piece: string) {
-    const wc = switchWordCase(piece)
-    const words = getWordsByCase(piece, wc)
-    if (words) {
-      const cased = joinCaseActions[targetCase](words)
-      targets.push(cased)
-    }
-  }
-
-  const matches = Array.from(sequence.matchAll(reSpiltChar))
-  if (matches.length) {
-    let lastIndx = 0
-    for (const { index, 0: value } of matches) {
-      const piece = sequence.slice(lastIndx, index)
-      if (piece.length) {
-        pushWord(piece)
+      let lastIdx = 0
+      for (const { index, 0: spiltChar } of sequence.matchAll(reSpiltChar)) {
+        const piece = sequence.slice(lastIdx, index)
+        if (piece.length) {
+          const wc = switchWordCase(piece)
+          const words = getWordsByCase(piece, wc)
+          if (words) {
+            targets.push(joinCaseActions[targetCase](words))
+          }
+        }
+        lastIdx = index! + spiltChar.length
+        targets.push(spiltChar)
       }
-      lastIndx = index! + value.length
-      targets.push(value)
-    }
-    const piece = sequence.slice(lastIndx)
-    if (piece.length) {
-      pushWord(piece)
-    }
-  } else {
-    pushWord(sequence)
-  }
 
-  return targets.join('')
+      return targets.join('')
+    }
+  }
 }

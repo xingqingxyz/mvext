@@ -1,5 +1,5 @@
 {
   "Delete Function Call": "删除函数调用",
-  "config.bashExecutable": "Bash可执行程序路径",
-  "config.useDeno": "是否使用Deno执行JavaScript"
+  "Select Word Case": "选择标识符命名方式",
+  "Please tell me which case of word you'd like to:": "请告诉我您需要的单词拼写法："
 }

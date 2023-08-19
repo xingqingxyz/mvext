@@ -1,17 +1,21 @@
 import vscode from 'vscode'
 import { registerCaseTransform } from './caseTransform'
-import { registerSwitchFile } from './switchFile'
-import { registerTsCodeActions } from './tsCodeActions'
 import { registerEvalWithSelection } from './evalWithSelection'
+import { registerExperimental } from './experimental'
+import { registerQuicklySwitchFile } from './quicklySwitchFile'
+import { registerTsCodeActions } from './tsCodeActions'
+import { setupExtConfig } from './utils/getExtConfig'
 
 export function activate(context: vscode.ExtensionContext) {
-  console.log('My Extension activated.')
+  console.log('My VSCode Extension activated.')
+  setupExtConfig(context)
   registerCaseTransform(context)
-  registerSwitchFile(context)
-  registerTsCodeActions(context)
+  registerQuicklySwitchFile(context)
   registerEvalWithSelection(context)
+  registerTsCodeActions(context)
+  registerExperimental(context)
 }
 
 export function deactivate() {
-  console.log('My Extension deactivated.')
+  console.log('My VSCode Extension deactivated.')
 }

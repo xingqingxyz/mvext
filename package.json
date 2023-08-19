@@ -17,6 +17,7 @@
     "name": "Ming.Chen.",
     "url": "https://github.com/xingqingxyz"
   },
+  "license": "MIT",
   "repository": {
     "url": "https://github.com/xingqingxyz/mvext.git",
     "type": "git"
@@ -39,6 +40,14 @@
           "type": "string",
           "markdownDescription": "%config.bashExecutable%"
         },
+        "mvext.evalWithSelection.pwshExecutable": {
+          "type": "string",
+          "markdownDescription": "%config.pwshExecutable%"
+        },
+        "mvext.evalWithSelection.experimentalReceiveTimeout": {
+          "type": "number",
+          "markdownDescription": "%config.experimentalReceiveTimeout%"
+        },
         "mvext.evalWithSelection.useDeno": {
           "type": "boolean",
           "markdownDescription": "%config.useDeno%"
@@ -47,68 +56,94 @@
     },
     "commands": [
       {
-        "title": "mvext: Transform Case: Title",
+        "title": "Title",
+        "category": "Transform Case",
         "command": "mvext.transformToTitleCase"
       },
       {
-        "title": "mvext: Transform Case: Camel",
+        "title": "Camel",
+        "category": "Transform Case",
         "command": "mvext.transformToCamelCase"
       },
       {
-        "title": "mvext: Transform Case: Constant",
+        "title": "Constant",
+        "category": "Transform Case",
         "command": "mvext.transformToConstantCase"
       },
       {
-        "title": "mvext: Transform Case: Pascal",
+        "title": "Pascal",
+        "category": "Transform Case",
         "command": "mvext.transformToPascalCase"
       },
       {
-        "title": "mvext: Transform Case: Kebab",
+        "title": "Kebab",
+        "category": "Transform Case",
         "command": "mvext.transformToKebabCase"
       },
       {
-        "title": "mvext: Transform Case: Snake",
+        "title": "Snake",
+        "category": "Transform Case",
         "command": "mvext.transformToSnakeCase"
       },
       {
-        "title": "mvext: Transform Case: Dot",
+        "title": "Dot",
+        "category": "Transform Case",
         "command": "mvext.transformToDotCase"
       },
       {
-        "title": "mvext: Transform Case: Path",
+        "title": "Path",
+        "category": "Transform Case",
         "command": "mvext.transformToPathCase"
       },
       {
-        "title": "mvext: Transform Case: Sentence",
+        "title": "Sentence",
+        "category": "Transform Case",
         "command": "mvext.transformToSentenceCase"
       },
       {
-        "title": "mvext: Transform Case: No",
+        "title": "No",
+        "category": "Transform Case",
         "command": "mvext.transformToNoCase"
       },
       {
-        "title": "mvext: Transform Case: Header",
+        "title": "Header",
+        "category": "Transform Case",
         "command": "mvext.transformToHeaderCase"
       },
       {
-        "title": "mvext: Transform Case: Lower",
+        "title": "Lower",
+        "category": "Transform Case",
         "command": "mvext.transformToLowerCase"
       },
       {
-        "title": "mvext: Transform Case: Upper",
+        "title": "Upper",
+        "category": "Transform Case",
         "command": "mvext.transformToUpperCase"
       },
       {
-        "title": "mvext: Detect Transform Case",
+        "title": "Detect Transform Case",
+        "category": "Transform Case",
         "command": "mvext.detectTransformCase"
       },
       {
-        "title": "mvext: Eval With Selection",
+        "category": "mvext",
+        "title": "Eval With Selection",
         "command": "mvext.evalWithSelection"
       },
       {
-        "title": "mvext: Switch File: HTML<->JS/CSS JS<->TS",
-        "command": "mvext.switchFile"
+        "title": "Eval By ShellIntegration",
+        "category": "experimental",
+        "command": "mvext.experimentalEvalByShellIntegration"
+      },
+      {
+        "title": "mvext",
+        "category": "Quickly Switch Test File",
+        "command": "mvext.quicklySwitchTestFile"
+      },
+      {
+        "title": "mvext",
+        "category": "Quickly Switch File",
+        "command": "mvext.quicklySwitchFile"
       }
     ],
     "keybindings": [
@@ -188,9 +223,19 @@
         "command": "mvext.evalWithSelection"
       },
       {
+        "key": "ctrl+alt+s",
+        "when": "terminalCount && editorTextFocus && !editorReadonly",
+        "command": "mvext.experimentalEvalByShellIntegration"
+      },
+      {
+        "key": "alt+shift+t",
+        "when": "editorTextFocus",
+        "command": "mvext.quicklySwitchTestFile"
+      },
+      {
         "key": "alt+o",
         "when": "editorTextFocus && editorLangId =~ /html|css|javascript|typescript/",
-        "command": "mvext.switchFile"
+        "command": "mvext.quicklySwitchFile"
       }
     ],
     "problemMatchers": [
@@ -204,7 +249,7 @@
         "fileLocation": "relative",
         "pattern": [
           {
-            "regexp": "^✘ [(ERROR)] (?<msg>.*)$",
+            "regexp": "^✘ [(ERROR)] (.*)$",
             "severity": 0,
             "message": 1
           },
@@ -245,9 +290,7 @@
     "dev": "node ./scripts/build.js",
     "test": "node ./out/test/runTest.js",
     "test:local": "cross-env LOCAL_TEST=true node ./out/test/runTest.js",
-    "eslint": "eslint src --ext ts --fix --cache",
-    "prettier": "prettier -w . --cache",
-    "stage": "cross-env NODE_ENV=stage yarn eslint && tsc --noEmit && yarn prettier && pwsh install.ps1",
+    "lint": "eslint --ext ts --fix --cache && tsc",
     "prepare": "husky install",
     "vscode:prepublish": "cross-env NODE_ENV=stage node ./scripts/build.js"
   },
@@ -265,14 +308,19 @@
     "husky": "^8.0.3",
     "iconv-lite": "^0.6.3",
     "lint-staged": "^14.0.0",
-    "mocha": "10.2.0"
+    "mocha": "10.2.0",
+    "typescript": "^5.1.6"
   },
   "prettier": {
     "semi": false,
     "singleQuote": true,
     "bracketSameLine": true
   },
-  "lint-staged": [
-    "yarn stage"
-  ]
+  "lint-staged": {
+    "*.{json,md}": "prettier -w --cache",
+    "*.{js,ts}": [
+      "cross-env NODE_ENV=stage eslint --cache --fix",
+      "prettier -w --cache"
+    ]
+  }
 }
