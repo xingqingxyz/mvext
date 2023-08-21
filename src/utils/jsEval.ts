@@ -3,7 +3,7 @@ import path from 'path'
 import { Worker } from 'worker_threads'
 
 export async function mjsEval(text: string) {
-  const mjsFile = path.resolve(__dirname, 'eval.mjs')
+  const mjsFile = path.join(__dirname, 'eval.mjs')
   const jsCode = `import { parentPort } from 'worker_threads'
 ;${text}
 parentPort.postMessage(await main())`

@@ -1,7 +1,6 @@
 import vscode from 'vscode'
 import { registerCaseTransform } from './caseTransform'
 import { registerEvalWithSelection } from './evalWithSelection'
-import { registerExperimental } from './experimental'
 import { registerQuicklySwitchFile } from './quicklySwitchFile'
 import { registerTsCodeActions } from './tsCodeActions'
 import { setupExtConfig } from './utils/getExtConfig'
@@ -13,7 +12,6 @@ export function activate(context: vscode.ExtensionContext) {
   registerQuicklySwitchFile(context)
   registerEvalWithSelection(context)
   registerTsCodeActions(context)
-  registerExperimental(context)
 }
 
 export function deactivate() {

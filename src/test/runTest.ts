@@ -5,7 +5,7 @@ void (async function main() {
     console.log('Running Local Tests')
     await (
       await import('./suite/index.js')
-    ).run(path.resolve(__dirname, './suite-local'), (err) => {
+    ).run(path.join(__dirname, './suite-local'), (err) => {
       console.error(err)
     })
     return
@@ -16,6 +16,6 @@ void (async function main() {
     await import('@vscode/test-electron')
   ).runTests({
     extensionDevelopmentPath: process.cwd(),
-    extensionTestsPath: path.resolve(__dirname, './suite'),
+    extensionTestsPath: path.join(__dirname, './suite'),
   })
 })()

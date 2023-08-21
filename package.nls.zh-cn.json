@@ -1,6 +1,6 @@
 {
-  "ext.config.bashExecutable": "`bash`可执行程序路径",
-  "ext.config.pwshExecutable": "`pwsh`可执行程序路径",
-  "ext.config.experimentalReceiveTimeout": "实验性使用`Shell集成`执行shell代码段接收结果延时 (毫秒)",
-  "ext.config.useDeno": "使用`Deno`而不是`Node.js`执行JavaScript"
+  "ext.config.bashExecutable": "`bash` 可执行程序路径",
+  "ext.config.pwshExecutable": "`pwsh` 可执行程序路径",
+  "ext.config.receiveShellTimeout": "使用 Shell 集成执行代码段的接收结果延时 (毫秒)",
+  "ext.config.useDeno": "使用 `Deno` 而不是 `Node.js` 执行 JavaScript"
 }

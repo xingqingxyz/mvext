@@ -34,7 +34,7 @@ function setEvalWithSelection() {
         ? 'C:\\Program Files\\Git\\bin\\bash.exe'
         : 'bash'),
     pwshExec: cfg.get<string>('pwshExecutable')! || 'pwsh',
-    receiveTimeout: cfg.get<number>('experimentalReceiveTimeout')! || 500,
+    receiveTimeout: cfg.get<number>('receiveShellTimeout')! || 500,
     useDeno: cfg.get<boolean>('useDeno')!,
   })
 }

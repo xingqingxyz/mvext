@@ -2,9 +2,9 @@
 
 This extension ships a set of pragmatic web dev features:
 
-- [caseTransform](#case-transform)
-- [quicklySwitchFile](#quickly-switch-file)
-- [evalWithSelection](#eval-with-selection)
+- [Case Transform](#case-transform)
+- [Quickly Switch (Test) File](#quickly-switch-test-file)
+- [Eval With Selection](#eval-with-selection)
 - [TypeScript Code Actions](#typescript-code-actions)
 
 ## Features
@@ -13,29 +13,22 @@ This extension ships a set of pragmatic web dev features:
 
 Transform (multiple) cursor position or selection to many cases. Cases: `titleCase`, `camelCase`, `constantCase`, `pascalCase`, `kebabCase`, `snakeCase`, `sentenceCase`, `dotCase`, `pathCase`, `headerCase`, `noCase`, `lowerCase`, `upperCase` (command search _mvext_ to know shortcuts)
 
-### Quickly Switch File
+### Quickly Switch (Test) File
 
 Quickly switch you source file between `.js/.css/.html` or `.js/.ts` (shortcut `alt+o`).
 
-#### on local machine
+#### Switch File
 
-| from       | to                              |
-| ---------- | ------------------------------- |
-| .js        | .html/.htm                      |
-| .css       | .html/.htm                      |
-| .html/.htm | .css/.js                        |
-| .ts        | `/dist/**/*.js`, `/out/**/*.js` |
+| from            | to             |
+| --------------- | -------------- |
+| .js             | .html          |
+| .css            | .html          |
+| .html?          | .css           |
+| `src/**/*.tsx?` | `dist/**/*.js` |
 
-#### on web
+#### Switch Test File
 
-| from       | to         |
-| ---------- | ---------- |
-| .js        | .html/.htm |
-| .css       | .html/.htm |
-| .html/.htm | .css/.js   |
-| .ts        | .js        |
-
-Or switch your source file between `*.*` and `./__tests__/*.test.*` or `./__tests__/*.spec.*` (shortcut `alt+shift+t`)
+Or switch your source file between `/[base].[ext]` and `/__tests__/[base].{test,spec}.[ext]` (shortcut `alt+shift+t`)
 
 ### Eval With Selection
 
@@ -45,13 +38,19 @@ Using current editor selection, according to `editorLangId`, to eval the code an
 - `powershell` (pwsh or fallback to powershell.exe)
 - `bat` (cmd.exe)
 - `bash` (bash or "C:\Program Files\Git\bin\bash.exe" on windows)
+- `ignore` (pwsh on win32, otherwise bash)
 
 > Setting config `mvext.evalWithSelection.useDeno` to true to use deno to eval any javascript code.
 
-> Setting config `mvext.evalWithSelection.bashExecutable` on any settings.json file to switch the `bash` executable.
+#### Eval By Shell Integration
+
+There is also a way to exec in current active terminal, it will
+automatically detect to decide which wrapper code to send, it is so fun~ (shortcut `ctrl+alt+s`)
 
 ### TypeScript Code Actions
 
 - `Delete Function Call`
 
   transform from `func('hello')` to `'hello'`
+
+---

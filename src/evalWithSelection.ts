@@ -3,6 +3,8 @@ import util from 'util'
 import vscode from 'vscode'
 import { getExtConfig } from './utils/getExtConfig'
 import { cjsEval, mjsEval } from './utils/jsEval'
+import path from 'path'
+import { writeFile } from 'fs/promises'
 
 const execFilePm = util.promisify(execFile)
 
@@ -14,6 +16,10 @@ export function registerEvalWithSelection(ctx: vscode.ExtensionContext) {
       'mvext.evalWithSelection',
       evalWithSelection,
     ),
+    vscode.commands.registerCommand(
+      'mvext.evalByShellIntegration',
+      evalByShellIntegration,
+    ),
   )
 }
 
@@ -23,24 +29,21 @@ export async function evalWithSelection() {
     return
   }
 
-  const { selections, document } = editor
-  if (selections[0].isEmpty) {
-    return
-  }
+  const { document } = editor
+  const selectMap = new Map<vscode.Range, string>()
 
-  const selectMap = new Map<vscode.Selection, string>()
-  for (const selectionIt of selections) {
-    if (selectionIt.isEmpty) {
-      continue
-    }
-    const text = document.getText(selectionIt)
+  for (const selectionIt of editor.selections) {
+    const line = document.lineAt(selectionIt.start.line)
+    const range = selectionIt.isEmpty ? line.range : selectionIt
+    const text = selectionIt.isEmpty ? line.text : document.getText(range)
     const langId = matchLangId(document.languageId, text)
     try {
-      selectMap.set(selectionIt, await evalByLangId(text, langId))
+      selectMap.set(range, await evalByLangId(text, langId))
     } catch (err) {
       console.error(err)
     }
   }
+
   await editor.edit((edit) => {
     selectMap.forEach((result, selectionIt) => {
       edit.replace(selectionIt, result)
@@ -72,7 +75,13 @@ export async function evalByLangId(text: string, langId: LangId) {
     case 'mjs':
       return formatObj(await mjsEval(text))
     case 'deno':
-      return (await execFilePm(langId, ['eval', '-p', text], options)).stdout
+      return (
+        await execFilePm(
+          langId,
+          ['eval', reMjs.test(text) ? '' : '-p', text],
+          options,
+        )
+      ).stdout
     case 'pwsh':
       return (
         await execFilePm(
@@ -84,14 +93,11 @@ export async function evalByLangId(text: string, langId: LangId) {
     case 'bash':
       return (await execFilePm(getExtConfig().bashExec, ['-c', text], options))
         .stdout
-    case 'cmd':
-      return (
-        await execFilePm(
-          langId,
-          ['/D', '/C', 'chcp 65001 && ' + text.replace(/\\n/g, ' && ')],
-          options,
-        )
-      ).stdout
+    case 'cmd': {
+      const cmdFile = path.join(__dirname, 'eval.bat')
+      await writeFile(cmdFile, text, 'utf-8')
+      return (await execFilePm(langId, ['/D', '/C', cmdFile], options)).stdout
+    }
     default:
       throw Error('[Eval] not identified langId: ' + (langId as string))
   }
@@ -116,4 +122,68 @@ function matchLangId(editorLangId: string, text: string): LangId {
     default:
       throw Error('[Match] not supported editorLangId: ' + editorLangId)
   }
+}
+
+export async function evalByShellIntegration() {
+  const editor = vscode.window.activeTextEditor
+  const terminal = vscode.window.activeTerminal
+  if (!terminal || !editor) {
+    return
+  }
+
+  const selectMap = new Map<vscode.Range, string>()
+
+  for (const selectionIt of editor.selections) {
+    const line = editor.document.lineAt(selectionIt.start.line)
+    const range = selectionIt.isEmpty ? line.range : selectionIt
+
+    try {
+      selectMap.set(
+        range,
+        await evalByTerminal(
+          selectionIt.isEmpty ? line.text : editor.document.getText(range),
+          terminal,
+        ),
+      )
+    } catch (err) {
+      console.error(err)
+    }
+  }
+
+  await editor.edit((edit) => {
+    selectMap.forEach((result, selectionIt) => {
+      edit.replace(selectionIt, result)
+    })
+  })
+}
+
+type ShellId = 'pwsh' | 'cmd' | 'bash'
+
+export async function evalByTerminal(code: string, terminal: vscode.Terminal) {
+  const shellId: ShellId = /bash|wsl/.test(terminal.name)
+    ? 'bash'
+    : /pwsh|powershell|javascript debug/i.test(terminal.name)
+    ? 'pwsh'
+    : process.platform === 'win32'
+    ? 'cmd'
+    : 'bash'
+
+  switch (shellId) {
+    case 'pwsh':
+      code = "scb (iex @'\n" + code + "\n'@)"
+      break
+    case 'cmd':
+      code = code.replace(/\s*$/, ' | clip.exe')
+      break
+    case 'bash':
+      code = code.replace(/\s*$/, ' | clipboard')
+      break
+  }
+  terminal.sendText(code)
+
+  return new Promise<string>((resolve, reject) => {
+    setTimeout(() => {
+      void vscode.env.clipboard.readText().then(resolve, reject)
+    }, getExtConfig().receiveTimeout)
+  })
 }

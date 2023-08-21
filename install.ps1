@@ -7,3 +7,6 @@ if (-not $ext) {
     return 1
 }
 code.cmd --install-extension $ext
+if (Get-Command code-insiders.cmd -ErrorAction Continue) {
+    code-insiders.cmd --install-extension $ext
+}

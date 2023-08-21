@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
 const esbuild = require('esbuild')
 const { glob } = require('glob')
 const path = require('path')
@@ -18,7 +17,7 @@ void (async function main() {
     return
   }
 
-  const srcDir = path.resolve(__dirname, '../src')
+  const srcDir = path.join(__dirname, '../src')
   const entryPoints = (
     await glob('**/**.ts', {
       cwd: srcDir,
@@ -32,7 +31,7 @@ void (async function main() {
     format: 'cjs',
     platform: 'node',
     outbase: srcDir,
-    outdir: path.resolve(__dirname, '../out'),
+    outdir: path.join(__dirname, '../out'),
   })
   console.log('[watch] build started')
   await ctx.watch()

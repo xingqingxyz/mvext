@@ -1,8 +1,8 @@
-import vscode from 'vscode'
-import { describe, it } from 'mocha'
 import strict from 'assert/strict'
-import path from 'path'
+import { describe, it } from 'mocha'
 import { homedir } from 'os'
+import path from 'path'
+import vscode from 'vscode'
 
 describe('#evalWithSelection', function () {
   it('should get truly result', async function () {
@@ -30,7 +30,7 @@ async function editorInsertText(text: string) {
     // TODO:fix
     (await vscode.commands.executeCommand<vscode.TextEditor>(
       'vscode.open',
-      path.resolve(homedir(), './test.js'),
+      path.join(homedir(), './test.js'),
     ))
 
   await editor.edit((b) => {

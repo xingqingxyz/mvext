@@ -1,6 +1,6 @@
 {
   "ext.config.pwshExecutable": "`pwsh` executable file path",
   "ext.config.bashExecutable": "`bash` executable file path",
-  "ext.config.experimentalReceiveTimeout": "Experimental eval Shell snippet by `Shell Integration` receiving result timeout (ms)",
+  "ext.config.receiveShellTimeout": "Eval by `Shell Integration` receiving result timeout (ms)",
   "ext.config.useDeno": "Use `Deno` rather `Node.js` to eval JavaScript"
 }
