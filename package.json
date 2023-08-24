@@ -3,7 +3,7 @@
   "private": true,
   "displayName": "My VSCode Extension",
   "description": "A extension which ships a set of pragmatic web dev features.",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "l10n": "./l10n",
   "engines": {
     "vscode": "^1.81.1"
@@ -118,11 +118,6 @@
         "command": "mvext.transformToUpperCase"
       },
       {
-        "title": "Detect Transform Case",
-        "category": "Transform Case",
-        "command": "mvext.detectTransformCase"
-      },
-      {
         "title": "Eval With Selection",
         "category": "mvext",
         "command": "mvext.evalWithSelection"
@@ -208,11 +203,6 @@
         "key": "alt+x l",
         "when": "editorTextFocus && !editorReadonly",
         "command": "mvext.transformToLowerCase"
-      },
-      {
-        "key": "alt+x alt+d",
-        "when": "editorTextFocus && !editorReadonly",
-        "command": "mvext.detectTransformCase"
       },
       {
         "key": "ctrl+alt+e",

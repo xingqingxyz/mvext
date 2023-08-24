@@ -1,10 +1,11 @@
 import { ExecFileOptions, execFile } from 'child_process'
+import { writeFile } from 'fs/promises'
+import path from 'path'
+import { setTimeout } from 'timers/promises'
 import util from 'util'
 import vscode from 'vscode'
 import { getExtConfig } from './utils/getExtConfig'
 import { cjsEval, mjsEval } from './utils/jsEval'
-import path from 'path'
-import { writeFile } from 'fs/promises'
 
 const execFilePm = util.promisify(execFile)
 
@@ -35,11 +36,18 @@ export async function evalWithSelection() {
   for (const selectionIt of editor.selections) {
     const line = document.lineAt(selectionIt.start.line)
     const range = selectionIt.isEmpty ? line.range : selectionIt
-    const text = selectionIt.isEmpty ? line.text : document.getText(range)
+    const text = selectionIt.isEmpty ? line.text : document.getText(selectionIt)
     const langId = matchLangId(document.languageId, text)
     try {
       selectMap.set(range, await evalByLangId(text, langId))
     } catch (err) {
+      if (err instanceof SyntaxError || langId === 'deno') {
+        await vscode.window.showErrorMessage(
+          vscode.l10n.t(
+            'SyntaxError: You may need to use wrapper (function () {\n\t/* code */\n})() instead.',
+          ),
+        )
+      }
       console.error(err)
     }
   }
@@ -78,7 +86,7 @@ export async function evalByLangId(text: string, langId: LangId) {
       return (
         await execFilePm(
           langId,
-          ['eval', reMjs.test(text) ? '' : '-p', text],
+          ['eval'].concat(reMjs.test(text) ? [text] : ['-p', text]),
           options,
         )
       ).stdout
@@ -124,49 +132,16 @@ function matchLangId(editorLangId: string, text: string): LangId {
   }
 }
 
-export async function evalByShellIntegration() {
-  const editor = vscode.window.activeTextEditor
-  const terminal = vscode.window.activeTerminal
-  if (!terminal || !editor) {
-    return
-  }
-
-  const selectMap = new Map<vscode.Range, string>()
-
-  for (const selectionIt of editor.selections) {
-    const line = editor.document.lineAt(selectionIt.start.line)
-    const range = selectionIt.isEmpty ? line.range : selectionIt
-
-    try {
-      selectMap.set(
-        range,
-        await evalByTerminal(
-          selectionIt.isEmpty ? line.text : editor.document.getText(range),
-          terminal,
-        ),
-      )
-    } catch (err) {
-      console.error(err)
-    }
-  }
-
-  await editor.edit((edit) => {
-    selectMap.forEach((result, selectionIt) => {
-      edit.replace(selectionIt, result)
-    })
-  })
-}
-
-type ShellId = 'pwsh' | 'cmd' | 'bash'
+export type ShellId = 'pwsh' | 'cmd' | 'bash' | 'unknown'
 
 export async function evalByTerminal(code: string, terminal: vscode.Terminal) {
   const shellId: ShellId = /bash|wsl/.test(terminal.name)
     ? 'bash'
-    : /pwsh|powershell|javascript debug/i.test(terminal.name)
+    : /pwsh|powershell/i.test(terminal.name)
     ? 'pwsh'
-    : process.platform === 'win32'
+    : terminal.name === 'cmd'
     ? 'cmd'
-    : 'bash'
+    : 'unknown'
 
   switch (shellId) {
     case 'pwsh':
@@ -178,12 +153,48 @@ export async function evalByTerminal(code: string, terminal: vscode.Terminal) {
     case 'bash':
       code = code.replace(/\s*$/, ' | clipboard')
       break
+    default:
+      terminal.sendText(code)
+      return
   }
-  terminal.sendText(code)
 
-  return new Promise<string>((resolve, reject) => {
-    setTimeout(() => {
-      void vscode.env.clipboard.readText().then(resolve, reject)
-    }, getExtConfig().receiveTimeout)
+  terminal.sendText(code)
+  await setTimeout(getExtConfig().receiveTimeout)
+  return vscode.env.clipboard.readText().then((text) => {
+    if (text.length) {
+      return text
+    }
+  })
+}
+
+export async function evalByShellIntegration() {
+  const terminal = vscode.window.activeTerminal
+  if (!terminal) {
+    return
+  }
+
+  const editor = vscode.window.activeTextEditor
+  if (!editor) {
+    return
+  }
+
+  const selectMap = new Map<vscode.Range, string>()
+
+  for (const selectionIt of editor.selections) {
+    const line = editor.document.lineAt(selectionIt.start.line)
+    const range = selectionIt.isEmpty ? line.range : selectionIt
+    const result = await evalByTerminal(
+      selectionIt.isEmpty ? line.text : editor.document.getText(selectionIt),
+      terminal,
+    )
+    if (result) {
+      selectMap.set(range, result)
+    }
+  }
+
+  await editor.edit((edit) => {
+    selectMap.forEach((result, selectionIt) => {
+      edit.replace(selectionIt, result)
+    })
   })
 }

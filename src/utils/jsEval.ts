@@ -21,7 +21,7 @@ parentPort.postMessage(await main())`
 }
 
 export function cjsEval(text: string) {
-  const jsCode = /function\s+main\(/.test(text)
+  const jsCode = /function\s+main\s*\(/.test(text)
     ? `const { parentPort } = require('worker_threads')
 void (async function () {
   ${text}

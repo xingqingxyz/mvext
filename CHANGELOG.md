@@ -26,3 +26,11 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 ## [0.1.2]
 
 - Feature: [`evalWithSelection`](./src/evalWithSelection.ts) eval selection by `editorLangId`, supports: nodejs | deno, pwsh, cmd, bash
+
+## [0.2.0]
+
+- Feature: [`quicklySwitchFile`](./src/quicklySwitchFile.ts) switch files quickly
+
+## [0.2.2]
+
+- Fix Shell Integration eval bugs; Refactor [`caseTransform`](./src/utils/caseTransformHelper.ts) implementation.

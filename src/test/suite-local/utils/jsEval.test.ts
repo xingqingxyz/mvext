@@ -16,11 +16,8 @@ function main() {
   }
 }`
 
-  it('should returns Object', async function () {
-    await strict.doesNotReject(() => mjsEval(mjsCode))
-    const result = (await mjsEval(mjsCode)) as object
-    strict.ok(result instanceof Object)
-    strict.deepEqual(result, { hello: 'world', num: 42 })
+  it('should not rejects and returns expected', async function () {
+    strict.deepEqual(await mjsEval(mjsCode), { hello: 'world', num: 42 })
   })
 
   it('should returns again', async function () {

@@ -1,5 +1,6 @@
 {
   "Delete Function Call": "删除函数调用",
   "Select Word Case": "选择标识符命名方式",
-  "Please tell me which case of word you'd like to:": "请告诉我您需要的单词拼写法："
+  "Please tell me which case of word you'd like to:": "请告诉我您需要的单词拼写法：",
+  "SyntaxError: You may need to use wrapper (function () {\n\t/* code */\n})() instead.": "语法错误：你可能需要使用包装器：(function () {\n\t/* code */\n})()"
 }

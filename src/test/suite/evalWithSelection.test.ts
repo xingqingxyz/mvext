@@ -1,12 +1,9 @@
 import strict from 'assert/strict'
 import { describe, it } from 'mocha'
-import { homedir } from 'os'
-import path from 'path'
-import vscode from 'vscode'
+import { evalByLangId } from '../../evalWithSelection'
 
-describe('#evalWithSelection', function () {
-  it('should get truly result', async function () {
-    const jsCode = `const { readdirSync } = require('fs')
+describe(`#${evalByLangId.name}()`, function () {
+  const cjsCode = `const { readdirSync } = require('fs')
 const files = readdirSync(process.cwd())
 if (
   !(files.find((v) => v === 'package.json') &&
@@ -14,30 +11,45 @@ if (
 ) {throw Error('Not found')}
 ;({ hello: 'world', num: 42 })
 `
-    const range = await editorInsertText(jsCode)
-    // TODO:fix
-    await vscode.commands.executeCommand('select', range)
-    await vscode.commands.executeCommand('mvext.evalWithSelection')
-    const { document, selection } = vscode.window.activeTextEditor!
-    const result = document.getText(selection)
-    strict.equal(result, "{ hello: 'world', num: 42 }")
+
+  const mjsCode = `import { readdirSync } from 'fs'
+function main() {
+  const files = readdirSync(process.cwd())
+  if (
+    !(files.find((v) => v === 'package.json') &&
+    files.find((v) => v === 'tsconfig.json'))
+  ) {throw Error('Not found')}
+  return {
+    hello: 'world',
+    num: 42
+  }
+}`
+
+  const pwshCode = '(ConvertFrom-Json "$(gc .\\package.json)").name'
+  const cmdCode = 'chcp 65001 && echo 布达拉宫'
+  const bashCode = 'abc=esc && echo $abc'
+
+  it('should should not rejects', async function () {
+    await strict.doesNotReject(() => evalByLangId(pwshCode, 'pwsh'))
+    await strict.doesNotReject(() => evalByLangId(cmdCode, 'cmd'))
+    await strict.doesNotReject(() => evalByLangId(bashCode, 'bash'))
+  })
+
+  it('should returns expected result', async function () {
+    strict.equal(
+      await evalByLangId(cjsCode, 'cjs'),
+      "{ hello: 'world', num: 42 }",
+    )
+    strict.equal(
+      await evalByLangId(mjsCode, 'mjs'),
+      "{ hello: 'world', num: 42 }",
+    )
+
+    strict.equal(await evalByLangId(pwshCode, 'pwsh'), 'mvext\n')
+    strict.equal(
+      await evalByLangId(cmdCode, 'cmd'),
+      'Active code page: 65001\n布达拉宫\n',
+    )
+    strict.equal(await evalByLangId(bashCode, 'bash'), 'esc\n')
   })
 })
-
-async function editorInsertText(text: string) {
-  const editor =
-    vscode.window.activeTextEditor ??
-    // TODO:fix
-    (await vscode.commands.executeCommand<vscode.TextEditor>(
-      'vscode.open',
-      path.join(homedir(), './test.js'),
-    ))
-
-  await editor.edit((b) => {
-    b.insert(editor.document.positionAt(0), text)
-  })
-  return new vscode.Range(
-    editor.document.positionAt(0),
-    editor.document.positionAt(text.length),
-  )
-}
