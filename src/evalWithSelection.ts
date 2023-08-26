@@ -1,5 +1,4 @@
-import { ExecFileOptions, execFile } from 'child_process'
-import { writeFile } from 'fs/promises'
+import { ExecFileOptions, execFile, exec } from 'child_process'
 import path from 'path'
 import { setTimeout } from 'timers/promises'
 import util from 'util'
@@ -8,6 +7,7 @@ import { getExtConfig } from './utils/getExtConfig'
 import { cjsEval, mjsEval } from './utils/jsEval'
 
 const execFilePm = util.promisify(execFile)
+const execPm = util.promisify(exec)
 
 export type LangId = 'cjs' | 'mjs' | 'deno' | 'pwsh' | 'cmd' | 'bash'
 
@@ -41,7 +41,7 @@ export async function evalWithSelection() {
     try {
       selectMap.set(range, await evalByLangId(text, langId))
     } catch (err) {
-      if (err instanceof SyntaxError || langId === 'deno') {
+      if (err instanceof SyntaxError) {
         await vscode.window.showErrorMessage(
           vscode.l10n.t(
             'SyntaxError: You may need to use wrapper (function () {\n\t/* code */\n})() instead.',
@@ -71,10 +71,13 @@ function formatObj(result: unknown) {
 }
 
 export async function evalByLangId(text: string, langId: LangId) {
-  const documentUri = vscode.window.activeTextEditor?.document.uri
+  const editor = vscode.window.activeTextEditor
   const options: ExecFileOptions = {}
-  if (documentUri) {
-    options.cwd = vscode.workspace.getWorkspaceFolder(documentUri)?.uri.fsPath
+  if (editor) {
+    const { document } = editor
+    options.cwd =
+      vscode.workspace.getWorkspaceFolder(document.uri)?.uri.fsPath ??
+      path.join(document.fileName, '..')
   }
 
   switch (langId) {
@@ -102,12 +105,17 @@ export async function evalByLangId(text: string, langId: LangId) {
       return (await execFilePm(getExtConfig().bashExec, ['-c', text], options))
         .stdout
     case 'cmd': {
-      const cmdFile = path.join(__dirname, 'eval.bat')
-      await writeFile(cmdFile, text, 'utf-8')
-      return (await execFilePm(langId, ['/D', '/C', cmdFile], options)).stdout
+      const reEmptyLine = /^(?:\s+|)$/
+      return (
+        await execPm(
+          text
+            .split('\n')
+            .filter((t) => !reEmptyLine.test(t))
+            .join(' && '),
+          { shell: 'cmd' },
+        )
+      ).stdout
     }
-    default:
-      throw Error('[Eval] not identified langId: ' + (langId as string))
   }
 }
 
@@ -148,12 +156,22 @@ export async function evalByTerminal(code: string, terminal: vscode.Terminal) {
       code = "scb (iex @'\n" + code + "\n'@)"
       break
     case 'cmd':
-      code = code.replace(/\s*$/, ' | clip.exe')
+      code += ' | clip.exe'
       break
     case 'bash':
-      code = code.replace(/\s*$/, ' | clipboard')
+      code += ' | '
+      switch (process.platform) {
+        case 'win32':
+          code += 'clip.exe'
+          break
+        case 'linux':
+          code += 'xsel'
+          break
+        case 'darwin':
+          code += 'pbcopy'
+      }
       break
-    default:
+    case 'unknown':
       terminal.sendText(code)
       return
   }

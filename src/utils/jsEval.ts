@@ -21,15 +21,14 @@ parentPort.postMessage(await main())`
 }
 
 export function cjsEval(text: string) {
-  const jsCode = /function\s+main\s*\(/.test(text)
-    ? `const { parentPort } = require('worker_threads')
+  const hasMainEntry = text.includes('function main(')
+
+  const jsCode = `const { parentPort } = require('worker_threads')
 void (async function () {
-  ${text}
-  parentPort.postMessage(await main())
-})()`
-    : `const { parentPort } = require('worker_threads')
-void (async function () {
-  parentPort.postMessage(await ${text})
+  ${hasMainEntry ? text : ''}
+  parentPort.postMessage(${
+    hasMainEntry ? 'await main()' : 'eval(' + JSON.stringify(text) + ')'
+  })
 })()`
 
   const worker = new Worker(jsCode, { eval: true })

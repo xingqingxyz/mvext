@@ -2,4 +2,4 @@
 . "$(dirname "$0")/_/husky.sh"
 
 npx lint-staged
-pwsh install.ps1
+pwsh -noprofile install.ps1

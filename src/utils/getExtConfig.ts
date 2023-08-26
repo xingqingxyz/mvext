@@ -15,6 +15,7 @@ export function getExtConfig() {
 
 export function setupExtConfig(ctx: vscode.ExtensionContext) {
   setEvalWithSelection()
+  console.log(extConfig)
   ctx.subscriptions.push(
     vscode.workspace.onDidChangeConfiguration((e) => {
       if (e.affectsConfiguration('mvext.evalWithSelection')) {

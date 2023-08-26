@@ -87,4 +87,4 @@ function getExtWordRange(
 ) {
   return document.getWordRangeAtPosition(position, getExtWordRange.reExtWord)
 }
-getExtWordRange.reExtWord = /[a-zA-Z_-./$][\w_-./$]*/
+getExtWordRange.reExtWord = /[a-zA-Z_./$-][\w_./$-]*/

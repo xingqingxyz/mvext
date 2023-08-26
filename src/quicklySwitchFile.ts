@@ -17,17 +17,17 @@ export function registerQuicklySwitchFile(ctx: vscode.ExtensionContext) {
 export async function quicklySwitchFile() {
   const uri = vscode.window.activeTextEditor?.document.uri
   if (uri) {
-    const matches = /(.*\.)(\w+$)/.exec(uri.path)
+    const matches = /(.+)\.(\w+$)/.exec(uri.path)
     if (matches) {
       let path = matches[1]
       const ext = matches[2]
 
       if (/html?/.test(ext)) {
-        path += 'css'
+        path += '.css'
       } else if (/css|js/.test(ext)) {
-        path += 'html'
+        path += '.html'
       } else if (/tsx?/.test(ext)) {
-        path = path.replace(/\/src\//, 'dist') + 'js'
+        path = path.replace('/src/', '/dist/') + '.js'
       }
       await execOpen(uri.with({ path }))
     }
@@ -48,7 +48,7 @@ export async function quicklySwitchTestFile() {
 
   const { path } = documentUri
   const nextPath = path.replace(
-    /__tests__\/(.+)\.(?:test|spec)\.(\w+)$/,
+    /\/__tests?__\/(.+)\.(?:test|spec)\.(\w+)$/,
     '/$1.$2',
   )
 
@@ -61,7 +61,7 @@ export async function quicklySwitchTestFile() {
     .findFiles(
       vscode.workspace
         .asRelativePath(documentUri, false)
-        .replace(/\/(.*)\.(\w+)$/, '/__tests__/$1.{test,spec}.$2'),
+        .replace(/\/([^/]+)\.(\w+)$/, '/__test?__/$1.{test,spec}.$2'),
     )
     .then((files) => files.length && execOpen(files[0]))
 }

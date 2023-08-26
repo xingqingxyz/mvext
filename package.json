@@ -3,7 +3,7 @@
   "private": true,
   "displayName": "My VSCode Extension",
   "description": "A extension which ships a set of pragmatic web dev features.",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "l10n": "./l10n",
   "engines": {
     "vscode": "^1.81.1"
@@ -274,12 +274,11 @@
     ]
   },
   "scripts": {
-    "dev": "node ./scripts/build.js",
+    "watch": "node ./scripts/build.js",
+    "pretest": "node ./scripts/build.js build-test",
     "test": "node ./out/test/runTest.js",
-    "test:local": "cross-env LOCAL_TEST=true node ./out/test/runTest.js",
-    "lint": "cross-env NODE_ENV=stage eslint --ext ts --fix --cache && tsc",
     "prepare": "husky install",
-    "vscode:prepublish": "cross-env NODE_ENV=stage node ./scripts/build.js"
+    "vscode:prepublish": "node ./scripts/build.js build"
   },
   "devDependencies": {
     "@types/glob": "8.1.0",

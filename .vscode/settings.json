@@ -5,5 +5,5 @@
   "search.exclude": {
     "out": true
   },
-  "cSpell.words": ["Keymaps", "mvext", "outbase", "outdir", "outfile"]
+  "cSpell.words": ["Keymaps", "mvext", "outbase", "outdir", "outfile", "pbcopy"]
 }

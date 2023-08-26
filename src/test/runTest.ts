@@ -1,20 +1,9 @@
 import path from 'path'
+import { runTests } from '@vscode/test-electron'
 
-void (async function main() {
-  if (process.env.LOCAL_TEST === 'true') {
-    console.log('Running Local Tests')
-    await (
-      await import('./suite/index.js')
-    ).run(path.join(__dirname, './suite-local'), (err) => {
-      console.error(err)
-    })
-    return
-  }
-
+void (async function () {
   console.log('Running VSC Tests')
-  await (
-    await import('@vscode/test-electron')
-  ).runTests({
+  await runTests({
     extensionDevelopmentPath: process.cwd(),
     extensionTestsPath: path.join(__dirname, './suite'),
   })
