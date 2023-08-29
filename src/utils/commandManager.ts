@@ -1,14 +1,20 @@
 import vscode from 'vscode'
-import { internalCmd } from '../constants'
 
 const { executeCommand } = vscode.commands
 
+export const enum vscodeCmd {
+  open = 'vscode.open',
+  prepareRename = 'vscode.prepareRename',
+  renameProvider = 'vscode.executeDocumentRenameProvider',
+}
+
+//#region external
 export async function execPrepareRename(
   fileUri: vscode.Uri,
   position: vscode.Position,
 ) {
   return await executeCommand<{ placeholder: string }>(
-    internalCmd.prepareRename,
+    vscodeCmd.prepareRename,
     fileUri,
     position,
   )
@@ -20,7 +26,7 @@ export async function execRename(
   renameTo: string,
 ) {
   return await executeCommand<vscode.WorkspaceEdit>(
-    internalCmd.renameProvider,
+    vscodeCmd.renameProvider,
     fileUri,
     position,
     renameTo,
@@ -28,5 +34,6 @@ export async function execRename(
 }
 
 export async function execOpen(uri: vscode.Uri) {
-  return await executeCommand(internalCmd.open, uri)
+  return await executeCommand(vscodeCmd.open, uri)
 }
+//#endregion

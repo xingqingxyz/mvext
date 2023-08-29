@@ -53,4 +53,8 @@ automatically detect to decide which wrapper code to send, it is so fun~ (shortc
 
   transform from `func('hello')` to `'hello'`
 
+- `Swap Vars`
+
+  transform from `[a.b, c.d, e.f]` to `[a.b, c.d, e.f] = [e.f, c.d, a.b]`
+
 ---

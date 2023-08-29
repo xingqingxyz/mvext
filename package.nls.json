@@ -2,5 +2,9 @@
   "ext.config.bashExecutable": "`bash` executable file path",
   "ext.config.pwshExecutable": "`pwsh` executable file path",
   "ext.config.receiveShellTimeout": "Eval by `Shell Integration` receiving result timeout (ms)",
-  "ext.config.useDeno": "Use `Deno` rather `Node.js` to eval JavaScript"
+  "ext.config.useDeno": "Use `Deno` rather `Node.js` to eval JavaScript",
+  "ext.codeActions.deleteFunctionCall.title": "Delete Function Call",
+  "ext.codeActions.deleteFunctionCall.description": "Delete Function Call",
+  "ext.codeActions.swapVars.title": "Swap Variables",
+  "ext.codeActions.swapVars.description": "Swap Variables"
 }

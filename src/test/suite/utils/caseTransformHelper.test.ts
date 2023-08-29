@@ -1,7 +1,10 @@
 import { strict } from 'assert'
-import { describe, it } from 'mocha'
-import type { ComplexWordCase, WordCase } from '../../utils/caseTransformHelper'
-import { caseTransform, joinCaseActions } from '../../utils/caseTransformHelper'
+import {
+  ComplexWordCase,
+  WordCase,
+  caseTransform,
+  joinCaseActions,
+} from '../../../utils/caseTransformHelper'
 
 const casedMap: Record<WordCase, string> = {
   lowerCase: 'itisagoodweather',

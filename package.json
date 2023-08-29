@@ -3,7 +3,7 @@
   "private": true,
   "displayName": "My VSCode Extension",
   "description": "A extension which ships a set of pragmatic web dev features.",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "l10n": "./l10n",
   "engines": {
     "vscode": "^1.81.1"
@@ -269,6 +269,28 @@
           "endsPattern": {
             "regexp": "\\[watch\\] build finished, watching for changes..."
           }
+        }
+      }
+    ],
+    "codeActions": [
+      {
+        "languages": [
+          "javascript,javascriptreact,typescript,typescriptreact"
+        ],
+        "actions": {
+          "title": "%ext.codeActions.deleteFunctionCall.title%",
+          "kind": "refactorRewrite",
+          "description": "%ext.codeActions.deleteFunctionCall.description%"
+        }
+      },
+      {
+        "languages": [
+          "javascript,javascriptreact,typescript,typescriptreact"
+        ],
+        "actions": {
+          "title": "%ext.codeActions.swapVars.title%",
+          "kind": "refactorRewrite",
+          "description": "%ext.codeActions.swapVars.description%"
         }
       }
     ]

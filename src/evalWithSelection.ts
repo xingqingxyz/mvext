@@ -1,15 +1,16 @@
-import { ExecFileOptions, execFile, exec } from 'child_process'
+import { ExecFileOptions, exec, execFile } from 'child_process'
+import { writeFile } from 'fs/promises'
 import path from 'path'
 import { setTimeout } from 'timers/promises'
 import util from 'util'
 import vscode from 'vscode'
+import { Worker } from 'worker_threads'
 import { getExtConfig } from './utils/getExtConfig'
-import { cjsEval, mjsEval } from './utils/jsEval'
 
 const execFilePm = util.promisify(execFile)
 const execPm = util.promisify(exec)
 
-export type LangId = 'cjs' | 'mjs' | 'deno' | 'pwsh' | 'cmd' | 'bash'
+export type LangId = 'cjs' | 'mjs' | 'deno' | 'pwsh' | 'cmd' | 'bash' | 'python'
 
 export function registerEvalWithSelection(ctx: vscode.ExtensionContext) {
   ctx.subscriptions.push(
@@ -44,7 +45,7 @@ export async function evalWithSelection() {
       if (err instanceof SyntaxError) {
         await vscode.window.showErrorMessage(
           vscode.l10n.t(
-            'SyntaxError: You may need to use wrapper (function () {\n\t/* code */\n})() instead.',
+            'SyntaxError: You may use `IIFE` wrapper instead:\n\t`(function () { /* code */ })()`',
           ),
         )
       }
@@ -57,17 +58,6 @@ export async function evalWithSelection() {
       edit.replace(selectionIt, result)
     })
   })
-}
-
-function formatObj(result: unknown) {
-  switch (typeof result) {
-    case 'object':
-      return util.format('%o', result)
-    case 'function':
-      return util.format('%o', result) + '\n' + result.toString()
-    default:
-      return String(result)
-  }
 }
 
 export async function evalByLangId(text: string, langId: LangId) {
@@ -116,6 +106,14 @@ export async function evalByLangId(text: string, langId: LangId) {
         )
       ).stdout
     }
+    case 'python':
+      return (
+        await execFilePm(
+          process.platform === 'win32' ? 'py' : 'python3',
+          ['-c', text],
+          options,
+        )
+      ).stdout
   }
 }
 
@@ -123,7 +121,11 @@ const reJs = /(?:java|type)script(?:react)?|vue|svelte|mdx|markdown/
 const reMjs = /^import\s+.*?\s+from\s+(['"]).*?\1\s*$/m
 function matchLangId(editorLangId: string, text: string): LangId {
   if (reJs.test(editorLangId)) {
-    return getExtConfig().useDeno ? 'deno' : reMjs.test(text) ? 'mjs' : 'cjs'
+    return getExtConfig().useDeno || editorLangId.startsWith('t')
+      ? 'deno'
+      : reMjs.test(text)
+      ? 'mjs'
+      : 'cjs'
   }
 
   switch (editorLangId) {
@@ -135,11 +137,65 @@ function matchLangId(editorLangId: string, text: string): LangId {
       return 'bash'
     case 'ignore':
       return process.platform === 'win32' ? 'pwsh' : 'bash'
+    case 'python':
+      return editorLangId
     default:
       throw Error('[Match] not supported editorLangId: ' + editorLangId)
   }
 }
 
+export async function mjsEval(text: string) {
+  const mjsFile = path.join(__dirname, 'eval.mjs')
+  const jsCode = `import { parentPort } from 'worker_threads'
+;${text}
+parentPort.postMessage(await main())`
+
+  await writeFile(mjsFile, jsCode, 'utf8')
+  const worker = new Worker(mjsFile)
+
+  return new Promise<unknown>((resolve, reject) => {
+    worker.on('message', (result) => {
+      resolve(result)
+      void worker.terminate()
+    })
+    worker.on('error', reject)
+  })
+}
+
+export function cjsEval(text: string) {
+  const hasMainEntry = text.includes('function main(')
+
+  const jsCode = `const { parentPort } = require('worker_threads')
+void (async function () {
+  ${hasMainEntry ? text : ''}
+  parentPort.postMessage(${
+    hasMainEntry ? 'await main()' : 'eval(' + JSON.stringify(text) + ')'
+  })
+})()`
+
+  const worker = new Worker(jsCode, { eval: true })
+
+  return new Promise<unknown>((resolve, reject) => {
+    worker.on('message', (result) => {
+      resolve(result)
+      void worker.terminate()
+    })
+    worker.on('error', reject)
+  })
+}
+
+function formatObj(result: unknown) {
+  switch (typeof result) {
+    case 'object':
+      return util.format('%o', result)
+    case 'function':
+      return util.format('%o', result) + '\n' + result.toString()
+    default:
+      return String(result)
+  }
+}
+
+//#region evalByShellIntegration
 export type ShellId = 'pwsh' | 'cmd' | 'bash' | 'unknown'
 
 export async function evalByTerminal(code: string, terminal: vscode.Terminal) {
@@ -216,3 +272,4 @@ export async function evalByShellIntegration() {
     })
   })
 }
+//#endregion

@@ -1,5 +1,5 @@
-import path from 'path'
 import { runTests } from '@vscode/test-electron'
+import path from 'path'
 
 void (async function () {
   console.log('Running VSC Tests')
