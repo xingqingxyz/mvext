@@ -11,11 +11,7 @@ module.exports = {
   extends: [
     'eslint:recommended',
     'plugin:@typescript-eslint/strict-type-checked',
-  ].concat(
-    process.env.NODE_ENV === 'stage'
-      ? 'plugin:@typescript-eslint/stylistic-type-checked'
-      : [],
-  ),
+  ],
   parserOptions: {
     project: true,
   },

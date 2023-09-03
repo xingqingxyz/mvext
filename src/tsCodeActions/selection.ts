@@ -2,7 +2,7 @@ import vscode from 'vscode'
 
 const allCodeActionKind = {
   function: vscode.CodeActionKind.RefactorRewrite.append('function'),
-  expand: vscode.CodeActionKind.RefactorRewrite.append('expand'),
+  expand: vscode.CodeActionKind.Refactor.append('expand'),
 }
 
 export const selectionCodeActions = [provideDeleteFunctionCall, provideSwapVar]

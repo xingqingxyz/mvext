@@ -6,12 +6,11 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "node",
-      "program": "${relativeFile}",
+      "name": "PowerShell Launch Current File",
+      "type": "PowerShell",
       "request": "launch",
-      "console": "integratedTerminal",
-      "skipFiles": ["<node_internals>/**", "**/node_modules/**"],
-      "type": "node"
+      "script": "${file}",
+      "cwd": "${cwd}"
     },
     {
       "name": "Run Extension",

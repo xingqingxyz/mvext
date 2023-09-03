@@ -1,11 +1,33 @@
 {
   "version": "2.0.0",
+  "problemMatcher": {
+    "name": "x-esbuild",
+    "label": "esbuild problem matcher",
+    "source": "esbuild",
+    "owner": "esbuild",
+    "severity": "error",
+    "applyTo": "allDocuments",
+    "fileLocation": "relative",
+    "pattern": [
+      {
+        "regexp": "^✘ [(ERROR)] (.*)$",
+        "severity": 0,
+        "message": 1
+      },
+      {
+        "regexp": "^\\s+(.+):(\\d+):(\\d+):",
+        "file": 0,
+        "line": 1,
+        "column": 2
+      }
+    ]
+  },
   "tasks": [
     {
       "label": "watch",
       "type": "npm",
       "script": "watch",
-      "problemMatcher": [],
+      "problemMatcher": ["$x-esbuild"],
       "presentation": {
         "reveal": "never"
       },

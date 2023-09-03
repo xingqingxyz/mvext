@@ -2,35 +2,8 @@
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
-## [0.0.1]
+## [0.3.0]
 
-- Add case transform commands and keybindings.
-
-## [0.0.2]
-
-- Cleanup codebase
-- integrated with user snippets.
-
-## [0.0.4]
-
-- Add RenameProvider to simply rename tokens.
-
-## [0.1.0]
-
-- Remove unnecessarily dependencies, turn to implement transform case from scratch.
-
-## [0.1.1]
-
-- Fix some bugs, offer commands which transform word(s) to `lowerCase` or `upperCase`.
-
-## [0.1.2]
-
-- Feature: [`evalWithSelection`](./src/evalWithSelection.ts) eval selection by `editorLangId`, supports: nodejs | deno, pwsh, cmd, bash
-
-## [0.2.0]
-
-- Feature: [`quicklySwitchFile`](./src/quicklySwitchFile.ts) switch files quickly
-
-## [0.2.2]
-
-- Fix Shell Integration eval bugs; Refactor [`caseTransform`](./src/utils/caseTransformHelper.ts) implementation.
+- Feature: [`caseTransform`](./src/caseTransform.ts): transform word selections to camelCase, pascalCase, snakeCase, kebabCase, titleCase, headerCase, dotCase, pathCase, noCase, lowerCase, upperCase.
+- Feature: [`quicklySwitchFile`](./src/quicklySwitchFile.ts): switch files between html and css/js or switch tests files.
+- Feature: [`applyShellEdit`](./src/applyShellEdit.ts): exec selection in scripting languages and replace selection by results, except empty or null.

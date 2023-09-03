@@ -1,31 +1,21 @@
-import { ExecFileOptions, exec, execFile } from 'child_process'
+import { ExecFileOptions } from 'child_process'
 import { writeFile } from 'fs/promises'
 import path from 'path'
-import { setTimeout } from 'timers/promises'
 import util from 'util'
 import vscode from 'vscode'
 import { Worker } from 'worker_threads'
 import { getExtConfig } from './utils/getExtConfig'
-
-const execFilePm = util.promisify(execFile)
-const execPm = util.promisify(exec)
+import { execFilePm, execPm } from './utils/nodeUtils'
 
 export type LangId = 'cjs' | 'mjs' | 'deno' | 'pwsh' | 'cmd' | 'bash' | 'python'
 
-export function registerEvalWithSelection(ctx: vscode.ExtensionContext) {
+export function registerApplyShellEdit(ctx: vscode.ExtensionContext) {
   ctx.subscriptions.push(
-    vscode.commands.registerCommand(
-      'mvext.evalWithSelection',
-      evalWithSelection,
-    ),
-    vscode.commands.registerCommand(
-      'mvext.evalByShellIntegration',
-      evalByShellIntegration,
-    ),
+    vscode.commands.registerCommand('mvext.applyShellEdit', applyShellEdit),
   )
 }
 
-export async function evalWithSelection() {
+export async function applyShellEdit() {
   const editor = vscode.window.activeTextEditor
   if (!editor) {
     return
@@ -40,7 +30,11 @@ export async function evalWithSelection() {
     const text = selectionIt.isEmpty ? line.text : document.getText(selectionIt)
     const langId = matchLangId(document.languageId, text)
     try {
-      selectMap.set(range, await evalByLangId(text, langId))
+      const result = await execByLangId(text, langId)
+      if (!/\s*/.test(result)) {
+        selectMap.set(range, result)
+        console.log(result)
+      }
     } catch (err) {
       if (err instanceof SyntaxError) {
         await vscode.window.showErrorMessage(
@@ -49,7 +43,7 @@ export async function evalWithSelection() {
           ),
         )
       }
-      console.error(err)
+      console.error('Eval error occurred:', err)
     }
   }
 
@@ -60,7 +54,7 @@ export async function evalWithSelection() {
   })
 }
 
-export async function evalByLangId(text: string, langId: LangId) {
+export async function execByLangId(text: string, langId: LangId) {
   const editor = vscode.window.activeTextEditor
   const options: ExecFileOptions = {}
   if (editor) {
@@ -194,82 +188,3 @@ function formatObj(result: unknown) {
       return String(result)
   }
 }
-
-//#region evalByShellIntegration
-export type ShellId = 'pwsh' | 'cmd' | 'bash' | 'unknown'
-
-export async function evalByTerminal(code: string, terminal: vscode.Terminal) {
-  const shellId: ShellId = /bash|wsl/.test(terminal.name)
-    ? 'bash'
-    : /pwsh|powershell/i.test(terminal.name)
-    ? 'pwsh'
-    : terminal.name === 'cmd'
-    ? 'cmd'
-    : 'unknown'
-
-  switch (shellId) {
-    case 'pwsh':
-      code = "scb (iex @'\n" + code + "\n'@)"
-      break
-    case 'cmd':
-      code += ' | clip.exe'
-      break
-    case 'bash':
-      code += ' | '
-      switch (process.platform) {
-        case 'win32':
-          code += 'clip.exe'
-          break
-        case 'linux':
-          code += 'xsel'
-          break
-        case 'darwin':
-          code += 'pbcopy'
-      }
-      break
-    case 'unknown':
-      terminal.sendText(code)
-      return
-  }
-
-  terminal.sendText(code)
-  await setTimeout(getExtConfig().receiveTimeout)
-  return vscode.env.clipboard.readText().then((text) => {
-    if (text.length) {
-      return text
-    }
-  })
-}
-
-export async function evalByShellIntegration() {
-  const terminal = vscode.window.activeTerminal
-  if (!terminal) {
-    return
-  }
-
-  const editor = vscode.window.activeTextEditor
-  if (!editor) {
-    return
-  }
-
-  const selectMap = new Map<vscode.Range, string>()
-
-  for (const selectionIt of editor.selections) {
-    const line = editor.document.lineAt(selectionIt.start.line)
-    const range = selectionIt.isEmpty ? line.range : selectionIt
-    const result = await evalByTerminal(
-      selectionIt.isEmpty ? line.text : editor.document.getText(selectionIt),
-      terminal,
-    )
-    if (result) {
-      selectMap.set(range, result)
-    }
-  }
-
-  await editor.edit((edit) => {
-    selectMap.forEach((result, selectionIt) => {
-      edit.replace(selectionIt, result)
-    })
-  })
-}
-//#endregion

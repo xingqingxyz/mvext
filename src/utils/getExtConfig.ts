@@ -3,8 +3,8 @@ import vscode from 'vscode'
 export interface ExtConfig {
   bashExec: string
   pwshExec: string
-  receiveTimeout: number
   useDeno: boolean
+  shfmtParserOptions: string[]
 }
 
 let extConfig: Readonly<ExtConfig>
@@ -14,27 +14,24 @@ export function getExtConfig() {
 }
 
 export function setupExtConfig(ctx: vscode.ExtensionContext) {
-  setEvalWithSelection()
-  ctx.subscriptions.push(
-    vscode.workspace.onDidChangeConfiguration((e) => {
-      if (e.affectsConfiguration('mvext.evalWithSelection')) {
-        setEvalWithSelection()
-      }
-    }),
-  )
+  setExtCfg()
+  ctx.subscriptions.push(vscode.workspace.onDidChangeConfiguration(setExtCfg))
 }
 
-function setEvalWithSelection() {
-  const cfg = vscode.workspace.getConfiguration('mvext.evalWithSelection')
+function setExtCfg() {
+  const applyShellEdit = vscode.workspace.getConfiguration(
+    'mvext.applyShellEdit',
+  )
+  const formatter = vscode.workspace.getConfiguration('mvext.formatter')
 
   extConfig = Object.freeze({
     bashExec:
-      cfg.get<string>('bashExecutable')! ||
+      applyShellEdit.get<string>('bashExecutable')! ||
       (process.platform === 'win32'
         ? 'C:\\Program Files\\Git\\bin\\bash.exe'
         : 'bash'),
-    pwshExec: cfg.get<string>('pwshExecutable')! || 'pwsh',
-    receiveTimeout: cfg.get<number>('receiveShellTimeout')! || 500,
-    useDeno: cfg.get<boolean>('useDeno')!,
+    pwshExec: applyShellEdit.get<string>('pwshExecutable')! || 'pwsh',
+    useDeno: applyShellEdit.get<boolean>('useDeno')!,
+    shfmtParserOptions: formatter.get<string[]>('shfmtParserOptions')!,
   })
 }

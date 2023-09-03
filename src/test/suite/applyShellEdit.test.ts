@@ -1,40 +1,40 @@
 import strict from 'assert/strict'
 import { EOL, homedir } from 'os'
-import { cjsEval, evalByLangId, mjsEval } from '../../evalWithSelection'
+import { cjsEval, execByLangId, mjsEval } from '../../applyShellEdit'
 
-describe(`#${evalByLangId.name}()`, function () {
+describe(`#${execByLangId.name}()`, function () {
   const cmdCode = '@set city=布达拉宫\n@echo %city%'
   const pwshCode = '"$(gi ~)"\n$?'
   const bashCode = 'abc=esc && echo $abc\necho $abc'
 
   describe('should should not rejects', function () {
     it('#cmd', async function () {
-      await strict.doesNotReject(() => evalByLangId(cmdCode, 'cmd'))
+      await strict.doesNotReject(() => execByLangId(cmdCode, 'cmd'))
     })
 
     it('#pwsh', async function () {
-      await strict.doesNotReject(() => evalByLangId(pwshCode, 'pwsh'))
+      await strict.doesNotReject(() => execByLangId(pwshCode, 'pwsh'))
     })
 
     it('#bash', async function () {
-      await strict.doesNotReject(() => evalByLangId(bashCode, 'bash'))
+      await strict.doesNotReject(() => execByLangId(bashCode, 'bash'))
     })
   })
 
   describe('should returns expected result', function () {
     it('#cmd', async function () {
-      strict.equal(await evalByLangId(cmdCode, 'cmd'), '%city%' + EOL)
+      strict.equal(await execByLangId(cmdCode, 'cmd'), '%city%' + EOL)
     })
 
     it('#pwsh', async function () {
       strict.equal(
-        await evalByLangId(pwshCode, 'pwsh'),
+        await execByLangId(pwshCode, 'pwsh'),
         homedir() + EOL + 'True' + EOL,
       )
     })
 
     it('#bash', async function () {
-      strict.equal(await evalByLangId(bashCode, 'bash'), 'esc\nesc\n')
+      strict.equal(await execByLangId(bashCode, 'bash'), 'esc\nesc\n')
     })
   })
 })

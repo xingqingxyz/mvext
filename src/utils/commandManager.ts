@@ -8,7 +8,7 @@ export const enum vscodeCmd {
   renameProvider = 'vscode.executeDocumentRenameProvider',
 }
 
-//#region external
+//#region vscode
 export async function execPrepareRename(
   fileUri: vscode.Uri,
   position: vscode.Position,

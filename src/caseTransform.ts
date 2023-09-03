@@ -42,24 +42,29 @@ async function dispatch(targetWc: WordCase) {
 
   if (selections.length < 2 && selections[0].isEmpty) {
     const position = selections[0].start
-    try {
-      await vscode.workspace.applyEdit(
-        await execRename(
-          document.uri,
-          position,
-          caseTransform(
-            (await execPrepareRename(document.uri, position)).placeholder,
-            targetWc,
+
+    if (document.languageId === 'javascript') {
+      try {
+        await vscode.workspace.applyEdit(
+          await execRename(
+            document.uri,
+            position,
+            caseTransform(
+              (await execPrepareRename(document.uri, position)).placeholder,
+              targetWc,
+            ),
           ),
-        ),
-      )
-    } catch {
-      const range = getExtWordRange(document, position)
-      if (range) {
-        await editor.edit((b) => {
-          b.replace(range, caseTransform(document.getText(range), targetWc))
-        })
+        )
+        return
+      } catch {
+        /* empty */
       }
+    }
+    const range = getExtWordRange(document, position)
+    if (range) {
+      await editor.edit((b) => {
+        b.replace(range, caseTransform(document.getText(range), targetWc))
+      })
     }
     return
   }
@@ -81,10 +86,10 @@ async function dispatch(targetWc: WordCase) {
   })
 }
 
-function getExtWordRange(
+export function getExtWordRange(
   document: vscode.TextDocument,
   position: vscode.Position,
 ) {
   return document.getWordRangeAtPosition(position, getExtWordRange.reExtWord)
 }
-getExtWordRange.reExtWord = /[a-zA-Z_./$-][\w_./$-]*/
+getExtWordRange.reExtWord = /[a-zA-Z_\-./$][\w_\-./$]*/

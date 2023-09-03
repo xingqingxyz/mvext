@@ -40,7 +40,7 @@ Using current editor selection, according to `editorLangId`, to eval the code an
 - `bash` (bash or "C:\Program Files\Git\bin\bash.exe" on windows)
 - `ignore` (pwsh on win32, otherwise bash)
 
-> Setting config `mvext.evalWithSelection.useDeno` to true to use deno to eval any javascript code.
+> Setting config `mvext.applyShellEdit.useDeno` to true to use deno to eval any javascript code.
 
 #### Eval By Shell Integration
 

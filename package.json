@@ -3,7 +3,7 @@
   "private": true,
   "displayName": "My VSCode Extension",
   "description": "A extension which ships a set of pragmatic web dev features.",
-  "version": "0.2.4",
+  "version": "0.3.0",
   "l10n": "./l10n",
   "engines": {
     "vscode": "^1.81.1"
@@ -25,32 +25,48 @@
   "main": "./out/extension.js",
   "keywords": [
     "case transform",
-    "quick switch",
-    "eval",
+    "quickly switch files",
+    "shell edit",
     "typescript"
   ],
   "contributes": {
     "configuration": {
       "title": "My VSCode Extension",
       "properties": {
-        "mvext.evalWithSelection.bashExecutable": {
+        "mvext.applyShellEdit.bashExecutable": {
           "type": "string",
           "markdownDescription": "%ext.config.bashExecutable%"
         },
-        "mvext.evalWithSelection.pwshExecutable": {
+        "mvext.applyShellEdit.pwshExecutable": {
           "type": "string",
           "markdownDescription": "%ext.config.pwshExecutable%"
         },
-        "mvext.evalWithSelection.receiveShellTimeout": {
-          "type": "number",
-          "markdownDescription": "%ext.config.receiveShellTimeout%"
-        },
-        "mvext.evalWithSelection.useDeno": {
+        "mvext.applyShellEdit.useDeno": {
           "type": "boolean",
           "markdownDescription": "%ext.config.useDeno%"
+        },
+        "mvext.formatter.shfmtParserOptions": {
+          "type": "array",
+          "markdownDescription": "%ext.config.shfmtParserOptions%",
+          "default": [
+            "-bn",
+            "-ci",
+            "-sr",
+            "-kp"
+          ],
+          "properties": {
+            "*": {
+              "type": "string"
+            }
+          }
         }
       }
     },
+    "languages": [
+      {
+        "id": "bat"
+      }
+    ],
     "commands": [
       {
         "title": "Title",
@@ -118,14 +134,9 @@
         "command": "mvext.transformToUpperCase"
       },
       {
-        "title": "Eval With Selection",
+        "title": "Apply Shell Edit",
         "category": "mvext",
-        "command": "mvext.evalWithSelection"
-      },
-      {
-        "title": "Eval By ShellIntegration",
-        "category": "mvext",
-        "command": "mvext.evalByShellIntegration"
+        "command": "mvext.applyShellEdit"
       },
       {
         "title": "Quickly Switch Test File",
@@ -205,14 +216,9 @@
         "command": "mvext.transformToLowerCase"
       },
       {
-        "key": "ctrl+alt+e",
-        "when": "editorTextFocus && !editorReadonly",
-        "command": "mvext.evalWithSelection"
-      },
-      {
         "key": "ctrl+alt+s",
-        "when": "terminalCount && editorTextFocus && !editorReadonly",
-        "command": "mvext.evalByShellIntegration"
+        "when": "editorTextFocus && !editorReadonly",
+        "command": "mvext.applyShellEdit"
       },
       {
         "key": "alt+shift+t",
@@ -232,7 +238,7 @@
         "source": "esbuild",
         "owner": "esbuild",
         "severity": "error",
-        "applyTo": "closedDocuments",
+        "applyTo": "allDocuments",
         "fileLocation": "relative",
         "pattern": [
           {
@@ -241,60 +247,23 @@
             "message": 1
           },
           {
-            "regexp": "^\\s+(.*?):(\\d+):(\\d+):",
+            "regexp": "^\\s+(.+):(\\d+):(\\d+):",
             "file": 0,
             "line": 1,
             "column": 2
-          },
-          {
-            "regexp": "^\\s+\\d+ │(.*)$",
-            "code": 0
           }
         ]
-      },
-      {
-        "name": "esbuild-watch",
-        "base": "$esbuild",
-        "source": "esbuild",
-        "owner": "esbuild",
-        "label": "esbuild watch problem matcher",
-        "severity": "error",
-        "applyTo": "closedDocuments",
-        "fileLocation": "relative",
-        "background": {
-          "activeOnStart": true,
-          "beginsPattern": {
-            "regexp": "\\[watch\\] build started"
-          },
-          "endsPattern": {
-            "regexp": "\\[watch\\] build finished, watching for changes..."
-          }
-        }
-      }
-    ],
-    "codeActions": [
-      {
-        "languages": [
-          "javascript,javascriptreact,typescript,typescriptreact"
-        ],
-        "actions": {
-          "title": "%ext.codeActions.deleteFunctionCall.title%",
-          "kind": "refactorRewrite",
-          "description": "%ext.codeActions.deleteFunctionCall.description%"
-        }
-      },
-      {
-        "languages": [
-          "javascript,javascriptreact,typescript,typescriptreact"
-        ],
-        "actions": {
-          "title": "%ext.codeActions.swapVars.title%",
-          "kind": "refactorRewrite",
-          "description": "%ext.codeActions.swapVars.description%"
-        }
       }
     ]
   },
+  "activationEvents": [
+    "onLanguage:javascript",
+    "onLanguage:javascriptreact",
+    "onLanguage:typescript",
+    "onLanguage:typescriptreact",
+    "onLanguage:shellscript",
+    "onLanguage:bat"
+  ],
   "scripts": {
     "watch": "node ./scripts/build.js",
     "pretest": "node ./scripts/build.js build-test",
@@ -310,12 +279,10 @@
     "@typescript-eslint/eslint-plugin": "^6.4.0",
     "@typescript-eslint/parser": "^6.4.0",
     "@vscode/test-electron": "2.3.4",
-    "cross-env": "^7.0.3",
     "esbuild": "0.19.2",
-    "eslint": "8.45.0",
+    "eslint": "^8.48.0",
     "glob": "10.3.3",
     "husky": "^8.0.3",
-    "iconv-lite": "^0.6.3",
     "lint-staged": "^14.0.0",
     "mocha": "10.2.0",
     "prettier": "^3.0.2",
@@ -327,7 +294,7 @@
     "bracketSameLine": true
   },
   "lint-staged": {
-    "*.{js,ts}": "cross-env NODE_ENV=stage eslint --cache --fix",
+    "*.{js,ts}": "eslint --cache --fix",
     "*.{js,ts,json,md}": "prettier -w"
   }
 }

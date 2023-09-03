@@ -15,7 +15,7 @@ src
 # CHANGELOG.md
 install.ps1
 # LICENSE
-mvext-0.1.2.vsix
+*.vsix
 # package.json
 # package.nls.json
 # package.nls.zh-cn.json

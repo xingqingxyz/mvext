@@ -45,9 +45,8 @@ void (async function main() {
         outdir: 'out',
       })
 
-      console.log('[watch] build started')
       await srcCtx.watch()
-      console.log('[watch] build finished, watching for changes...')
+      console.log('start watching')
     }
   }
 })()
