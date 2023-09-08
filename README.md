@@ -3,8 +3,10 @@
 This extension ships a set of pragmatic web dev features:
 
 - [Case Transform](#case-transform)
-- [Quickly Switch (Test) File](#quickly-switch-test-file)
-- [Eval With Selection](#eval-with-selection)
+- [Quickly Switch File](#quickly-switch-file)
+- [Apply Shell Edit](#apply-shell-edit)
+- [Bat Completions](#bat-completions)
+- [Bootstrap Completions](#bootstrap-completions)
 - [TypeScript Code Actions](#typescript-code-actions)
 
 ## Features
@@ -13,7 +15,7 @@ This extension ships a set of pragmatic web dev features:
 
 Transform (multiple) cursor position or selection to many cases. Cases: `titleCase`, `camelCase`, `constantCase`, `pascalCase`, `kebabCase`, `snakeCase`, `sentenceCase`, `dotCase`, `pathCase`, `headerCase`, `noCase`, `lowerCase`, `upperCase` (command search _mvext_ to know shortcuts)
 
-### Quickly Switch (Test) File
+### Quickly Switch File
 
 Quickly switch you source file between `.js/.css/.html` or `.js/.ts` (shortcut `alt+o`).
 
@@ -30,9 +32,9 @@ Quickly switch you source file between `.js/.css/.html` or `.js/.ts` (shortcut `
 
 Or switch your source file between `/[base].[ext]` and `/__tests__/[base].{test,spec}.[ext]` (shortcut `alt+shift+t`)
 
-### Eval With Selection
+### Apply Shell Edit
 
-Using current editor selection, according to `editorLangId`, to eval the code and instantly replace it. Supports language ids (shortcut `ctrl+alt+e`):
+Using current editor selection, according to `editorLangId`, to eval the code and instantly replace it. Supports language ids (shortcut `ctrl+alt+s`):
 
 - `/(java|type)script(react)?|vue|svelte|markdown|mdx/` (Node.js / Deno)
 - `powershell` (pwsh or fallback to powershell.exe)
@@ -42,10 +44,13 @@ Using current editor selection, according to `editorLangId`, to eval the code an
 
 > Setting config `mvext.applyShellEdit.useDeno` to true to use deno to eval any javascript code.
 
-#### Eval By Shell Integration
+### Bat Completions
 
-There is also a way to exec in current active terminal, it will
-automatically detect to decide which wrapper code to send, it is so fun~ (shortcut `ctrl+alt+s`)
+Ships some bat commands and executables completions.
+
+### Bootstrap Completions
+
+Ships some Bootstrap classes.
 
 ### TypeScript Code Actions
 

@@ -1,12 +1,14 @@
 import { EOL, homedir } from 'os'
 import path from 'path'
 import vscode from 'vscode'
-import { execPm } from './utils/nodeUtils'
-import winUtils from '../winUtils.json'
+import winUtils from '../resources/winUtils.json'
+import { getPrevCharAtPosition } from './utils/completionHelper'
+import { execFilePm, tokenToSignal } from './utils/nodeUtils'
 
 export function registerBatCompletion(ctx: vscode.ExtensionContext) {
   const selector: vscode.DocumentSelector = {
     language: 'bat',
+    scheme: 'file',
   }
   ctx.subscriptions.push(
     vscode.languages.registerCompletionItemProvider(selector, {
@@ -19,34 +21,42 @@ export const provideCompletionItems: vscode.CompletionItemProvider['provideCompl
   async (
     document: vscode.TextDocument,
     position: vscode.Position,
-    // token: vscode.CancellationToken,
-    // context: vscode.CompletionContext,
+    token: vscode.CancellationToken,
+    context: vscode.CompletionContext,
   ) => {
-    const range = document.getWordRangeAtPosition(position)
-    const prefix = range ? document.getText(range) : ''
-
-    let items: vscode.CompletionItem[] = []
-    if (document.uri.scheme === 'file') {
+    if (
+      position.character === 0 ||
+      context.triggerKind === vscode.CompletionTriggerKind.Invoke ||
+      getPrevCharAtPosition(document, position) === '`'
+    ) {
       const wspFd = vscode.workspace.getWorkspaceFolder(document.uri)
-      let result!: {
-        stdout: string
-        stderr: string
-      }
-      try {
-        result = await execPm(
-          'C:\\Windows\\System32\\where.exe ' +
-            `"${
-              wspFd ? path.dirname(wspFd.uri.fsPath) : homedir()
-            };${process.env.Path!.replace(
-              /C:\\Windows\\System32;/i,
-              '',
-            )}:${prefix}*.exe" "${prefix}*.bat" "${prefix}*.cmd"`,
-        )
+      const range = document.getWordRangeAtPosition(position)
+      const prefix = range ? document.getText(range) : ''
 
-        const files = result.stdout.split(EOL)
+      let items: vscode.CompletionItem[] = []
+
+      try {
+        const files = (
+          await execFilePm(
+            'C:\\Windows\\System32\\where.exe',
+            [
+              `$PATH:${prefix}*.exe`,
+              `$PATH:${prefix}*.bat`,
+              `$PATH:${prefix}*.cmd`,
+            ],
+            {
+              env: {
+                Path:
+                  (wspFd ? path.dirname(wspFd.uri.fsPath) : homedir()) +
+                  ';' +
+                  process.env.Path!.replace(/C:\\Windows\\System32;/i, ''),
+              },
+              signal: tokenToSignal(token),
+            },
+          )
+        ).stdout.split(EOL)
         // remove last empty line
         files.pop()
-        // const isIncomplete = files.length > 1
 
         const { Function } = vscode.CompletionItemKind
         items = files.map((f) => ({
@@ -55,27 +65,25 @@ export const provideCompletionItems: vscode.CompletionItemProvider['provideCompl
           kind: Function,
         }))
       } catch (err) {
-        console.log(result)
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-        console.log(result?.stderr)
         console.error(err)
       }
-    }
 
-    const completionList = new vscode.CompletionList(builtins.concat(items))
-    return completionList
+      return new vscode.CompletionList(builtins.concat(items))
+    }
   }
 
 export const builtins = (function getBuiltins() {
   const batKeywords = [
+    'call',
     'do',
-    'goto',
-    ':EOF',
+    'else',
+    'endlocal',
+    'exit',
     'for',
+    'goto',
     'if',
     'in',
-    'else',
-    'set',
+    'pause',
     'setlocal',
   ]
   const batConstants = [
@@ -91,7 +99,6 @@ export const builtins = (function getBuiltins() {
   const batCommands = [
     'assoc',
     'break',
-    'call',
     'cd',
     'cls',
     'color',
@@ -100,19 +107,17 @@ export const builtins = (function getBuiltins() {
     'del',
     'dir',
     'echo',
-    'endlocal',
-    'exit',
     'ftype',
     'md',
     'mklink',
     'move',
-    'pause',
     'popd',
     'prompt',
     'pushd',
     'rd',
     'rem',
     'ren',
+    'set',
     'shift',
     'start',
     'time',
@@ -120,7 +125,7 @@ export const builtins = (function getBuiltins() {
     'type',
   ]
 
-  const { Function, Keyword, Constant } = vscode.CompletionItemKind
+  const { Function, Keyword, Constant, Value } = vscode.CompletionItemKind
   const kws: vscode.CompletionList['items'] = batKeywords.map((kw) => ({
     label: kw,
     kind: Keyword,
@@ -152,5 +157,8 @@ export const builtins = (function getBuiltins() {
     'net view',
   ].map((c) => ({ label: c, kind: Function }))
 
-  return kws.concat(constants, cmds, utils, combos)
+  return kws.concat(constants, cmds, utils, combos, {
+    label: 'EOF',
+    kind: Value,
+  })
 })()

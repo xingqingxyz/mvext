@@ -24,7 +24,7 @@ export function provideDeleteFunctionCall(
   ])
 
   const codeAction = new vscode.CodeAction(
-    vscode.l10n.t('Delete Function Call'),
+    'Delete Function Call',
     allCodeActionKind.function,
   )
   codeAction.edit = wspEdit
@@ -48,7 +48,7 @@ export function provideSwapVar(
   ])
 
   const codeAction = new vscode.CodeAction(
-    vscode.l10n.t('Swap Variables'),
+    'Swap Variables',
     allCodeActionKind.expand,
   )
   codeAction.edit = wspEdit

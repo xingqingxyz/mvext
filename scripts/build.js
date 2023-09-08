@@ -9,8 +9,7 @@ const common = {
 
 void (async function main() {
   switch (process.argv[2]) {
-    case 'build': {
-      require('fs').rmSync('out', { recursive: true, force: true })
+    case 'build':
       await esbuild.build({
         ...common,
         entryPoints: ['src/extension.ts'],
@@ -21,32 +20,30 @@ void (async function main() {
       })
       console.log('Building finished.')
       return
-    }
-    case 'build-test': {
+
+    case 'build-test':
       require('fs').rmSync('out/test', { recursive: true, force: true })
-      const srcFiles = await glob('src/**/**.ts')
       await esbuild.build({
         ...common,
-        entryPoints: srcFiles,
+        entryPoints: await glob('src/**/**.ts'),
         sourcemap: true,
         outbase: 'src',
         outdir: 'out',
       })
       console.log('Building finished.')
       return
-    }
-    default: {
-      const srcFiles = await glob('src/**/**.ts')
-      const srcCtx = await esbuild.context({
-        ...common,
-        entryPoints: srcFiles,
-        sourcemap: true,
-        outbase: 'src',
-        outdir: 'out',
-      })
 
-      await srcCtx.watch()
+    default:
+      await (
+        await esbuild.context({
+          ...common,
+          entryPoints: ['src/extension.ts'],
+          external: ['vscode'],
+          bundle: true,
+          sourcemap: true,
+          outfile: 'out/extension.js',
+        })
+      ).watch()
       console.log('start watching')
-    }
   }
 })()

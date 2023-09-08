@@ -1,12 +1,18 @@
+import { execFileSync } from 'child_process'
 import vscode from 'vscode'
 import { getExtConfig } from './utils/getExtConfig'
-import { execFilePm } from './utils/nodeUtils'
 
 export function registerShfmt(ctx: vscode.ExtensionContext) {
   ctx.subscriptions.push(
-    vscode.languages.registerDocumentFormattingEditProvider('shellscript', {
-      provideDocumentFormattingEdits: shellscriptFormatter,
-    }),
+    vscode.languages.registerDocumentFormattingEditProvider(
+      {
+        language: 'shellscript',
+        scheme: 'file',
+      },
+      {
+        provideDocumentFormattingEdits: shellscriptFormatter,
+      },
+    ),
   )
 }
 
@@ -15,27 +21,17 @@ export const shellscriptFormatter: vscode.DocumentFormattingEditProvider['provid
     document: vscode.TextDocument,
     options: vscode.FormattingOptions,
     // token: vscode.CancellationToken,
-  ): undefined =>
-    void execFilePm(
+  ) => {
+    const text = execFileSync(
       'shfmt',
       getExtConfig().shfmtParserOptions.concat(
         options.insertSpaces ? ['-i', String(options.tabSize)] : [],
-        '-w',
-        document.fileName,
       ),
-    )
-
-// export const batFormatter: vscode.DocumentFormattingEditProvider['provideDocumentFormattingEdits'] =
-//   (
-//     document: vscode.TextDocument,
-//     options: vscode.FormattingOptions,
-//     // token: vscode.CancellationToken,
-//   ): undefined =>
-//     void execFilePm(
-//       'shfmt',
-//       getExtConfig().shfmtParserOptions.concat(
-//         options.insertSpaces ? ['-i', String(options.tabSize)] : [],
-//         '-w',
-//         document.fileName,
-//       ),
-//     )
+      {
+        input: document.getText(),
+      },
+    ).toString()
+    return [
+      new vscode.TextEdit(new vscode.Range(0, 0, document.lineCount, 0), text),
+    ]
+  }

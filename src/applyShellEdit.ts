@@ -12,6 +12,10 @@ export type LangId = 'cjs' | 'mjs' | 'deno' | 'pwsh' | 'cmd' | 'bash' | 'python'
 export function registerApplyShellEdit(ctx: vscode.ExtensionContext) {
   ctx.subscriptions.push(
     vscode.commands.registerCommand('mvext.applyShellEdit', applyShellEdit),
+    vscode.commands.registerCommand(
+      'mvext.applyCurrentShellEdit',
+      applyCurrentShellEdit,
+    ),
   )
 }
 
@@ -30,7 +34,7 @@ export async function applyShellEdit() {
     const text = selectionIt.isEmpty ? line.text : document.getText(selectionIt)
     const langId = matchLangId(document.languageId, text)
     try {
-      const result = await execByLangId(text, langId)
+      const result = await execByLangId(text, langId, document)
       if (!/\s*/.test(result)) {
         selectMap.set(range, result)
         console.log(result)
@@ -54,14 +58,15 @@ export async function applyShellEdit() {
   })
 }
 
-export async function execByLangId(text: string, langId: LangId) {
-  const editor = vscode.window.activeTextEditor
-  const options: ExecFileOptions = {}
-  if (editor) {
-    const { document } = editor
-    options.cwd =
+export async function execByLangId(
+  text: string,
+  langId: LangId,
+  document: vscode.TextDocument,
+) {
+  const options: ExecFileOptions = {
+    cwd:
       vscode.workspace.getWorkspaceFolder(document.uri)?.uri.fsPath ??
-      path.join(document.fileName, '..')
+      path.join(document.fileName, '..'),
   }
 
   switch (langId) {
@@ -93,7 +98,7 @@ export async function execByLangId(text: string, langId: LangId) {
       return (
         await execPm(
           text
-            .split('\n')
+            .split(document.eol === vscode.EndOfLine.CRLF ? '\r\n' : '\n')
             .filter((t) => !reEmptyLine.test(t))
             .join(' && '),
           { shell: 'cmd' },
@@ -187,4 +192,39 @@ function formatObj(result: unknown) {
     default:
       return String(result)
   }
+}
+
+export async function applyCurrentShellEdit() {
+  const editor = vscode.window.activeTextEditor
+  const terminal = vscode.window.activeTerminal
+  if (!(editor && terminal)) {
+    return
+  }
+
+  const { document } = editor
+  const selectMap = new Map<vscode.Range, string>()
+
+  for (const selectionIt of editor.selections) {
+    const line = document.lineAt(selectionIt.start.line)
+    const range = selectionIt.isEmpty ? line.range : selectionIt
+    const text = selectionIt.isEmpty ? line.text : document.getText(selectionIt)
+    const result = await new Promise<string | undefined>((resolve) => {
+      terminal.sendText(text)
+      const event = vscode.window.onDidExecuteTerminalCommand((cmd) => {
+        if (cmd.commandLine === text) {
+          resolve(cmd.output)
+          event.dispose()
+        }
+      })
+    })
+    if (result) {
+      selectMap.set(range, result)
+    }
+  }
+
+  await editor.edit((edit) => {
+    selectMap.forEach((result, selectionIt) => {
+      edit.replace(selectionIt, result)
+    })
+  })
 }
