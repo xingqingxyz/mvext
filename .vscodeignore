@@ -16,6 +16,7 @@ src
 install.ps1
 # LICENSE
 *.vsix
+*.d.ts
 # package.json
 # package.nls.json
 # package.nls.zh-cn.json

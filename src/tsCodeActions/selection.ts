@@ -7,20 +7,19 @@ const allCodeActionKind = {
 
 export const selectionCodeActions = [provideDeleteFunctionCall, provideSwapVar]
 
+const reDelFc = /[\w$[\]]+\s*\(.*\)/
+const delFcSnippet = new vscode.SnippetString(
+  '${TM_SELECTED_TEXT/^\\s*.+?\\((.*)\\)\\s*$/$1/s}',
+)
 export function provideDeleteFunctionCall(
   document: vscode.TextDocument,
   selection: vscode.Selection,
 ) {
-  if (!/[\w$[\]]+\s*\(.*\)/.test(document.getText(selection))) return
+  if (!reDelFc.test(document.getText(selection))) return
 
   const wspEdit = new vscode.WorkspaceEdit()
   wspEdit.set(document.uri, [
-    new vscode.SnippetTextEdit(
-      selection,
-      new vscode.SnippetString(
-        '${TM_SELECTED_TEXT/^\\s*.+?\\((.*)\\)\\s*$/$1/s}',
-      ),
-    ),
+    new vscode.SnippetTextEdit(selection, delFcSnippet),
   ])
 
   const codeAction = new vscode.CodeAction(
@@ -36,11 +35,12 @@ function swapVar(text: string) {
   return text + ' = [' + text.slice(1, -1).split(',').reverse().join(',') + ']'
 }
 
+const reSwapVar = /^\[(?:[^,]+,)+.*\]$/s
 export function provideSwapVar(
   document: vscode.TextDocument,
   selection: vscode.Selection,
 ) {
-  if (!/^\[(?:[^,]+,)+.*\]$/s.test(document.getText(selection))) return
+  if (!reSwapVar.test(document.getText(selection))) return
 
   const wspEdit = new vscode.WorkspaceEdit()
   wspEdit.set(document.uri, [

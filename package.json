@@ -3,7 +3,7 @@
   "private": true,
   "displayName": "My VSCode Extension",
   "description": "A extension which ships a set of pragmatic web dev features.",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "l10n": "./l10n",
   "engines": {
     "vscode": "^1.82.0"
@@ -241,40 +241,10 @@
         "when": "editorTextFocus && editorLangId =~ /html|css|javascript|typescript/",
         "command": "mvext.quicklySwitchFile"
       }
-    ],
-    "problemMatchers": [
-      {
-        "name": "esbuild",
-        "label": "esbuild problem matcher",
-        "source": "esbuild",
-        "owner": "esbuild",
-        "severity": "error",
-        "applyTo": "allDocuments",
-        "fileLocation": "relative",
-        "pattern": [
-          {
-            "regexp": "^✘ [(ERROR)] (.*)$",
-            "severity": 0,
-            "message": 1
-          },
-          {
-            "regexp": "^\\s+(.+):(\\d+):(\\d+):",
-            "file": 0,
-            "line": 1,
-            "column": 2
-          }
-        ]
-      }
     ]
   },
   "activationEvents": [
-    "onLanguage:html",
-    "onLanguage:javascript",
-    "onLanguage:javascriptreact",
-    "onLanguage:typescript",
-    "onLanguage:typescriptreact",
-    "onLanguage:shellscript",
-    "onLanguage:bat"
+    "onStartupFinished"
   ],
   "enabledApiProposals": [
     "envShellEvent",
@@ -289,7 +259,6 @@
     "vscode:prepublish": "node ./scripts/build.js build"
   },
   "devDependencies": {
-    "@types/glob": "8.1.0",
     "@types/mocha": "10.0.1",
     "@types/node": "18.15",
     "@types/vscode": "^1.82.0",

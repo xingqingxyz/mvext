@@ -2,10 +2,6 @@
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
-## [0.3.1]
-
-- Feature: [`bsCompletion`](./src/bsCompletion.ts)
-
 ## [0.3.0]
 
 - Feature: [`caseTransform`](./src/caseTransform.ts): transform word selections to camelCase, pascalCase, snakeCase, kebabCase, titleCase, headerCase, dotCase, pathCase, noCase, lowerCase, upperCase.

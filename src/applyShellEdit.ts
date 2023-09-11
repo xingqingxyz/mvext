@@ -7,7 +7,14 @@ import { Worker } from 'worker_threads'
 import { getExtConfig } from './utils/getExtConfig'
 import { execFilePm, execPm } from './utils/nodeUtils'
 
-export type LangId = 'cjs' | 'mjs' | 'deno' | 'pwsh' | 'cmd' | 'bash' | 'python'
+export type LangId =
+  | 'cjs'
+  | 'mjs'
+  | 'deno'
+  | 'bat'
+  | 'powershell'
+  | 'shellscript'
+  | 'python'
 
 export function registerApplyShellEdit(ctx: vscode.ExtensionContext) {
   ctx.subscriptions.push(
@@ -33,21 +40,9 @@ export async function applyShellEdit() {
     const range = selectionIt.isEmpty ? line.range : selectionIt
     const text = selectionIt.isEmpty ? line.text : document.getText(selectionIt)
     const langId = matchLangId(document.languageId, text)
-    try {
-      const result = await execByLangId(text, langId, document)
-      if (!/\s*/.test(result)) {
-        selectMap.set(range, result)
-        console.log(result)
-      }
-    } catch (err) {
-      if (err instanceof SyntaxError) {
-        await vscode.window.showErrorMessage(
-          vscode.l10n.t(
-            'SyntaxError: You may use `IIFE` wrapper instead:\n\t`(function () { /* code */ })()`',
-          ),
-        )
-      }
-      console.error('Eval error occurred:', err)
+    const result = await execByLangId(text, langId, document)
+    if (!/^\s*$/.test(result)) {
+      selectMap.set(range, result)
     }
   }
 
@@ -75,25 +70,25 @@ export async function execByLangId(
     case 'mjs':
       return formatObj(await mjsEval(text))
     case 'deno':
-      return (
-        await execFilePm(
-          langId,
-          ['eval'].concat(reMjs.test(text) ? [text] : ['-p', text]),
-          options,
-        )
-      ).stdout
-    case 'pwsh':
-      return (
-        await execFilePm(
-          getExtConfig().pwshExec,
-          ['-NoProfile', '-C', text],
-          options,
-        )
-      ).stdout
-    case 'bash':
-      return (await execFilePm(getExtConfig().bashExec, ['-c', text], options))
-        .stdout
-    case 'cmd': {
+      try {
+        return (
+          await execFilePm(
+            langId,
+            ['eval'].concat(reMjs.test(text) ? [text] : ['-p', text]),
+            options,
+          )
+        ).stdout
+      } catch (err) {
+        if (err instanceof SyntaxError) {
+          await vscode.window.showErrorMessage(
+            vscode.l10n.t(
+              'SyntaxError: You may use `IIFE` wrapper instead:\n\t`(function () { /* code */ })()`',
+            ),
+          )
+        }
+        return ''
+      }
+    case 'bat': {
       const reEmptyLine = /^(?:\s+|)$/
       return (
         await execPm(
@@ -105,6 +100,17 @@ export async function execByLangId(
         )
       ).stdout
     }
+    case 'powershell':
+      return (
+        await execFilePm(
+          getExtConfig().pwshExec,
+          ['-NoProfile', '-C', text],
+          options,
+        )
+      ).stdout
+    case 'shellscript':
+      return (await execFilePm(getExtConfig().bashExec, ['-c', text], options))
+        .stdout
     case 'python':
       return (
         await execFilePm(
@@ -128,18 +134,15 @@ function matchLangId(editorLangId: string, text: string): LangId {
   }
 
   switch (editorLangId) {
-    case 'powershell':
-      return 'pwsh'
     case 'bat':
-      return 'cmd'
+    case 'powershell':
     case 'shellscript':
-      return 'bash'
-    case 'ignore':
-      return process.platform === 'win32' ? 'pwsh' : 'bash'
     case 'python':
       return editorLangId
+    case 'ignore':
+      return process.platform === 'win32' ? 'powershell' : 'shellscript'
     default:
-      throw Error('[Match] not supported editorLangId: ' + editorLangId)
+      throw Error('not supported langId: ' + editorLangId)
   }
 }
 

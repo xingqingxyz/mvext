@@ -1,8 +1,7 @@
 import { EOL, homedir } from 'os'
 import path from 'path'
 import vscode from 'vscode'
-import winUtils from '../resources/winUtils.json'
-import { getPrevCharAtPosition } from './utils/completionHelper'
+import winExes from './assets/winExes.json'
 import { execFilePm, tokenToSignal } from './utils/nodeUtils'
 
 export function registerBatCompletion(ctx: vscode.ExtensionContext) {
@@ -26,8 +25,7 @@ export const provideCompletionItems: vscode.CompletionItemProvider['provideCompl
   ) => {
     if (
       position.character === 0 ||
-      context.triggerKind === vscode.CompletionTriggerKind.Invoke ||
-      getPrevCharAtPosition(document, position) === '`'
+      context.triggerKind === vscode.CompletionTriggerKind.Invoke
     ) {
       const wspFd = vscode.workspace.getWorkspaceFolder(document.uri)
       const range = document.getWordRangeAtPosition(position)
@@ -87,17 +85,51 @@ export const builtins = (function getBuiltins() {
     'setlocal',
   ]
   const batConstants = [
+    '%ALLUSERSPROFILE%',
+    '%APPDATA%',
     '%CD%',
-    '%TIME%',
-    '%DATE%',
-    '%RANDOM%',
-    '%ERRORLEVEL%',
-    '%CMDEXTVERSION%',
     '%CMDCMDLINE%',
-    '%HIGHESTNUMAODENUMBER%',
+    '%CMDEXTVERSION%',
+    '%CommonProgramFiles(x86)%',
+    '%CommonProgramFiles%',
+    '%CommonProgramW6432%',
+    '%COMPUTERNAME%',
+    '%ComSpec%',
+    '%DATE%',
+    '%DriverData%',
+    '%ERRORLEVEL%',
+    '%HOMEDRIVE%',
+    '%HOMEPATH%',
+    '%LOCALAPPDATA%',
+    '%LOGONSERVER%',
+    '%NUMBER_OF_PROCESSORS%',
+    '%NVIDIAWHITELISTED%',
+    '%OS%',
+    '%PATH%',
+    '%PATHEXT%',
+    '%PROCESSOR_ARCHITECTURE%',
+    '%PROCESSOR_IDENTIFIER%',
+    '%PROCESSOR_LEVEL%',
+    '%PROCESSOR_REVISION%',
+    '%ProgramData%',
+    '%ProgramFiles(x86)%',
+    '%ProgramFiles%',
+    '%ProgramW6432%',
+    '%PROMPT%',
+    '%PUBLIC%',
+    '%RANDOM%',
+    '%SESSIONNAME%',
+    '%SystemDrive%',
+    '%SystemRoot%',
+    '%TEMP%',
+    '%TIME%',
+    '%TMP%',
+    '%USERDOMAIN%',
+    '%USERNAME%',
+    '%USERPROFILE%',
+    '%WINDIR%',
   ]
   const batCommands = [
-    'assoc',
     'break',
     'cd',
     'cls',
@@ -107,7 +139,6 @@ export const builtins = (function getBuiltins() {
     'del',
     'dir',
     'echo',
-    'ftype',
     'md',
     'mklink',
     'move',
@@ -115,7 +146,6 @@ export const builtins = (function getBuiltins() {
     'prompt',
     'pushd',
     'rd',
-    'rem',
     'ren',
     'set',
     'shift',
@@ -138,7 +168,7 @@ export const builtins = (function getBuiltins() {
     label: c,
     kind: Function,
   }))
-  const utils = Object.entries(winUtils).map(([key, val]) => ({
+  const utils = Object.entries(winExes).map(([key, val]) => ({
     label: key,
     detail: val,
     kind: Function,

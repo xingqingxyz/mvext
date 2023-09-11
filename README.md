@@ -6,7 +6,6 @@ This extension ships a set of pragmatic web dev features:
 - [Quickly Switch File](#quickly-switch-file)
 - [Apply Shell Edit](#apply-shell-edit)
 - [Bat Completions](#bat-completions)
-- [Bootstrap Completions](#bootstrap-completions)
 - [TypeScript Code Actions](#typescript-code-actions)
 
 ## Features
@@ -47,10 +46,6 @@ Using current editor selection, according to `editorLangId`, to eval the code an
 ### Bat Completions
 
 Ships some bat commands and executables completions.
-
-### Bootstrap Completions
-
-Ships some Bootstrap classes.
 
 ### TypeScript Code Actions
 

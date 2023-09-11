@@ -1,5 +1,5 @@
 {
-  "include": ["src", "resources", "*.d.ts"],
+  "include": ["src", "*.d.ts"],
   "compilerOptions": {
     "target": "ES2021",
     "lib": ["ES2021"],

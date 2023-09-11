@@ -1,7 +1,6 @@
 import vscode from 'vscode'
 import { registerApplyShellEdit } from './applyShellEdit'
 import { registerBatCompletion } from './batCompletion'
-import { registerBsCompletion } from './bsCompletion'
 import { registerCaseTransform } from './caseTransform'
 import { registerQuicklySwitchFile } from './quicklySwitchFile'
 import { registerShfmt } from './shfmt'
@@ -16,7 +15,6 @@ export function activate(context: vscode.ExtensionContext) {
   registerApplyShellEdit(context)
   registerTsCodeActions(context)
   registerBatCompletion(context)
-  registerBsCompletion(context)
   registerShfmt(context)
 }
 
