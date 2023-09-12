@@ -17,12 +17,10 @@ export type LangId =
   | 'python'
 
 export function registerApplyShellEdit(ctx: vscode.ExtensionContext) {
+  const { registerCommand } = vscode.commands
   ctx.subscriptions.push(
-    vscode.commands.registerCommand('mvext.applyShellEdit', applyShellEdit),
-    vscode.commands.registerCommand(
-      'mvext.applyCurrentShellEdit',
-      applyCurrentShellEdit,
-    ),
+    registerCommand('mvext.applyShellEdit', applyShellEdit),
+    registerCommand('mvext.applyCurrentShellEdit', applyCurrentShellEdit),
   )
 }
 
@@ -40,9 +38,11 @@ export async function applyShellEdit() {
     const range = selectionIt.isEmpty ? line.range : selectionIt
     const text = selectionIt.isEmpty ? line.text : document.getText(selectionIt)
     const langId = matchLangId(document.languageId, text)
-    const result = await execByLangId(text, langId, document)
-    if (!/^\s*$/.test(result)) {
+    try {
+      const result = await execByLangId(text, langId, document)
       selectMap.set(range, result)
+    } catch {
+      /* empty */
     }
   }
 
@@ -86,16 +86,16 @@ export async function execByLangId(
             ),
           )
         }
-        return ''
+        throw err
       }
     case 'bat': {
-      const reEmptyLine = /^(?:\s+|)$/
+      const reEmptyLine = /^\s*$/
       return (
         await execPm(
           text
             .split(document.eol === vscode.EndOfLine.CRLF ? '\r\n' : '\n')
             .filter((t) => !reEmptyLine.test(t))
-            .join(' && '),
+            .join('&&'),
           { shell: 'cmd' },
         )
       ).stdout
@@ -119,6 +119,8 @@ export async function execByLangId(
           options,
         )
       ).stdout
+    default:
+      throw Error('not supported langId')
   }
 }
 

@@ -71,7 +71,7 @@ export const provideCompletionItems: vscode.CompletionItemProvider['provideCompl
   }
 
 export const builtins = (function getBuiltins() {
-  const batKeywords = [
+  const batKws = [
     'call',
     'do',
     'else',
@@ -84,7 +84,32 @@ export const builtins = (function getBuiltins() {
     'pause',
     'setlocal',
   ]
-  const batConstants = [
+  const batCmds = [
+    'break',
+    'cd',
+    'cls',
+    'color',
+    'copy',
+    'date',
+    'del',
+    'dir',
+    'echo',
+    'md',
+    'mklink',
+    'move',
+    'popd',
+    'prompt',
+    'pushd',
+    'rd',
+    'ren',
+    'set',
+    'shift',
+    'start',
+    'time',
+    'title',
+    'type',
+  ]
+  const batEnvs = [
     '%ALLUSERSPROFILE%',
     '%APPDATA%',
     '%CD%',
@@ -129,46 +154,14 @@ export const builtins = (function getBuiltins() {
     '%USERPROFILE%',
     '%WINDIR%',
   ]
-  const batCommands = [
-    'break',
-    'cd',
-    'cls',
-    'color',
-    'copy',
-    'date',
-    'del',
-    'dir',
-    'echo',
-    'md',
-    'mklink',
-    'move',
-    'popd',
-    'prompt',
-    'pushd',
-    'rd',
-    'ren',
-    'set',
-    'shift',
-    'start',
-    'time',
-    'title',
-    'type',
-  ]
 
-  const { Function, Keyword, Constant, Value } = vscode.CompletionItemKind
-  const kws: vscode.CompletionList['items'] = batKeywords.map((kw) => ({
+  const { Function, Keyword, Constant, Value, Property } =
+    vscode.CompletionItemKind
+  const kws: vscode.CompletionList['items'] = batKws.map((kw) => ({
     label: kw,
     kind: Keyword,
   }))
-  const constants = batConstants.map((ct) => ({
-    label: ct,
-    kind: Constant,
-  }))
-  const cmds = batCommands.map((c) => ({
-    label: c,
-    kind: Function,
-  }))
-  const utils = Object.entries(winExes).map(([key, val]) => ({
+  const exes = Object.entries(winExes).map(([key, val]) => ({
     label: key,
     detail: val,
     kind: Function,
@@ -186,8 +179,19 @@ export const builtins = (function getBuiltins() {
     'net user',
     'net view',
   ].map((c) => ({ label: c, kind: Function }))
+  const cmds = batCmds.map((c) => ({
+    label: c,
+    kind: Function,
+  }))
+  const props = ['usebackq', 'delims=', 'skip=', 'tokens=', 'eol='].map(
+    (p) => ({ label: p, kind: Property }),
+  )
+  const envs = batEnvs.map((e) => ({
+    label: e,
+    kind: Constant,
+  }))
 
-  return kws.concat(constants, cmds, utils, combos, {
+  return kws.concat(exes, combos, cmds, props, envs, {
     label: 'EOF',
     kind: Value,
   })

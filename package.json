@@ -3,7 +3,7 @@
   "private": true,
   "displayName": "My VSCode Extension",
   "description": "A extension which ships a set of pragmatic web dev features.",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "l10n": "./l10n",
   "engines": {
     "vscode": "^1.82.0"
@@ -16,7 +16,7 @@
   "author": "Ming.Chen <cm.email@qq.com> (https://github.com/xingqingxyz)",
   "license": "MIT",
   "repository": {
-    "url": "git+https://github.com/xingqingxyz/mvext.git",
+    "url": "https://github.com/xingqingxyz/mvext.git",
     "type": "git"
   },
   "bugs": {
@@ -24,11 +24,10 @@
   },
   "main": "./out/extension.js",
   "keywords": [
+    "bat completion",
     "case transform",
     "quickly switch files",
     "shell edit",
-    "bat completion",
-    "bootstrap completion",
     "typescript code actions"
   ],
   "contributes": {
@@ -265,6 +264,7 @@
     "@typescript-eslint/eslint-plugin": "^6.4.0",
     "@typescript-eslint/parser": "^6.4.0",
     "@vscode/dts": "^0.4.0",
+    "@vscode/l10n-dev": "^0.0.29",
     "@vscode/test-electron": "2.3.4",
     "esbuild": "0.19.2",
     "eslint": "^8.48.0",

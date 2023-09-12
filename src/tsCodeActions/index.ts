@@ -3,22 +3,10 @@ import provideCodeActions from './provider'
 
 export function registerTsCodeActions(ctx: vscode.ExtensionContext) {
   const tsSelector: vscode.DocumentSelector = [
-    {
-      language: 'typescript',
-      scheme: 'file',
-    },
-    {
-      language: 'javascript',
-      scheme: 'file',
-    },
-    {
-      language: 'typescriptreact',
-      scheme: 'file',
-    },
-    {
-      language: 'javascriptreact',
-      scheme: 'file',
-    },
+    'javascript',
+    'javascriptreact',
+    'typescript',
+    'typescriptreact',
   ]
 
   ctx.subscriptions.push(
@@ -26,7 +14,7 @@ export function registerTsCodeActions(ctx: vscode.ExtensionContext) {
       tsSelector,
       { provideCodeActions },
       {
-        providedCodeActionKinds: [vscode.CodeActionKind.RefactorRewrite],
+        providedCodeActionKinds: [vscode.CodeActionKind.Refactor],
       },
     ),
   )

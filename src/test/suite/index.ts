@@ -1,17 +1,11 @@
 import { glob } from 'glob'
 import Mocha from 'mocha'
 import path from 'path'
-import vscode from 'vscode'
 
 export function run() {
   const mocha = new Mocha({
     color: true,
     inlineDiffs: true,
-    rootHooks: {
-      async beforeAll() {
-        await vscode.commands.executeCommand('mvext.transformToLowerCase')
-      },
-    },
   })
 
   return new Promise<void>((c, e) => {

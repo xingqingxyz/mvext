@@ -6,13 +6,6 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "PowerShell Launch Current File",
-      "type": "PowerShell",
-      "request": "launch",
-      "script": "${file}",
-      "cwd": "${cwd}"
-    },
-    {
       "name": "Run Extension",
       "type": "extensionHost",
       "request": "launch",
@@ -22,7 +15,6 @@
       ],
       "outFiles": ["${workspaceFolder}/out/**/*.js"],
       "skipFiles": ["<node_internals>/**", "**/node_modules/**"]
-      // "preLaunchTask": "${defaultBuildTask}"
     },
     {
       "name": "Extension Tests",
@@ -34,8 +26,8 @@
         "--disable-extensions"
       ],
       "outFiles": ["${workspaceFolder}/out/**/*.js"],
-      "skipFiles": ["<node_internals>/**", "**/node_modules/**"]
-      // "preLaunchTask": "${defaultBuildTask}"
+      "skipFiles": ["<node_internals>/**", "**/node_modules/**"],
+      "preLaunchTask": "npm: pretest"
     }
   ]
 }

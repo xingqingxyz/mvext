@@ -33,7 +33,7 @@ export async function execRename(
   )
 }
 
-export async function execOpen(uri: vscode.Uri) {
+export async function execOpen(uri: vscode.Uri): Promise<void> {
   return await executeCommand(vscodeCmd.open, uri)
 }
 //#endregion

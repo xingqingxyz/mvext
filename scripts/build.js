@@ -20,9 +20,14 @@ void (async function main() {
       })
       console.log('Building finished.')
       return
+    case 'build-test': {
+      const { rmSync, cpSync } = require('fs')
+      rmSync('out/test', {
+        recursive: true,
+        force: true,
+      })
+      cpSync('src/assets', 'out/assets', { recursive: true })
 
-    case 'build-test':
-      require('fs').rmSync('out/test', { recursive: true, force: true })
       await esbuild.build({
         ...common,
         entryPoints: await glob('src/**/**.ts'),
@@ -32,7 +37,7 @@ void (async function main() {
       })
       console.log('Building finished.')
       return
-
+    }
     default:
       await (
         await esbuild.context({

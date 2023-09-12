@@ -3,7 +3,7 @@ module.exports = {
   root: true,
   ignorePatterns: ['/out/'],
   env: {
-    es2019: true,
+    es2021: true,
     node: true,
     commonjs: true,
   },

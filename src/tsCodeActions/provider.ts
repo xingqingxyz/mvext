@@ -9,13 +9,14 @@ export default function provideCodeActions(
 ): vscode.ProviderResult<(vscode.CodeAction | vscode.Command)[]> {
   if (context.triggerKind !== vscode.CodeActionTriggerKind.Invoke) return
 
-  const result: vscode.CodeAction[] = []
+  const result: ReturnType<typeof provideCodeActions> = []
   if (!range.isEmpty) {
-    let ret: vscode.CodeAction | undefined
-    selectionCodeActions.forEach(
-      (action) =>
-        (ret = action(document, range as vscode.Selection)) && result.push(ret),
-    )
+    for (const action of selectionCodeActions) {
+      const ret = action(document, range as vscode.Selection)
+      if (ret) {
+        result.push(ret)
+      }
+    }
   }
 
   return result

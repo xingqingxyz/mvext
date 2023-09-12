@@ -90,11 +90,12 @@ export function caseTransform(sequence: string, targetWc: WordCase) {
   }
 }
 
+const reGetWords = /([A-Z]+)([A-Z][a-z]+)|[A-Z][a-z]+|[a-z]+|[A-Z]+/g
 export function getWords(text: string) {
   const words = text.split(/[-/_.\s]+/)
   const res: string[] = []
   for (const word of words) {
-    for (const matches of word.matchAll(getWords.reGetWords)) {
+    for (const matches of word.matchAll(reGetWords)) {
       if (matches[1]) {
         res.push(matches[1].toLowerCase(), matches[2].toLowerCase())
       } else {
@@ -104,4 +105,3 @@ export function getWords(text: string) {
   }
   return res.length ? res : null
 }
-getWords.reGetWords = /([A-Z]+)([A-Z][a-z]+)|[A-Z][a-z]+|[a-z]+|[A-Z]+/g
