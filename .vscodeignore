@@ -5,6 +5,7 @@
 node_modules
 out
 !out/extension.js
+resources
 scripts
 src
 .eslintcache

@@ -7,7 +7,7 @@ export function getPrevCharAtPosition(
   return document.getText(
     new vscode.Range(
       position.with({
-        character: position.character - 1,
+        character: position.character - 5,
       }),
       position,
     ),

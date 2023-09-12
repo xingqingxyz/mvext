@@ -2,7 +2,6 @@ import { EOL, homedir } from 'os'
 import * as path from 'path'
 import * as vscode from 'vscode'
 import batCompItems from '../resources/batCompItems.json'
-import { getPrevCharAtPosition } from './utils/completionHelper'
 import { execFilePm, tokenToSignal } from './utils/nodeUtils'
 
 export function registerBatCompletion(ctx: vscode.ExtensionContext) {
@@ -17,6 +16,8 @@ export function registerBatCompletion(ctx: vscode.ExtensionContext) {
   )
 }
 
+const reBatComp = /^\s*$|(["`])((?!\1).){0,4}$/
+const whereEnvPath = process.env.Path!.replace(/C:\\Windows\\System32;/i, '')
 export const provideCompletionItems: vscode.CompletionItemProvider['provideCompletionItems'] =
   async (
     document: vscode.TextDocument,
@@ -24,15 +25,16 @@ export const provideCompletionItems: vscode.CompletionItemProvider['provideCompl
     token: vscode.CancellationToken,
     // context: vscode.CompletionContext,
   ) => {
-    if (
-      position.character === 0 ||
-      /['"`]/.test(getPrevCharAtPosition(document, position))
-    ) {
-      const wspFd = vscode.workspace.getWorkspaceFolder(document.uri)
-      const range = document.getWordRangeAtPosition(position)
-      const prefix = range ? document.getText(range) : ''
+    const matches = reBatComp.exec(
+      document.getText(
+        new vscode.Range(position.with({ character: 0 }), position),
+      ),
+    )
 
+    if (matches) {
       try {
+        const prefix = matches[2] || ''
+        const wspFd = vscode.workspace.getWorkspaceFolder(document.uri)
         const files = (
           await execFilePm(
             'C:\\Windows\\System32\\where.exe',
@@ -46,7 +48,7 @@ export const provideCompletionItems: vscode.CompletionItemProvider['provideCompl
                 Path:
                   (wspFd ? path.dirname(wspFd.uri.fsPath) : homedir()) +
                   ';' +
-                  process.env.Path!.replace(/C:\\Windows\\System32;/i, ''),
+                  whereEnvPath,
               },
               signal: tokenToSignal(token),
             },
