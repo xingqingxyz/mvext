@@ -1,4 +1,4 @@
-import vscode from 'vscode'
+import * as vscode from 'vscode'
 import { WordCase, caseTransform } from './utils/caseTransformHelper'
 
 export function registerCaseTransform({

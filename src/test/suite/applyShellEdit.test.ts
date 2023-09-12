@@ -1,7 +1,7 @@
-import strict from 'assert/strict'
+import * as strict from 'assert/strict'
 import { EOL, homedir } from 'os'
-import path from 'path'
-import vscode from 'vscode'
+import * as path from 'path'
+import * as vscode from 'vscode'
 import { cjsEval, execByLangId, mjsEval } from '../../applyShellEdit'
 
 // eslint-disable-next-line @typescript-eslint/no-misused-promises

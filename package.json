@@ -3,7 +3,7 @@
   "private": true,
   "displayName": "My VSCode Extension",
   "description": "A extension which ships a set of pragmatic web dev features.",
-  "version": "0.3.3",
+  "version": "0.3.4",
   "l10n": "./l10n",
   "engines": {
     "vscode": "^1.82.0"
@@ -251,11 +251,14 @@
     "terminalDataWriteEvent"
   ],
   "scripts": {
-    "watch": "node ./scripts/build.js",
-    "pretest": "node ./scripts/build.js build-test",
+    "watch": "yarn esbuild-base --watch --sourcemap",
+    "pretest": "rimraf out && esbuild src/**/**.ts --platform=node --format=cjs --outdir=out --sourcemap",
     "test": "node ./out/test/runTest.js",
+    "prebuild": "node ./scripts/makeBatCompItems.js",
+    "build": "yarn esbuild-base --minify",
+    "esbuild-base": "esbuild src/extension.ts --bundle --platform=node --outfile=out/extension.js --external:vscode",
     "prepare": "husky install",
-    "vscode:prepublish": "node ./scripts/build.js build"
+    "vscode:prepublish": "yarn build"
   },
   "devDependencies": {
     "@types/mocha": "10.0.1",
@@ -273,6 +276,7 @@
     "lint-staged": "^14.0.0",
     "mocha": "10.2.0",
     "prettier": "^3.0.2",
+    "rimraf": "^5.0.1",
     "typescript": "^5.1.6"
   },
   "prettier": {

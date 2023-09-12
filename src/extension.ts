@@ -1,4 +1,4 @@
-import vscode from 'vscode'
+import * as vscode from 'vscode'
 import { registerApplyShellEdit } from './applyShellEdit'
 import { registerBatCompletion } from './batCompletion'
 import { registerCaseTransform } from './caseTransform'

@@ -1,4 +1,4 @@
-import vscode from 'vscode'
+import * as vscode from 'vscode'
 
 const allCodeActionKind = {
   function: vscode.CodeActionKind.RefactorRewrite.append('function'),

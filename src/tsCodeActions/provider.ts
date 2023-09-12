@@ -1,4 +1,4 @@
-import vscode from 'vscode'
+import * as vscode from 'vscode'
 import { selectionCodeActions } from './selection'
 
 export default function provideCodeActions(

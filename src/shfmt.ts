@@ -1,5 +1,5 @@
 import { execFileSync } from 'child_process'
-import vscode from 'vscode'
+import * as vscode from 'vscode'
 import { getExtConfig } from './utils/getExtConfig'
 
 export function registerShfmt(ctx: vscode.ExtensionContext) {

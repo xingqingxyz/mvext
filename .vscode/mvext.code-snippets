@@ -2,11 +2,6 @@
   "import vscode": {
     "scope": "javascript,typescript",
     "prefix": "imvs",
-    "body": "import vscode from 'vscode'"
-  },
-  "import mocha": {
-    "scope": "javascript,typescript",
-    "prefix": "imo",
-    "body": "import { describe, it } from 'mocha'"
+    "body": "import * as vscode from 'vscode'"
   }
 }

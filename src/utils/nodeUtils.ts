@@ -1,6 +1,6 @@
 import { exec, execFile } from 'child_process'
-import util from 'util'
-import vscode from 'vscode'
+import * as util from 'util'
+import * as vscode from 'vscode'
 
 export const execFilePm = util.promisify(execFile)
 

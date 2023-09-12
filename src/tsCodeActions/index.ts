@@ -1,4 +1,4 @@
-import vscode from 'vscode'
+import * as vscode from 'vscode'
 import provideCodeActions from './provider'
 
 export function registerTsCodeActions(ctx: vscode.ExtensionContext) {

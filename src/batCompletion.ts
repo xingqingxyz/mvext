@@ -1,7 +1,8 @@
 import { EOL, homedir } from 'os'
-import path from 'path'
-import vscode from 'vscode'
-import winExes from './assets/winExes.json'
+import * as path from 'path'
+import * as vscode from 'vscode'
+import batCompItems from '../resources/batCompItems.json'
+import { getPrevCharAtPosition } from './utils/completionHelper'
 import { execFilePm, tokenToSignal } from './utils/nodeUtils'
 
 export function registerBatCompletion(ctx: vscode.ExtensionContext) {
@@ -21,17 +22,15 @@ export const provideCompletionItems: vscode.CompletionItemProvider['provideCompl
     document: vscode.TextDocument,
     position: vscode.Position,
     token: vscode.CancellationToken,
-    context: vscode.CompletionContext,
+    // context: vscode.CompletionContext,
   ) => {
     if (
       position.character === 0 ||
-      context.triggerKind === vscode.CompletionTriggerKind.Invoke
+      /['"`]/.test(getPrevCharAtPosition(document, position))
     ) {
       const wspFd = vscode.workspace.getWorkspaceFolder(document.uri)
       const range = document.getWordRangeAtPosition(position)
       const prefix = range ? document.getText(range) : ''
-
-      let items: vscode.CompletionItem[] = []
 
       try {
         const files = (
@@ -57,142 +56,15 @@ export const provideCompletionItems: vscode.CompletionItemProvider['provideCompl
         files.pop()
 
         const { Function } = vscode.CompletionItemKind
-        items = files.map((f) => ({
+        const items = files.map((f) => ({
           label: path.basename(f),
           detail: f,
           kind: Function,
         }))
+
+        return new vscode.CompletionList(batCompItems.concat(items))
       } catch (err) {
         console.error(err)
       }
-
-      return new vscode.CompletionList(builtins.concat(items))
     }
   }
-
-export const builtins = (function getBuiltins() {
-  const batKws = [
-    'call',
-    'do',
-    'else',
-    'endlocal',
-    'exit',
-    'for',
-    'goto',
-    'if',
-    'in',
-    'pause',
-    'setlocal',
-  ]
-  const batCmds = [
-    'break',
-    'cd',
-    'cls',
-    'color',
-    'copy',
-    'date',
-    'del',
-    'dir',
-    'echo',
-    'md',
-    'mklink',
-    'move',
-    'popd',
-    'prompt',
-    'pushd',
-    'rd',
-    'ren',
-    'set',
-    'shift',
-    'start',
-    'time',
-    'title',
-    'type',
-  ]
-  const batEnvs = [
-    '%ALLUSERSPROFILE%',
-    '%APPDATA%',
-    '%CD%',
-    '%CMDCMDLINE%',
-    '%CMDEXTVERSION%',
-    '%CommonProgramFiles(x86)%',
-    '%CommonProgramFiles%',
-    '%CommonProgramW6432%',
-    '%COMPUTERNAME%',
-    '%ComSpec%',
-    '%DATE%',
-    '%DriverData%',
-    '%ERRORLEVEL%',
-    '%HOMEDRIVE%',
-    '%HOMEPATH%',
-    '%LOCALAPPDATA%',
-    '%LOGONSERVER%',
-    '%NUMBER_OF_PROCESSORS%',
-    '%NVIDIAWHITELISTED%',
-    '%OS%',
-    '%PATH%',
-    '%PATHEXT%',
-    '%PROCESSOR_ARCHITECTURE%',
-    '%PROCESSOR_IDENTIFIER%',
-    '%PROCESSOR_LEVEL%',
-    '%PROCESSOR_REVISION%',
-    '%ProgramData%',
-    '%ProgramFiles(x86)%',
-    '%ProgramFiles%',
-    '%ProgramW6432%',
-    '%PROMPT%',
-    '%PUBLIC%',
-    '%RANDOM%',
-    '%SESSIONNAME%',
-    '%SystemDrive%',
-    '%SystemRoot%',
-    '%TEMP%',
-    '%TIME%',
-    '%TMP%',
-    '%USERDOMAIN%',
-    '%USERNAME%',
-    '%USERPROFILE%',
-    '%WINDIR%',
-  ]
-
-  const { Function, Keyword, Constant, Value, Property } =
-    vscode.CompletionItemKind
-  const kws: vscode.CompletionList['items'] = batKws.map((kw) => ({
-    label: kw,
-    kind: Keyword,
-  }))
-  const exes = Object.entries(winExes).map(([key, val]) => ({
-    label: key,
-    detail: val,
-    kind: Function,
-  }))
-  const combos = [
-    'net computer',
-    'net group',
-    'net localgroup',
-    'net print',
-    'net session',
-    'net share',
-    'net start',
-    'net stop',
-    'net use',
-    'net user',
-    'net view',
-  ].map((c) => ({ label: c, kind: Function }))
-  const cmds = batCmds.map((c) => ({
-    label: c,
-    kind: Function,
-  }))
-  const props = ['usebackq', 'delims=', 'skip=', 'tokens=', 'eol='].map(
-    (p) => ({ label: p, kind: Property }),
-  )
-  const envs = batEnvs.map((e) => ({
-    label: e,
-    kind: Constant,
-  }))
-
-  return kws.concat(exes, combos, cmds, props, envs, {
-    label: 'EOF',
-    kind: Value,
-  })
-})()

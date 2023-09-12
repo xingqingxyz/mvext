@@ -1,8 +1,8 @@
-import strict from 'assert/strict'
-import fs from 'fs/promises'
+import * as strict from 'assert/strict'
+import * as fs from 'fs/promises'
 import { homedir } from 'os'
-import path from 'path'
-import vscode from 'vscode'
+import * as path from 'path'
+import * as vscode from 'vscode'
 const { executeCommand } = vscode.commands
 
 describe('vscode', function () {

@@ -1,4 +1,4 @@
-import vscode from 'vscode'
+import * as vscode from 'vscode'
 import { execOpen } from './utils/commandManager'
 
 export function registerQuicklySwitchFile(ctx: vscode.ExtensionContext) {
