@@ -1,6 +1,4 @@
 {
-  "ext.config.bashExecutable": "`bash` 可执行程序路径",
   "ext.config.pwshExecutable": "`pwsh` 可执行程序路径",
-  "ext.config.useDeno": "使用 `Deno` 而不是 `Node.js` 执行 JavaScript",
-  "ext.config.shfmtParserOptions": "`shfmt` 二进制文件的处理选项，用来格式化 shellscript 文件"
+  "ext.config.useDeno": "使用 `Deno` 而不是 `Node.js` 执行 JavaScript"
 }

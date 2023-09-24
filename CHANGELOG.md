@@ -2,6 +2,10 @@
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## [0.4.0]
+
+- Remove: `batCompletion`, in favor of powershell convenience, same as `shfmt`
+
 ## [0.3.0]
 
 - Feature: [`caseTransform`](./src/caseTransform.ts): transform word selections to camelCase, pascalCase, snakeCase, kebabCase, titleCase, headerCase, dotCase, pathCase, noCase, lowerCase, upperCase.

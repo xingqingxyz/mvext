@@ -3,7 +3,7 @@
   "private": true,
   "displayName": "My VSCode Extension",
   "description": "A extension which ships a set of pragmatic web dev features.",
-  "version": "0.3.4",
+  "version": "0.4.0",
   "l10n": "./l10n",
   "engines": {
     "vscode": "^1.82.0"
@@ -24,20 +24,14 @@
   },
   "main": "./out/extension.js",
   "keywords": [
-    "bat completion",
     "case transform",
     "quickly switch files",
-    "shell edit",
     "typescript code actions"
   ],
   "contributes": {
     "configuration": {
       "title": "My VSCode Extension",
       "properties": {
-        "mvext.applyShellEdit.bashExecutable": {
-          "type": "string",
-          "markdownDescription": "%ext.config.bashExecutable%"
-        },
         "mvext.applyShellEdit.pwshExecutable": {
           "type": "string",
           "markdownDescription": "%ext.config.pwshExecutable%"
@@ -45,28 +39,9 @@
         "mvext.applyShellEdit.useDeno": {
           "type": "boolean",
           "markdownDescription": "%ext.config.useDeno%"
-        },
-        "mvext.formatter.shfmtParserOptions": {
-          "type": "array",
-          "markdownDescription": "%ext.config.shfmtParserOptions%",
-          "default": [
-            "-bn",
-            "-ci",
-            "-sr"
-          ],
-          "properties": {
-            "*": {
-              "type": "string"
-            }
-          }
         }
       }
     },
-    "languages": [
-      {
-        "id": "bat"
-      }
-    ],
     "commands": [
       {
         "title": "Title",
@@ -250,7 +225,7 @@
         "pattern": [
           {
             "regexp": "^X [(ERROR|WARNNING)] (.*)$",
-            "kind": 1,
+            "severity": 1,
             "message": 2
           },
           {
@@ -282,15 +257,12 @@
     "onStartupFinished"
   ],
   "enabledApiProposals": [
-    "envShellEvent",
-    "terminalExecuteCommandEvent",
-    "terminalDataWriteEvent"
+    "terminalExecuteCommandEvent"
   ],
   "scripts": {
     "watch": "yarn esbuild-base --watch --sourcemap",
     "pretest": "rimraf out && esbuild src/**/**.ts --platform=node --format=cjs --outdir=out --sourcemap",
     "test": "node ./out/test/runTest.js",
-    "prebuild": "node ./scripts/makeBatCompItems.js",
     "build": "yarn esbuild-base --minify",
     "esbuild-base": "esbuild src/extension.ts --bundle --platform=node --outfile=out/extension.js --external:vscode",
     "prepare": "husky install",

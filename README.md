@@ -5,7 +5,6 @@ This extension ships a set of pragmatic web dev features:
 - [Case Transform](#case-transform)
 - [Quickly Switch File](#quickly-switch-file)
 - [Apply Shell Edit](#apply-shell-edit)
-- [Bat Completions](#bat-completions)
 - [TypeScript Code Actions](#typescript-code-actions)
 
 ## Features
@@ -37,15 +36,9 @@ Using current editor selection, according to `editorLangId`, to eval the code an
 
 - `/(java|type)script(react)?|vue|svelte|markdown|mdx/` (Node.js / Deno)
 - `powershell` (pwsh or fallback to powershell.exe)
-- `bat` (cmd.exe)
-- `bash` (bash or "C:\Program Files\Git\bin\bash.exe" on windows)
-- `ignore` (pwsh on win32, otherwise bash)
+- `ignore` (pwsh)
 
 > Setting config `mvext.applyShellEdit.useDeno` to true to use deno to eval any javascript code.
-
-### Bat Completions
-
-Ships some bat commands and executables completions.
 
 ### TypeScript Code Actions
 

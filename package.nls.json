@@ -1,6 +1,4 @@
 {
-  "ext.config.bashExecutable": "`bash` executable file path",
   "ext.config.pwshExecutable": "`pwsh` executable file path",
-  "ext.config.useDeno": "Use `Deno` rather `Node.js` to eval JavaScript",
-  "ext.config.shfmtParserOptions": "The binary `shfmt`'s parser options, used to format shellscript files"
+  "ext.config.useDeno": "Use `Deno` rather `Node.js` to eval JavaScript"
 }

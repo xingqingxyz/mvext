@@ -5,16 +5,9 @@ import * as util from 'util'
 import * as vscode from 'vscode'
 import { Worker } from 'worker_threads'
 import { getExtConfig } from './utils/getExtConfig'
-import { execFilePm, execPm } from './utils/nodeUtils'
+import { execFilePm } from './utils/nodeUtils'
 
-export type LangId =
-  | 'cjs'
-  | 'mjs'
-  | 'deno'
-  | 'bat'
-  | 'powershell'
-  | 'shellscript'
-  | 'python'
+export type LangId = 'cjs' | 'mjs' | 'deno' | 'powershell' | 'python'
 
 export function registerApplyShellEdit(ctx: vscode.ExtensionContext) {
   const { registerCommand } = vscode.commands
@@ -77,7 +70,7 @@ export async function execByLangId(
             ['eval'].concat(reMjs.test(text) ? [text] : ['-p', text]),
             options,
           )
-        ).stdout
+        ).stdout.trimEnd()
       } catch (err) {
         if (err instanceof SyntaxError) {
           await vscode.window.showErrorMessage(
@@ -88,18 +81,6 @@ export async function execByLangId(
         }
         throw err
       }
-    case 'bat': {
-      const reEmptyLine = /^\s*$/
-      return (
-        await execPm(
-          text
-            .split(document.eol === vscode.EndOfLine.CRLF ? '\r\n' : '\n')
-            .filter((t) => !reEmptyLine.test(t))
-            .join('&&'),
-          { shell: 'cmd' },
-        )
-      ).stdout
-    }
     case 'powershell':
       return (
         await execFilePm(
@@ -107,10 +88,7 @@ export async function execByLangId(
           ['-NoProfile', '-C', text],
           options,
         )
-      ).stdout
-    case 'shellscript':
-      return (await execFilePm(getExtConfig().bashExec, ['-c', text], options))
-        .stdout
+      ).stdout.trimEnd()
     case 'python':
       return (
         await execFilePm(
@@ -118,7 +96,7 @@ export async function execByLangId(
           ['-c', text],
           options,
         )
-      ).stdout
+      ).stdout.trimEnd()
     default:
       throw Error('not supported langId')
   }
@@ -136,13 +114,11 @@ function matchLangId(editorLangId: string, text: string): LangId {
   }
 
   switch (editorLangId) {
-    case 'bat':
     case 'powershell':
-    case 'shellscript':
     case 'python':
       return editorLangId
     case 'ignore':
-      return process.platform === 'win32' ? 'powershell' : 'shellscript'
+      return 'powershell'
     default:
       throw Error('not supported langId: ' + editorLangId)
   }
@@ -208,6 +184,7 @@ export async function applyCurrentShellEdit() {
 
   const { document } = editor
   const selectMap = new Map<vscode.Range, string>()
+  const reFirstLine = /^.*?\r?\n/
 
   for (const selectionIt of editor.selections) {
     const line = document.lineAt(selectionIt.start.line)
@@ -217,7 +194,7 @@ export async function applyCurrentShellEdit() {
       terminal.sendText(text)
       const event = vscode.window.onDidExecuteTerminalCommand((cmd) => {
         if (cmd.commandLine === text) {
-          resolve(cmd.output)
+          resolve(cmd.output?.replace(reFirstLine, '').trimEnd())
           event.dispose()
         }
       })
