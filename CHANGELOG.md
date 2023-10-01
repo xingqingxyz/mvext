@@ -2,6 +2,10 @@
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## [0.5.0]
+
+- Feature: [`pathComplete`](./src/pathComplete.ts): files path completer.
+
 ## [0.4.0]
 
 - Remove: `batCompletion`, in favor of powershell convenience, same as `shfmt`

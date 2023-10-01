@@ -84,7 +84,7 @@ export async function execByLangId(
     case 'powershell':
       return (
         await execFilePm(
-          getExtConfig().pwshExec,
+          getExtConfig('applyShellEdit.pwshExec'),
           ['-NoProfile', '-C', text],
           options,
         )
@@ -106,7 +106,8 @@ const reJs = /(?:java|type)script(?:react)?|vue|svelte|mdx|markdown/
 const reMjs = /^import\s+.*?\s+from\s+(['"]).*?\1\s*$/m
 function matchLangId(editorLangId: string, text: string): LangId {
   if (reJs.test(editorLangId)) {
-    return getExtConfig().useDeno || editorLangId.startsWith('t')
+    return getExtConfig('applyShellEdit.useDeno') ||
+      editorLangId.startsWith('t')
       ? 'deno'
       : reMjs.test(text)
       ? 'mjs'
@@ -184,7 +185,6 @@ export async function applyCurrentShellEdit() {
 
   const { document } = editor
   const selectMap = new Map<vscode.Range, string>()
-  const reFirstLine = /^.*?\r?\n/
 
   for (const selectionIt of editor.selections) {
     const line = document.lineAt(selectionIt.start.line)
@@ -194,7 +194,7 @@ export async function applyCurrentShellEdit() {
       terminal.sendText(text)
       const event = vscode.window.onDidExecuteTerminalCommand((cmd) => {
         if (cmd.commandLine === text) {
-          resolve(cmd.output?.replace(reFirstLine, '').trimEnd())
+          resolve(cmd.output?.trimEnd())
           event.dispose()
         }
       })

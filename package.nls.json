@@ -1,4 +1,5 @@
 {
-  "ext.config.pwshExecutable": "`pwsh` executable file path",
-  "ext.config.useDeno": "Use `Deno` rather `Node.js` to eval JavaScript"
+  "cfg.pwshExecutable": "`pwsh` executable file path",
+  "cfg.useDeno": "Use `Deno` rather `Node.js` to eval JavaScript",
+  "cfg.pathCompleteExpandPaths": "Path mappings maps to some path prefix:\n- `${workspaceFolder}` substitutes to main workspaceFolder\n- `${env:someVar}` substitutes to vscode's start env variable- `~` substitutes to `os.homedir()` with ease"
 }

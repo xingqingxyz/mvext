@@ -1,34 +1,25 @@
 import * as vscode from 'vscode'
-import { WordCase, caseTransform } from './utils/caseTransformHelper'
+import {
+  WordCase,
+  caseTransform,
+  joinCaseActions,
+} from './utils/caseTransformHelper'
 
-export function registerCaseTransform({
-  subscriptions,
-}: vscode.ExtensionContext) {
+export function registerCaseTransform(ctx: vscode.ExtensionContext) {
   const { registerTextEditorCommand } = vscode.commands
-  const casesList = [
+  const casesList = Object.keys(joinCaseActions).concat(
     'lowerCase',
     'upperCase',
-    'dotCase',
-    'pathCase',
-    'snakeCase',
-    'kebabCase',
-    'noCase',
-    'sentenceCase',
-    'constantCase',
-    'pascalCase',
-    'camelCase',
-    'titleCase',
-    'headerCase',
-  ] as const
+  ) as WordCase[]
 
-  for (const wc of casesList) {
-    subscriptions.push(
+  ctx.subscriptions.push(
+    ...casesList.map((wc) =>
       registerTextEditorCommand(
         `mvext.transformTo${wc[0].toUpperCase() + wc.slice(1)}`,
         (editor, edit) => dispatch(editor, edit, wc),
       ),
-    )
-  }
+    ),
+  )
 }
 
 function dispatch(
@@ -40,7 +31,7 @@ function dispatch(
 
   if (selections.length < 2 && selections[0].isEmpty) {
     const position = selections[0].start
-    const range = getExtWordRange(document, position)
+    const range = document.getWordRangeAtPosition(position)
     if (range) {
       edit.replace(range, caseTransform(document.getText(range), targetWc))
     }
@@ -49,7 +40,7 @@ function dispatch(
 
   for (const selectionIt of selections) {
     if (selectionIt.isEmpty) {
-      const range = getExtWordRange(document, selectionIt.start)
+      const range = document.getWordRangeAtPosition(selectionIt.start)
       if (range) {
         edit.replace(range, caseTransform(document.getText(range), targetWc))
       }
@@ -60,12 +51,4 @@ function dispatch(
       caseTransform(document.getText(selectionIt), targetWc),
     )
   }
-}
-
-const reExtWord = /[a-zA-Z_\-./$][\w_\-./$]*/
-export function getExtWordRange(
-  document: vscode.TextDocument,
-  position: vscode.Position,
-) {
-  return document.getWordRangeAtPosition(position, reExtWord)
 }

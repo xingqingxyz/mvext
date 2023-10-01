@@ -1,4 +1,5 @@
 {
-  "ext.config.pwshExecutable": "`pwsh` 可执行程序路径",
-  "ext.config.useDeno": "使用 `Deno` 而不是 `Node.js` 执行 JavaScript"
+  "cfg.pwshExecutable": "`pwsh` 可执行程序路径",
+  "cfg.useDeno": "使用 `Deno` 而不是 `Node.js` 执行 JavaScript",
+  "cfg.pathCompleteExpandPaths": "需要扩展路径的映射：\n- `${workspaceFolder}` 替换主工作区\n- `${env:someVar}` 替换 vscode 启动环境变量\n- 轻松使用 `~` 替换 `os.homedir()`"
 }

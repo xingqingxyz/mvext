@@ -16,10 +16,13 @@ module.exports = {
     project: true,
   },
   rules: {
+    'no-extra-semi': 'off',
     '@typescript-eslint/no-non-null-assertion': 'off',
     '@typescript-eslint/no-explicit-any': 'off',
     '@typescript-eslint/no-namespace': 'off',
     '@typescript-eslint/no-confusing-void-expression': 'off',
+    '@typescript-eslint/no-unsafe-assignment': 'off',
+    '@typescript-eslint/no-unsafe-member-access': 'off',
   },
   overrides: [
     {

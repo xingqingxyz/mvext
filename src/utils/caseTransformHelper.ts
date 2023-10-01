@@ -22,38 +22,25 @@ export const joinCaseActions: Record<
   ComplexWordCase,
   (words: string[]) => string
 > = {
-  dotCase: (words: string[]) => words.join('.'),
-  pathCase: (words: string[]) => words.join('/'),
-  snakeCase: (words: string[]) => words.join('_'),
-  kebabCase: (words: string[]) => words.join('-'),
-  noCase: (words: string[]) => words.join(' '),
-  sentenceCase: (words: string[]) =>
-    words.reduce(
-      (pv, cv, ci) =>
-        pv + (ci ? ' ' + cv : cv[0].toUpperCase() + cv.substring(1)),
-      '',
-    ),
-  constantCase: (words: string[]) =>
-    words.reduce((pv, cv, ci) => pv + (ci ? '_' : '') + cv.toUpperCase(), ''),
-  pascalCase: (words: string[]) =>
-    words.reduce((pv, cv) => pv + cv[0].toUpperCase() + cv.substring(1), ''),
-  camelCase: (words: string[]) =>
-    words.reduce(
-      (pv, cv, ci) => pv + (ci ? cv[0].toUpperCase() + cv.substring(1) : cv),
-      '',
-    ),
-  titleCase: (words: string[]) =>
-    words.reduce(
-      (pv, cv, ci) =>
-        pv + (ci ? ' ' : '') + cv[0].toUpperCase() + cv.substring(1),
-      '',
-    ),
-  headerCase: (words: string[]) =>
-    words.reduce(
-      (pv, cv, ci) =>
-        pv + (ci ? '-' : '') + cv[0].toUpperCase() + cv.substring(1),
-      '',
-    ),
+  dotCase: (words) => words.join('.'),
+  pathCase: (words) => words.join('/'),
+  snakeCase: (words) => words.join('_'),
+  kebabCase: (words) => words.join('-'),
+  noCase: (words) => words.join(' '),
+  sentenceCase: (words) => {
+    const first = words[0]
+    words[0] = first[0].toUpperCase() + first.slice(1)
+    return words.join(' ')
+  },
+  constantCase: (words) => words.join('_').toUpperCase(),
+  pascalCase: (words) =>
+    words.map((w) => w[0].toUpperCase() + w.slice(1)).join(''),
+  camelCase: (words) =>
+    words.reduce((pv, cv) => pv + cv[0].toUpperCase() + cv.slice(1)),
+  titleCase: (words) =>
+    words.map((w) => w[0].toUpperCase() + w.slice(1)).join(' '),
+  headerCase: (words) =>
+    words.map((w) => w[0].toUpperCase() + w.slice(1)).join('-'),
 }
 
 /**

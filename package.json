@@ -3,7 +3,7 @@
   "private": true,
   "displayName": "My VSCode Extension",
   "description": "A extension which ships a set of pragmatic web dev features.",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "l10n": "./l10n",
   "engines": {
     "vscode": "^1.82.0"
@@ -34,11 +34,24 @@
       "properties": {
         "mvext.applyShellEdit.pwshExecutable": {
           "type": "string",
-          "markdownDescription": "%ext.config.pwshExecutable%"
+          "markdownDescription": "%cfg.pwshExecutable%",
+          "default": "pwsh"
         },
         "mvext.applyShellEdit.useDeno": {
           "type": "boolean",
-          "markdownDescription": "%ext.config.useDeno%"
+          "markdownDescription": "%cfg.useDeno%"
+        },
+        "mvext.pathComplete.expandPaths": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "markdownDescription": "%cfg.pathCompleteExpandPaths%",
+          "examples": [
+            {
+              "": "${workspaceFolder}/"
+            }
+          ]
         }
       }
     },
@@ -221,6 +234,7 @@
         "name": "esbuild",
         "label": "esbuild problemMatcher",
         "source": "esbuild",
+        "fileLocation": "relative",
         "applyTo": "allDocuments",
         "pattern": [
           {
@@ -239,15 +253,17 @@
       {
         "name": "esbuild-watch",
         "label": "esbuild watch problemMatcher",
+        "source": "esbuild-watch",
+        "fileLocation": "relative",
+        "applyTo": "allDocuments",
         "base": "esbuild",
         "background": {
-          "activeOnStart": true,
           "beginsPattern": {
             "regexp": "^\\[watch\\] build started \\(change: \"(.*)\"\\)$",
             "file": 1
           },
           "endsPattern": {
-            "regexp": "^\\[watch\\] build finished(, watching for changes\\.\\.\\.)?$"
+            "regexp": "^\\[watch\\] build finished(?:, watching for changes\\.\\.\\.)?$"
           }
         }
       }

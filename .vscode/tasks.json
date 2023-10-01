@@ -4,9 +4,17 @@
     {
       "type": "npm",
       "script": "pretest",
-      "problemMatcher": [],
+      "problemMatcher": ["$esbuild"],
       "label": "npm: pretest",
       "detail": "node ./scripts/build.js build-test"
+    },
+    {
+      "type": "npm",
+      "script": "watch",
+      "group": "build",
+      "problemMatcher": ["$esbuild"],
+      "label": "npm: watch",
+      "detail": "yarn esbuild-base --watch --sourcemap"
     }
   ]
 }

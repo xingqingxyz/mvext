@@ -7,7 +7,9 @@ export default function provideCodeActions(
   context: vscode.CodeActionContext,
   // token: vscode.CancellationToken,
 ): vscode.ProviderResult<(vscode.CodeAction | vscode.Command)[]> {
-  if (context.triggerKind !== vscode.CodeActionTriggerKind.Invoke) return
+  if (context.triggerKind !== vscode.CodeActionTriggerKind.Invoke) {
+    return
+  }
 
   const result: ReturnType<typeof provideCodeActions> = []
   if (!range.isEmpty) {

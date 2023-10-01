@@ -6,6 +6,7 @@ This extension ships a set of pragmatic web dev features:
 - [Quickly Switch File](#quickly-switch-file)
 - [Apply Shell Edit](#apply-shell-edit)
 - [TypeScript Code Actions](#typescript-code-actions)
+- [Path Complete](#path-complete)
 
 ## Features
 
@@ -35,7 +36,7 @@ Or switch your source file between `/[base].[ext]` and `/__tests__/[base].{test,
 Using current editor selection, according to `editorLangId`, to eval the code and instantly replace it. Supports language ids (shortcut `ctrl+alt+s`):
 
 - `/(java|type)script(react)?|vue|svelte|markdown|mdx/` (Node.js / Deno)
-- `powershell` (pwsh or fallback to powershell.exe)
+- `powershell` (pwsh or `mvext.applyShellEdit.pwshExec`)
 - `ignore` (pwsh)
 
 > Setting config `mvext.applyShellEdit.useDeno` to true to use deno to eval any javascript code.
@@ -51,3 +52,7 @@ Using current editor selection, according to `editorLangId`, to eval the code an
   transform from `[a.b, c.d, e.f]` to `[a.b, c.d, e.f] = [e.f, c.d, a.b]`
 
 ---
+
+### Path Complete
+
+Provide path completions for files.
