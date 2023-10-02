@@ -1,10 +1,11 @@
 import * as vscode from 'vscode'
 import { registerApplyShellEdit } from './applyShellEdit'
 import { registerCaseTransform } from './caseTransform'
+import { PathCompleteProvider } from './pathComplete'
 import { registerQuicklySwitchFile } from './quicklySwitchFile'
 import { registerTsCodeActions } from './tsCodeActions'
 import { setupExtConfig } from './utils/getExtConfig'
-import { registerPathComplete } from './pathComplete'
+import { CssSelectorCompleteProvider } from './cssSelectorComplete'
 
 export function activate(context: vscode.ExtensionContext) {
   console.log('My VSCode Extension activated.')
@@ -13,7 +14,8 @@ export function activate(context: vscode.ExtensionContext) {
   registerQuicklySwitchFile(context)
   registerApplyShellEdit(context)
   registerTsCodeActions(context)
-  registerPathComplete(context)
+  PathCompleteProvider.register(context)
+  CssSelectorCompleteProvider.register(context)
 }
 
 export function deactivate() {

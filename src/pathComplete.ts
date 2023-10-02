@@ -1,132 +1,137 @@
 import * as vscode from 'vscode'
 import { getExtConfig } from './utils/getExtConfig'
-import fs = vscode.workspace.fs
+import { LangIds } from './utils/constants'
+import { CompletionItem, Uri } from 'vscode'
 
-export function registerPathComplete(ctx: vscode.ExtensionContext) {
-  ctx.subscriptions.push(
-    vscode.languages.registerCompletionItemProvider(
-      { pattern: '**' },
-      { provideCompletionItems },
-      '\\',
-      '/',
-    ),
-  )
-}
+export class PathCompleteProvider {
+  static readonly reValidSuffix = /[^'"`?*:<>|\s]*$/
 
-export async function provideCompletionItems(
-  document: vscode.TextDocument,
-  position: vscode.Position,
-  token: vscode.CancellationToken,
-  context: vscode.CompletionContext,
-) {
-  if (context.triggerKind !== vscode.CompletionTriggerKind.TriggerCharacter) {
-    return
-  }
-
-  const getWords = /(java|type)script(react)?/.test(document.languageId)
-    ? getWordsJs
-    : /ignore|properties|dotenv/.test(document.languageId)
-    ? getWordsIgnore
-    : getWordsDefault
-
-  const words = getWords(document, position)
-  if (!words) {
-    return
-  }
-
-  // eslint-disable-next-line @typescript-eslint/unbound-method
-  const { joinPath } = vscode.Uri
-  let baseDir: vscode.Uri
-  const first = words[0]
-  if (!first.includes(':') || first === 'untitled:') {
-    // relative wsp
-    words[0] = expandPath(first)
-    if (words[0] === first) {
-      // no expanded
-      baseDir = joinPath(document.uri, '..', ...words)
-    } else {
-      baseDir = joinPath(vscode.Uri.file(''), ...words)
+  async provideCompletionItems(
+    document: vscode.TextDocument,
+    position: vscode.Position,
+    token: vscode.CancellationToken,
+    context: vscode.CompletionContext,
+  ) {
+    if (context.triggerKind !== vscode.CompletionTriggerKind.TriggerCharacter) {
+      return
     }
-  } else if (first.length === 2 && /[a-z]/i.test(first[0])) {
-    // windows disk descriptor
-    baseDir = joinPath(vscode.Uri.file(''), ...words)
-  } else if (first === 'file:') {
-    // file urls
-    baseDir = joinPath(vscode.Uri.file(''), ...words.slice(2))
-  } else {
-    return
+
+    const words = PathCompleteProvider.getSubPaths(document, position)
+    if (!words) {
+      return
+    }
+
+    const baseDir = PathCompleteProvider.getBaseDirFromPaths(words, document)
+    if (!baseDir) {
+      return
+    }
+
+    try {
+      const entries = await vscode.workspace.fs.readDirectory(baseDir)
+      return PathCompleteProvider.createCompItems(entries, document)
+    } catch {
+      /* no need handle ENOENT */
+    }
   }
 
-  const entries = await fs.readDirectory(baseDir)
-  const { File, Folder } = vscode.CompletionItemKind
-  const commitChars = /html|javascriptreact|typescriptreact|markdown|mdx/.test(
-    document.languageId,
-  )
-    ? ['\\']
-    : ['\\', '/']
-  const compItems = entries.map(([filename, kind]) => {
-    const uri = joinPath(baseDir, filename)
-    const item = new vscode.CompletionItem(
-      filename,
-      kind === vscode.FileType.Directory ? Folder : File,
+  //#region util
+  static createCompItems(
+    entries: [string, vscode.FileType][],
+    document: vscode.TextDocument,
+  ) {
+    const { File, Folder } = vscode.CompletionItemKind
+    const { Directory } = vscode.FileType
+    const commitChars = LangIds.langIdMarkup.includes(document.languageId)
+      ? ['\\']
+      : ['\\', '/']
+    const compItems = entries.map(([filename, kind]) => {
+      const item = new CompletionItem(
+        filename,
+        kind === Directory ? Folder : File,
+      )
+      item.commitCharacters = commitChars
+      return item
+    })
+    // quick complete . and .., reduce esc keys
+    compItems.push(
+      new CompletionItem('.', Folder),
+      new CompletionItem('..', Folder),
     )
-    item.commitCharacters = commitChars
-    item.documentation = uri.fsPath
-    return item
-  })
-  // quick complete . and .., reduce esc keys
-  compItems.push(
-    new vscode.CompletionItem('.', Folder),
-    new vscode.CompletionItem('..', Folder),
-  )
 
-  return compItems
-}
-
-function getWordsDefault(
-  document: vscode.TextDocument,
-  position: vscode.Position,
-) {
-  let lineText = document.lineAt(position).text
-  lineText = lineText.slice(0, position.character)
-  if (!/['"`]/.test(lineText)) {
-    return
+    return compItems
   }
-  lineText = lineText.slice(/[^'"`\s]*$/.exec(lineText)!.index)
-  return lineText.split(/[\\/]/)
-}
 
-function getWordsJs(document: vscode.TextDocument, position: vscode.Position) {
-  const lineText = document.lineAt(position).text
-  if (/import|require/.test(lineText)) {
-    return
+  static getSubPaths(document: vscode.TextDocument, position: vscode.Position) {
+    let prefix = document.lineAt(position).text.slice(0, position.character)
+    if (!prefix) {
+      return ['']
+    }
+
+    if (LangIds.langIdRawFile.includes(document.languageId)) {
+      prefix = prefix.split('=').at(-1)!
+    } else {
+      if (
+        LangIds.langIdJsOrJsx.includes(document.languageId) &&
+        /import|require/.test(prefix)
+      ) {
+        return
+      }
+      if (!/['"`]/.test(prefix)) {
+        return
+      }
+    }
+    // get sub paths like 'abc/cde'
+    prefix = prefix.slice(
+      PathCompleteProvider.reValidSuffix.exec(prefix)!.index,
+    )
+
+    return prefix.split(/[\\/]/)
   }
-  return getWordsDefault(document, position)
-}
 
-function getWordsIgnore(
-  document: vscode.TextDocument,
-  position: vscode.Position,
-) {
-  let lineText = document.lineAt(position).text
-  lineText = lineText.slice(0, position.character)
-  lineText = lineText.slice(/[^='"`\s]*$/.exec(lineText)!.index)
-  return lineText.split(/[\\/]/)
-}
-
-//#region util
-function expandPath(somePath: string) {
-  const expandPaths = getExtConfig('pathComplete.expandPaths')
-  // prohibit empty ''
-  if (!somePath) {
-    return expandPaths['${workspaceFolder}']
-  }
-  // prevent multi replace, no meaning and lets errors
-  for (const key of Object.keys(expandPaths)) {
-    if (somePath.includes(key)) {
-      return somePath.replace(key, expandPaths[key])
+  static getBaseDirFromPaths(words: string[], document: vscode.TextDocument) {
+    const first = words[0]
+    if (!first.includes(':') || first === 'untitled:') {
+      // relative wsp
+      words[0] = PathCompleteProvider.expandPath(first)
+      if (words[0] === first) {
+        // no expanded
+        return Uri.joinPath(document.uri, '..', ...words)
+      } else {
+        return Uri.joinPath(Uri.file(''), ...words)
+      }
+    } else if (first.length === 2 && /[a-z]/i.test(first[0])) {
+      // windows disk descriptor
+      return Uri.joinPath(Uri.file(''), ...words)
+    } else if (first === 'file:') {
+      // file urls
+      return Uri.joinPath(Uri.file(''), ...words.slice(2))
     }
   }
-  return somePath
+
+  static expandPath(somePath: string) {
+    const expandPaths = getExtConfig('pathComplete.expandPaths')
+    // prohibit empty ''
+    if (!somePath) {
+      return expandPaths['${workspaceFolder}']
+    }
+    // prevent multi replace, no meaning and lets errors
+    for (const key of Object.keys(expandPaths)) {
+      if (somePath.includes(key)) {
+        return somePath.replace(key, expandPaths[key])
+      }
+    }
+    return somePath
+  }
+
+  static register(ctx: vscode.ExtensionContext) {
+    ctx.subscriptions.push(
+      vscode.languages.registerCompletionItemProvider(
+        { pattern: '**' },
+        new PathCompleteProvider(),
+        '\\',
+        '/',
+      ),
+    )
+  }
+  //#endregion
 }
-//#endregion

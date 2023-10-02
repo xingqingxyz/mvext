@@ -1,5 +1,4 @@
 import * as vscode from 'vscode'
-import { execOpen } from './utils/commandManager'
 
 export function registerQuicklySwitchFile(ctx: vscode.ExtensionContext) {
   const { registerCommand } = vscode.commands
@@ -10,21 +9,28 @@ export function registerQuicklySwitchFile(ctx: vscode.ExtensionContext) {
 }
 
 export async function quicklySwitchFile() {
-  const uri = vscode.window.activeTextEditor?.document.uri
-  if (uri) {
-    const matches = /(.+)\.(\w+$)/.exec(uri.path)
+  const documentUri = vscode.window.activeTextEditor?.document.uri
+  if (documentUri) {
+    const matches = /(.+)\.(\w+$)/.exec(documentUri.fsPath)
     if (matches) {
-      let path = matches[1]
+      let nextPath = matches[1]
       const ext = matches[2]
 
       if (/html?/.test(ext)) {
-        path += '.css'
+        nextPath += '.css'
       } else if (/css|js/.test(ext)) {
-        path += '.html'
+        nextPath += '.html'
       } else if (/[cm]?ts/.test(ext)) {
-        path = uri.path.slice(0, -2) + 'js'
+        nextPath = documentUri.path.slice(0, -2) + 'js'
       }
-      await execOpen(uri.with({ path }))
+
+      try {
+        await vscode.window.showTextDocument(
+          documentUri.with({ path: nextPath }),
+        )
+      } catch {
+        /* ignore ENOENT */
+      }
     }
   }
 }
@@ -39,24 +45,26 @@ const reAddTest = /\/([^/]+)\.(\w+)$/
 export async function quicklySwitchTestFile() {
   const documentUri = vscode.window.activeTextEditor?.document.uri
 
-  if (!documentUri) {
-    return
-  }
+  if (documentUri) {
+    const { fsPath } = documentUri
+    const nextPath = fsPath.replace(reStripTest, '/$1.$2')
 
-  const { path } = documentUri
-  const nextPath = path.replace(reStripTest, '/$1.$2')
+    let uri = documentUri.with({ path: nextPath })
+    if (nextPath === fsPath) {
+      const files = await vscode.workspace.findFiles(
+        vscode.workspace
+          .asRelativePath(documentUri, false)
+          .replace(reAddTest, '/__test?__/$1.{test,spec}.$2'),
+      )
+      if (files.length) {
+        uri = files[0]
+      }
+    }
 
-  if (nextPath !== path) {
-    await execOpen(documentUri.with({ path: nextPath }))
-    return
-  }
-
-  const files = await vscode.workspace.findFiles(
-    vscode.workspace
-      .asRelativePath(documentUri, false)
-      .replace(reAddTest, '/__test?__/$1.{test,spec}.$2'),
-  )
-  if (files.length) {
-    await execOpen(files[0])
+    try {
+      await vscode.window.showTextDocument(uri)
+    } catch {
+      /* ignore ENOENT */
+    }
   }
 }

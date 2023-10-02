@@ -11,3 +11,11 @@ export function tokenToSignal(token: vscode.CancellationToken): AbortSignal {
   token.onCancellationRequested(() => controller.abort())
   return controller.signal
 }
+
+export function mergeIterables<T>(iterables: Iterable<T>[]) {
+  return (function* () {
+    for (const iterable of iterables) {
+      yield* iterable
+    }
+  })()
+}
