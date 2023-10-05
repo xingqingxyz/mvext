@@ -1,13 +1,11 @@
 .husky
 .vscode
-.vscode-test
-# l10n
 node_modules
 out
 !out/extension.js
-resources
 scripts
 src
+test-workspace
 .eslintcache
 .eslintrc.js
 .gitignore
@@ -17,10 +15,9 @@ src
 install.ps1
 # LICENSE
 *.vsix
-*.d.ts
 # package.json
 # package.nls.json
 # package.nls.zh-cn.json
 # README.md
 tsconfig.json
-yarn.lock
+*.d.ts

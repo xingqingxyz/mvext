@@ -1,12 +1,12 @@
-import * as vscode from 'vscode'
+import { ExtensionContext, TextEditor, TextEditorEdit, commands } from 'vscode'
 import {
   WordCase,
   caseTransform,
   joinCaseActions,
 } from './utils/caseTransformHelper'
 
-export function registerCaseTransform(ctx: vscode.ExtensionContext) {
-  const { registerTextEditorCommand } = vscode.commands
+export function registerCaseTransform(ctx: ExtensionContext) {
+  const { registerTextEditorCommand } = commands
   const casesList = Object.keys(joinCaseActions).concat(
     'lowerCase',
     'upperCase',
@@ -23,8 +23,8 @@ export function registerCaseTransform(ctx: vscode.ExtensionContext) {
 }
 
 function dispatch(
-  editor: vscode.TextEditor,
-  edit: vscode.TextEditorEdit,
+  editor: TextEditor,
+  edit: TextEditorEdit,
   targetWc: WordCase,
 ) {
   const { document, selections } = editor

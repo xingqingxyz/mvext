@@ -1,18 +1,35 @@
-import * as vscode from 'vscode'
-import { getExtConfig } from './utils/getExtConfig'
-import { LangIds } from './utils/constants'
-import { CompletionItem, Uri } from 'vscode'
+import { homedir } from 'os'
+import {
+  CancellationToken,
+  CompletionContext,
+  CompletionItem,
+  CompletionItemKind,
+  CompletionTriggerKind,
+  ExtensionContext,
+  FileType,
+  Position,
+  TextDocument,
+  Uri,
+  languages,
+  workspace,
+} from 'vscode'
+import { LangIds } from './utils'
 
 export class PathCompleteProvider {
   static readonly reValidSuffix = /[^'"`?*:<>|\s]*$/
+  static cfgPathMappings: {
+    '~': string
+    '@': string
+    '${workspaceFolder}': string
+  } & Record<string, string>
 
   async provideCompletionItems(
-    document: vscode.TextDocument,
-    position: vscode.Position,
-    token: vscode.CancellationToken,
-    context: vscode.CompletionContext,
+    document: TextDocument,
+    position: Position,
+    token: CancellationToken,
+    context: CompletionContext,
   ) {
-    if (context.triggerKind !== vscode.CompletionTriggerKind.TriggerCharacter) {
+    if (context.triggerKind !== CompletionTriggerKind.TriggerCharacter) {
       return
     }
 
@@ -27,7 +44,7 @@ export class PathCompleteProvider {
     }
 
     try {
-      const entries = await vscode.workspace.fs.readDirectory(baseDir)
+      const entries = await workspace.fs.readDirectory(baseDir)
       return PathCompleteProvider.createCompItems(entries, document)
     } catch {
       /* no need handle ENOENT */
@@ -36,11 +53,11 @@ export class PathCompleteProvider {
 
   //#region util
   static createCompItems(
-    entries: [string, vscode.FileType][],
-    document: vscode.TextDocument,
+    entries: [string, FileType][],
+    document: TextDocument,
   ) {
-    const { File, Folder } = vscode.CompletionItemKind
-    const { Directory } = vscode.FileType
+    const { File, Folder } = CompletionItemKind
+    const { Directory } = FileType
     const commitChars = LangIds.langIdMarkup.includes(document.languageId)
       ? ['\\']
       : ['\\', '/']
@@ -61,7 +78,7 @@ export class PathCompleteProvider {
     return compItems
   }
 
-  static getSubPaths(document: vscode.TextDocument, position: vscode.Position) {
+  static getSubPaths(document: TextDocument, position: Position) {
     let prefix = document.lineAt(position).text.slice(0, position.character)
     if (!prefix) {
       return ['']
@@ -88,7 +105,7 @@ export class PathCompleteProvider {
     return prefix.split(/[\\/]/)
   }
 
-  static getBaseDirFromPaths(words: string[], document: vscode.TextDocument) {
+  static getBaseDirFromPaths(words: string[], document: TextDocument) {
     const first = words[0]
     if (!first.includes(':') || first === 'untitled:') {
       // relative wsp
@@ -109,29 +126,59 @@ export class PathCompleteProvider {
   }
 
   static expandPath(somePath: string) {
-    const expandPaths = getExtConfig('pathComplete.expandPaths')
-    // prohibit empty ''
+    const { cfgPathMappings } = PathCompleteProvider
     if (!somePath) {
-      return expandPaths['${workspaceFolder}']
+      return cfgPathMappings['${workspaceFolder}']
     }
     // prevent multi replace, no meaning and lets errors
-    for (const key of Object.keys(expandPaths)) {
+    for (const key of Object.keys(cfgPathMappings)) {
       if (somePath.includes(key)) {
-        return somePath.replace(key, expandPaths[key])
+        return somePath.replace(key, cfgPathMappings[key])
       }
     }
     return somePath
   }
 
-  static register(ctx: vscode.ExtensionContext) {
+  static register(ctx: ExtensionContext) {
+    PathCompleteProvider.cfgPathMappings = getPathMappings()
     ctx.subscriptions.push(
-      vscode.languages.registerCompletionItemProvider(
+      languages.registerCompletionItemProvider(
         { pattern: '**' },
         new PathCompleteProvider(),
         '\\',
         '/',
       ),
+      workspace.onDidChangeConfiguration((e) => {
+        if (e.affectsConfiguration('mvext.pathComplete.expandPaths')) {
+          PathCompleteProvider.cfgPathMappings = getPathMappings()
+        }
+      }),
     )
   }
   //#endregion
+}
+
+function getPathMappings() {
+  // path mappings
+  const wspFolder = workspace.workspaceFolders?.[0].uri.fsPath ?? ''
+  const defaultExpandPaths = {
+    '~': homedir(),
+    '@': wspFolder + '/src',
+    '${workspaceFolder}': wspFolder,
+  }
+  const cfgExpandPaths: Record<string, string> = workspace.getConfiguration(
+    'mvext.pathComplete.expandPaths',
+  )
+
+  for (const key of Reflect.ownKeys(cfgExpandPaths) as string[]) {
+    let val = cfgExpandPaths[key]
+    if (val[0] === '~') {
+      val = val.replace('~', homedir())
+    } else {
+      val = val.replace('${workspaceFolder}', wspFolder)
+    }
+    cfgExpandPaths[key] = val
+  }
+
+  return Object.assign(defaultExpandPaths, cfgExpandPaths)
 }

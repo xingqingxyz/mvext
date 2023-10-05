@@ -6,7 +6,6 @@ This extension ships a set of pragmatic web dev features:
 - [Quickly Switch File](#quickly-switch-file)
 - [Apply Shell Edit](#apply-shell-edit)
 - [TypeScript Code Actions](#typescript-code-actions)
-- [ESBuild Problem Matchers](#esbuild-problem-matchers)
 - [Path Complete](#path-complete)
 
 ## Features
@@ -53,10 +52,6 @@ Using current editor selection, according to `editorLangId`, to eval the code an
   transform from `[a.b, c.d, e.f]` to `[a.b, c.d, e.f] = [e.f, c.d, a.b]`
 
 ---
-
-### ESBuild Problem Matchers
-
-Ships `$esbuild` and `$esbuild-watch` problem matchers for tasks configuration.
 
 ### Path Complete
 

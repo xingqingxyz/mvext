@@ -1,10 +1,19 @@
-import * as vscode from 'vscode'
-import { LangIds } from './utils/constants'
-import { mergeIterables } from './utils/nodeUtils'
+import {
+  CancellationToken,
+  CompletionContext,
+  CompletionItem,
+  CompletionItemKind,
+  CompletionItemProvider,
+  CompletionTriggerKind,
+  ExtensionContext,
+  Position,
+  TextDocument,
+  languages,
+  workspace,
+} from 'vscode'
+import { LangIds, mergeIterables } from './utils'
 
-export class CssSelectorCompleteProvider
-  implements vscode.CompletionItemProvider
-{
+export class CssSelectorCompleteProvider implements CompletionItemProvider {
   static readonly reHtmlClassName =
     /(?<=\bclass(?:Name)?="(?:\S+\s+)*)[\w-]+(?=(?:\s+\S+)*")/g
 
@@ -16,12 +25,12 @@ export class CssSelectorCompleteProvider
    * - stylesheets: completes in empty line or line starts with selector, resolves relative dir markups or workspace markups
    */
   async provideCompletionItems(
-    document: vscode.TextDocument,
-    position: vscode.Position,
-    token: vscode.CancellationToken,
-    context: vscode.CompletionContext,
+    document: TextDocument,
+    position: Position,
+    token: CancellationToken,
+    context: CompletionContext,
   ) {
-    if (context.triggerKind !== vscode.CompletionTriggerKind.TriggerCharacter) {
+    if (context.triggerKind !== CompletionTriggerKind.TriggerCharacter) {
       return
     }
 
@@ -35,23 +44,23 @@ export class CssSelectorCompleteProvider
         CssSelectorCompleteProvider.getMarkupClasses(document.getText()),
       )
 
-      const { Constant } = vscode.CompletionItemKind
-      const compItems: vscode.CompletionItem[] = []
+      const { Constant } = CompletionItemKind
+      const compItems: CompletionItem[] = []
       for (const className of classNames) {
-        compItems.push(new vscode.CompletionItem(className, Constant))
+        compItems.push(new CompletionItem(className, Constant))
       }
 
       return compItems
     }
 
-    const markups = await vscode.workspace.findFiles(
-      vscode.workspace.asRelativePath(document.fileName) +
+    const markups = await workspace.findFiles(
+      workspace.asRelativePath(document.fileName) +
         '../{.,..}/*.{htm,html,jsx,tsx}',
       undefined,
       undefined,
       token,
     )
-    const { readFile } = vscode.workspace.fs
+    const { readFile } = workspace.fs
     const relativeDirClasses = new Set(
       mergeIterables(
         await Promise.all(
@@ -62,10 +71,10 @@ export class CssSelectorCompleteProvider
         ),
       ),
     )
-    const { Constant } = vscode.CompletionItemKind
-    const compItems: vscode.CompletionItem[] = []
+    const { Constant } = CompletionItemKind
+    const compItems: CompletionItem[] = []
     for (const className of relativeDirClasses) {
-      compItems.push(new vscode.CompletionItem(className, Constant))
+      compItems.push(new CompletionItem(className, Constant))
     }
 
     return compItems
@@ -82,7 +91,7 @@ export class CssSelectorCompleteProvider
     })()
   }
 
-  static register(ctx: vscode.ExtensionContext) {
+  static register(ctx: ExtensionContext) {
     const selector = [
       'css',
       'scss',
@@ -93,7 +102,7 @@ export class CssSelectorCompleteProvider
       'mdx',
     ]
     ctx.subscriptions.push(
-      vscode.languages.registerCompletionItemProvider(
+      languages.registerCompletionItemProvider(
         selector,
         new CssSelectorCompleteProvider(),
         '.',

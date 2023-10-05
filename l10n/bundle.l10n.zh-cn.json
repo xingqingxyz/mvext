@@ -1,5 +1,0 @@
-{
-  "Delete Function Call": "删除函数调用",
-  "Swap Variables": "交换变量值",
-  "SyntaxError: You may use `IIFE` wrapper instead:\n\t`(function () { /* code */ })()`": "语法错误：或许应该转而使用`IIFE`包装器：\n\t`(function () { /* code */ })()`"
-}

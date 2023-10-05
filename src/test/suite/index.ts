@@ -14,12 +14,9 @@ export function run() {
     const testFileStream = testFiles.stream()
 
     testFileStream.on('data', (file) => {
-      console.log(file)
       mocha.addFile(path.join(testRoot, file))
     })
-    testFileStream.on('error', (err) => {
-      e(err)
-    })
+    testFileStream.on('error', e)
     testFileStream.on('end', () => {
       try {
         // Run the mocha test
@@ -31,7 +28,6 @@ export function run() {
           }
         })
       } catch (err) {
-        console.error(err)
         e(err)
       }
     })

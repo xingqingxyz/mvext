@@ -2,30 +2,37 @@ import { ExecFileOptions } from 'child_process'
 import { writeFile } from 'fs/promises'
 import * as path from 'path'
 import * as util from 'util'
-import * as vscode from 'vscode'
+import {
+  ExtensionContext,
+  Range,
+  TextDocument,
+  commands,
+  window,
+  workspace,
+} from 'vscode'
 import { Worker } from 'worker_threads'
-import { LangIds } from './utils/constants'
-import { getExtConfig } from './utils/getExtConfig'
-import { execFilePm } from './utils/nodeUtils'
+import { LangIds, execFilePm, getExtConfig } from './utils'
 
 export type LangId = 'cjs' | 'mjs' | 'node' | 'powershell' | 'python'
 
-export function registerApplyShellEdit(ctx: vscode.ExtensionContext) {
-  const { registerCommand } = vscode.commands
+export function registerApplyShellEdit(ctx: ExtensionContext) {
   ctx.subscriptions.push(
-    registerCommand('mvext.applyShellEdit', applyShellEdit),
-    registerCommand('mvext.applyCurrentShellEdit', applyCurrentShellEdit),
+    commands.registerCommand('mvext.applyShellEdit', applyShellEdit),
+    commands.registerCommand(
+      'mvext.applyCurrentShellEdit',
+      applyCurrentShellEdit,
+    ),
   )
 }
 
 export async function applyShellEdit() {
-  const editor = vscode.window.activeTextEditor
+  const editor = window.activeTextEditor
   if (!editor) {
     return
   }
 
   const { document } = editor
-  const selectMap = new Map<vscode.Range, string>()
+  const selectMap = new Map<Range, string>()
 
   for (const selectionIt of editor.selections) {
     const line = document.lineAt(selectionIt.start.line)
@@ -50,11 +57,11 @@ export async function applyShellEdit() {
 export async function execByLangId(
   text: string,
   langId: LangId,
-  document: vscode.TextDocument,
+  document: TextDocument,
 ) {
   const options: ExecFileOptions = {
     cwd:
-      vscode.workspace.getWorkspaceFolder(document.uri)?.uri.fsPath ??
+      workspace.getWorkspaceFolder(document.uri)?.uri.fsPath ??
       path.join(document.fileName, '..'),
   }
 
@@ -168,14 +175,14 @@ function formatObj(result: unknown) {
 }
 
 export async function applyCurrentShellEdit() {
-  const editor = vscode.window.activeTextEditor
-  const terminal = vscode.window.activeTerminal
+  const editor = window.activeTextEditor
+  const terminal = window.activeTerminal
   if (!(editor && terminal)) {
     return
   }
 
   const { document } = editor
-  const selectMap = new Map<vscode.Range, string>()
+  const selectMap = new Map<Range, string>()
 
   for (const selectionIt of editor.selections) {
     const line = document.lineAt(selectionIt.start.line)
@@ -183,7 +190,7 @@ export async function applyCurrentShellEdit() {
     const text = selectionIt.isEmpty ? line.text : document.getText(selectionIt)
     const result = await new Promise<string | undefined>((resolve) => {
       terminal.sendText(text)
-      const event = vscode.window.onDidExecuteTerminalCommand((cmd) => {
+      const event = window.onDidExecuteTerminalCommand((cmd) => {
         if (cmd.commandLine === text) {
           resolve(cmd.output?.trimEnd())
           event.dispose()

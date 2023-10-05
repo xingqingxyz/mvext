@@ -1,5 +1,5 @@
 {
   "cfg.pwshExecutable": "`pwsh` executable file path",
-  "cfg.nodeCommandLine": "Child process command and args used to eval javascript/typescript",
+  "cfg.nodeCommandLine": "Child process command and args used to eval JavaScript / TypeScript",
   "cfg.pathComplete.expandPaths": "Path mappings maps to some path prefix:\n- `${workspaceFolder}` substitutes to main workspace folder\n- `${env:someVar}` substitutes to vscode's start env variable\n- `~` substitutes to `os.homedir()` with ease"
 }

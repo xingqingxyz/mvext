@@ -1,14 +1,14 @@
+import { cjsEval, execByLangId, mjsEval } from '../../applyShellEdit'
 import * as strict from 'assert/strict'
 import { EOL, homedir } from 'os'
 import * as path from 'path'
-import * as vscode from 'vscode'
-import { cjsEval, execByLangId, mjsEval } from '@/applyShellEdit'
+import { Uri, window } from 'vscode'
 
 // eslint-disable-next-line @typescript-eslint/no-misused-promises
 describe(`#${execByLangId.name}()`, async function () {
   const pwshCode = '"$(gi ~)"\n$?'
-  const { document } = await vscode.window.showTextDocument(
-    vscode.Uri.file(path.join(homedir(), 'test.js')),
+  const { document } = await window.showTextDocument(
+    Uri.file(path.join(homedir(), 'test.js')),
   )
 
   describe('should should not rejects', function () {

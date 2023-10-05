@@ -2,15 +2,12 @@
   "name": "mvext",
   "private": true,
   "displayName": "My VSCode Extension",
-  "description": "A extension which ships a set of pragmatic web dev features.",
-  "version": "0.6.2",
-  "l10n": "./l10n",
+  "description": "An extension ships some pragmatic tools.",
+  "version": "0.6.3",
   "engines": {
     "vscode": "^1.82.0"
   },
   "categories": [
-    "Programming Languages",
-    "Keymaps",
     "Other"
   ],
   "author": "Ming.Chen <cm.email@qq.com> (https://github.com/xingqingxyz)",
@@ -26,7 +23,8 @@
   "keywords": [
     "case transform",
     "quickly switch files",
-    "typescript code actions"
+    "apply shell edit",
+    "path complete"
   ],
   "contributes": {
     "configuration": {
@@ -136,11 +134,6 @@
         "command": "mvext.applyCurrentShellEdit"
       },
       {
-        "title": "Quickly Switch Test File",
-        "category": "mvext",
-        "command": "mvext.quicklySwitchTestFile"
-      },
-      {
         "title": "Quickly Switch File",
         "category": "mvext",
         "command": "mvext.quicklySwitchFile"
@@ -223,54 +216,9 @@
         "command": "mvext.applyCurrentShellEdit"
       },
       {
-        "key": "alt+shift+t",
-        "when": "editorTextFocus",
-        "command": "mvext.quicklySwitchTestFile"
-      },
-      {
         "key": "alt+o",
         "when": "editorTextFocus && editorLangId =~ /html|css|javascript|typescript/",
         "command": "mvext.quicklySwitchFile"
-      }
-    ],
-    "problemMatchers": [
-      {
-        "name": "esbuild",
-        "label": "esbuild problemMatcher",
-        "source": "esbuild",
-        "fileLocation": [
-          "relative",
-          "${cwd}"
-        ],
-        "applyTo": "allDocuments",
-        "pattern": [
-          {
-            "regexp": "^✘ \\[(ERROR|WARNING|INFO)\\] (.*)$",
-            "severity": 1,
-            "message": 2
-          },
-          {
-            "regexp": "^\\s+(.*):(\\d+):(\\d+):$",
-            "file": 1,
-            "line": 2,
-            "column": 3
-          }
-        ]
-      },
-      {
-        "name": "esbuild-watch",
-        "label": "esbuild watch problemMatcher",
-        "base": "$esbuild",
-        "background": {
-          "activeOnStart": true,
-          "beginsPattern": {
-            "regexp": "^\\[watch\\] build started \\(change: \"(.*)\"\\)$",
-            "file": 1
-          },
-          "endsPattern": {
-            "regexp": "^\\[watch\\] build finished(?:, watching for changes\\.\\.\\.)?$"
-          }
-        }
       }
     ]
   },
@@ -282,9 +230,9 @@
   ],
   "scripts": {
     "watch": "yarn esbuild-base --watch --sourcemap",
-    "pretest": "rimraf out && esbuild src/**/**.ts --platform=node --format=cjs --outdir=out --sourcemap --external:@=./src",
+    "pretest": "rimraf out && esbuild src/**/**.ts --platform=node --format=cjs --outdir=out --sourcemap",
     "prepare": "husky install",
-    "esbuild-base": "esbuild src/extension.ts --bundle --platform=node --outfile=out/extension.js --external:vscode --external:@=./src",
+    "esbuild-base": "esbuild src/extension.ts --bundle --platform=node --outfile=out/extension.js --external:vscode",
     "vscode:prepublish": "yarn esbuild-base --minify"
   },
   "devDependencies": {
