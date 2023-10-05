@@ -1,6 +1,6 @@
 import { execFile } from 'child_process'
 import * as util from 'util'
-import { CancellationToken, UIKind, env, workspace } from 'vscode'
+import { CancellationToken, UIKind, env } from 'vscode'
 
 //#region constants
 export const isDesktop = env.uiKind === UIKind.Desktop
@@ -44,13 +44,3 @@ export function mergeIterables<T>(iterables: Iterable<T>[]) {
   })()
 }
 //#endregion
-
-export interface ExtConfig {
-  'applyShellEdit.pwshExec': string
-  'applyShellEdit.nodeCommandLine': string[] | undefined
-}
-
-export function getExtConfig<T extends keyof ExtConfig>(section: T) {
-  const cfg = workspace.getConfiguration('mvext')
-  return cfg.get(section) as ExtConfig[T]
-}

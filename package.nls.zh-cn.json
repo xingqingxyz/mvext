@@ -1,5 +1,6 @@
 {
-  "cfg.pwshExecutable": "`pwsh` 可执行程序路径",
-  "cfg.nodeCommandLine": "执行 JavaScript/TypeScript 的命令行",
-  "cfg.pathComplete.expandPaths": "需要扩展路径的映射：\n- `${workspaceFolder}` 替换主工作区文件夹\n- `${env:someVar}` 替换 vscode 启动环境变量\n- 轻松使用 `~` 替换 `os.homedir()`"
+  "cfg.applyShellEdit.pwshExecutable": "`pwsh` 可执行程序路径",
+  "cfg.applyShellEdit.useExternalNode": "使用外部 node 执行 js/ts 文件",
+  "cfg.applyShellEdit.nodeCommandLine": "当 #mvext.applyShellEdit.useExternalNode# 打开时，执行 js/ts 文件的命令和参数",
+  "cfg.pathComplete.expandPaths": "需要扩展路径的映射：\n- `${workspaceFolder}` 替换主工作区文件夹\n- 轻松使用 `~` 替换 `os.homedir()`"
 }

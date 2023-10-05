@@ -3,7 +3,7 @@
   "private": true,
   "displayName": "My VSCode Extension",
   "description": "An extension ships some pragmatic tools.",
-  "version": "0.6.3",
+  "version": "0.6.4",
   "engines": {
     "vscode": "^1.82.0"
   },
@@ -32,15 +32,24 @@
       "properties": {
         "mvext.applyShellEdit.pwshExecutable": {
           "type": "string",
-          "markdownDescription": "%cfg.pwshExecutable%",
-          "default": "pwsh"
+          "default": "pwsh",
+          "markdownDescription": "%cfg.applyShellEdit.pwshExecutable%"
+        },
+        "mvext.applyShellEdit.useExternalNode": {
+          "type": "boolean",
+          "default": false,
+          "markdownDescription": "%cfg.applyShellEdit.useExternalNode%"
         },
         "mvext.applyShellEdit.nodeCommandLine": {
           "type": "array",
           "items": {
             "type": "string"
           },
-          "markdownDescription": "%cfg.nodeCommandLine%"
+          "default": [
+            "node",
+            "-e"
+          ],
+          "markdownDescription": "%cfg.applyShellEdit.nodeCommandLine%"
         },
         "mvext.pathComplete.expandPaths": {
           "type": "object",

@@ -16,12 +16,8 @@ import {
 import { LangIds } from './utils'
 
 export class PathCompleteProvider {
-  static readonly reValidSuffix = /[^'"`?*:<>|\s]*$/
-  static cfgPathMappings: {
-    '~': string
-    '@': string
-    '${workspaceFolder}': string
-  } & Record<string, string>
+  static readonly reValidSuffix = /(\b[a-z]:)?[^'"`?*:<>|]*$/i
+  static cfgPathMappings: Record<string, string>
 
   async provideCompletionItems(
     document: TextDocument,
@@ -39,28 +35,19 @@ export class PathCompleteProvider {
     }
 
     const baseDir = PathCompleteProvider.getBaseDirFromPaths(words, document)
-    if (!baseDir) {
-      return
-    }
-
     try {
       const entries = await workspace.fs.readDirectory(baseDir)
-      return PathCompleteProvider.createCompItems(entries, document)
+      return PathCompleteProvider.createCompItems(entries)
     } catch {
       /* no need handle ENOENT */
     }
   }
 
   //#region util
-  static createCompItems(
-    entries: [string, FileType][],
-    document: TextDocument,
-  ) {
+  static createCompItems(entries: [string, FileType][]) {
     const { File, Folder } = CompletionItemKind
     const { Directory } = FileType
-    const commitChars = LangIds.langIdMarkup.includes(document.languageId)
-      ? ['\\']
-      : ['\\', '/']
+    const commitChars = ['\\', '/']
     const compItems = entries.map(([filename, kind]) => {
       const item = new CompletionItem(
         filename,
@@ -107,22 +94,15 @@ export class PathCompleteProvider {
 
   static getBaseDirFromPaths(words: string[], document: TextDocument) {
     const first = words[0]
-    if (!first.includes(':') || first === 'untitled:') {
-      // relative wsp
-      words[0] = PathCompleteProvider.expandPath(first)
-      if (words[0] === first) {
-        // no expanded
-        return Uri.joinPath(document.uri, '..', ...words)
-      } else {
-        return Uri.joinPath(Uri.file(''), ...words)
-      }
-    } else if (first.length === 2 && /[a-z]/i.test(first[0])) {
-      // windows disk descriptor
-      return Uri.joinPath(Uri.file(''), ...words)
-    } else if (first === 'file:') {
-      // file urls
-      return Uri.joinPath(Uri.file(''), ...words.slice(2))
+    if (
+      !first.includes(':') &&
+      PathCompleteProvider.expandPath(first) === first
+    ) {
+      // relative wsp or untitled:
+      return Uri.joinPath(document.uri, '..', ...words)
     }
+    // windows disk descriptor
+    return Uri.joinPath(Uri.file(''), ...words)
   }
 
   static expandPath(somePath: string) {
@@ -132,7 +112,7 @@ export class PathCompleteProvider {
     }
     // prevent multi replace, no meaning and lets errors
     for (const key of Object.keys(cfgPathMappings)) {
-      if (somePath.includes(key)) {
+      if (somePath.startsWith(key)) {
         return somePath.replace(key, cfgPathMappings[key])
       }
     }
@@ -160,8 +140,8 @@ export class PathCompleteProvider {
 
 function getPathMappings() {
   // path mappings
-  const wspFolder = workspace.workspaceFolders?.[0].uri.fsPath ?? ''
-  const defaultExpandPaths = {
+  const wspFolder = workspace.workspaceFolders?.[0].uri.fsPath ?? '/'
+  const expandPaths: Record<string, string> = {
     '~': homedir(),
     '@': wspFolder + '/src',
     '${workspaceFolder}': wspFolder,
@@ -172,13 +152,16 @@ function getPathMappings() {
 
   for (const key of Reflect.ownKeys(cfgExpandPaths) as string[]) {
     let val = cfgExpandPaths[key]
+    if (typeof val !== 'string') {
+      continue
+    }
     if (val[0] === '~') {
       val = val.replace('~', homedir())
     } else {
       val = val.replace('${workspaceFolder}', wspFolder)
     }
-    cfgExpandPaths[key] = val
+    expandPaths[key] = val
   }
 
-  return Object.assign(defaultExpandPaths, cfgExpandPaths)
+  return expandPaths
 }

@@ -11,9 +11,15 @@ import {
   workspace,
 } from 'vscode'
 import { Worker } from 'worker_threads'
-import { LangIds, execFilePm, getExtConfig } from './utils'
+import { LangIds, execFilePm } from './utils'
 
-export type LangId = 'cjs' | 'mjs' | 'node' | 'powershell' | 'python'
+export type LangId =
+  | 'cjs'
+  | 'mjs'
+  | 'node'
+  | 'powershell'
+  | 'python'
+  | 'unknown'
 
 export function registerApplyShellEdit(ctx: ExtensionContext) {
   ctx.subscriptions.push(
@@ -39,6 +45,7 @@ export async function applyShellEdit() {
     const range = selectionIt.isEmpty ? line.range : selectionIt
     const text = selectionIt.isEmpty ? line.text : document.getText(selectionIt)
     const langId = matchLangId(document.languageId, text)
+
     try {
       const result = await execByLangId(text, langId, document)
       selectMap.set(range, result)
@@ -60,9 +67,7 @@ export async function execByLangId(
   document: TextDocument,
 ) {
   const options: ExecFileOptions = {
-    cwd:
-      workspace.getWorkspaceFolder(document.uri)?.uri.fsPath ??
-      path.join(document.fileName, '..'),
+    cwd: path.join(document.fileName, '..'),
   }
 
   switch (langId) {
@@ -72,7 +77,9 @@ export async function execByLangId(
       return formatObj(await mjsEval(text))
     case 'node':
       try {
-        const [cmd, ...args] = getExtConfig('applyShellEdit.nodeCommandLine')!
+        const [cmd, ...args] = workspace
+          .getConfiguration('mvext.applyShellEdit')
+          .get('nodeCommandLine', ['node', '-e'])
         return (await execFilePm(cmd, args, options)).stdout.trimEnd()
       } catch (err) {
         return String(err)
@@ -80,7 +87,9 @@ export async function execByLangId(
     case 'powershell':
       return (
         await execFilePm(
-          getExtConfig('applyShellEdit.pwshExec'),
+          workspace
+            .getConfiguration('mvext.applyShellEdit')
+            .get('pwshExec', 'pwsh'),
           ['-NoProfile', '-C', text],
           options,
         )
@@ -94,7 +103,7 @@ export async function execByLangId(
         )
       ).stdout.trimEnd()
     default:
-      throw Error('not supported langId')
+      throw Error('not support langId')
   }
 }
 
@@ -104,9 +113,11 @@ function matchLangId(editorLangId: string, text: string): LangId {
       .concat('javascript', 'typescript')
       .includes(editorLangId)
   ) {
-    return getExtConfig('applyShellEdit.nodeCommandLine')
+    return workspace
+      .getConfiguration('mvext.applyShellEdit')
+      .get<boolean>('useExternalNode')
       ? 'node'
-      : /^import /m.test(text)
+      : /^(im|ex)port /m.test(text)
       ? 'mjs'
       : 'cjs'
   }
@@ -119,7 +130,7 @@ function matchLangId(editorLangId: string, text: string): LangId {
     case 'properties':
       return 'powershell'
     default:
-      throw Error('not supported langId: ' + editorLangId)
+      return 'unknown'
   }
 }
 
