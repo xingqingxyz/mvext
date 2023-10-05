@@ -3,7 +3,7 @@
   "private": true,
   "displayName": "My VSCode Extension",
   "description": "A extension which ships a set of pragmatic web dev features.",
-  "version": "0.6.0",
+  "version": "0.6.2",
   "l10n": "./l10n",
   "engines": {
     "vscode": "^1.82.0"
@@ -37,9 +37,12 @@
           "markdownDescription": "%cfg.pwshExecutable%",
           "default": "pwsh"
         },
-        "mvext.applyShellEdit.useDeno": {
-          "type": "boolean",
-          "markdownDescription": "%cfg.useDeno%"
+        "mvext.applyShellEdit.nodeCommandLine": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "markdownDescription": "%cfg.nodeCommandLine%"
         },
         "mvext.pathComplete.expandPaths": {
           "type": "object",
@@ -53,14 +56,6 @@
               "": "${workspaceFolder}/"
             }
           ]
-        },
-        "mvext.cssSelectorComplete.includePaths": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "default": [],
-          "markdownDescription": "%cfg.cssSelectorComplete.includePaths%"
         }
       }
     },
@@ -250,7 +245,7 @@
         "applyTo": "allDocuments",
         "pattern": [
           {
-            "regexp": "^✘ \\[(ERROR|WARNNING|INFO)\\] (.*)$",
+            "regexp": "^✘ \\[(ERROR|WARNING|INFO)\\] (.*)$",
             "severity": 1,
             "message": 2
           },
@@ -287,12 +282,10 @@
   ],
   "scripts": {
     "watch": "yarn esbuild-base --watch --sourcemap",
-    "pretest": "rimraf out && esbuild src/**/**.ts --platform=node --format=cjs --outdir=out --sourcemap",
-    "test": "node ./out/test/runTest.js",
-    "build": "yarn esbuild-base --minify",
-    "esbuild-base": "esbuild src/extension.ts --bundle --platform=node --outfile=out/extension.js --external:vscode",
+    "pretest": "rimraf out && esbuild src/**/**.ts --platform=node --format=cjs --outdir=out --sourcemap --external:@=./src",
     "prepare": "husky install",
-    "vscode:prepublish": "yarn build"
+    "esbuild-base": "esbuild src/extension.ts --bundle --platform=node --outfile=out/extension.js --external:vscode --external:@=./src",
+    "vscode:prepublish": "yarn esbuild-base --minify"
   },
   "devDependencies": {
     "@types/mocha": "10.0.1",

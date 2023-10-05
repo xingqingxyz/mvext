@@ -1,12 +1,12 @@
 $ErrorActionPreference = 'Stop'
 
-Remove-Item $PSScriptRoot\mvext-*.vsix -ErrorAction Continue
+# prepare
+Remove-Item $PSScriptRoot\mvext-*.vsix -ErrorAction Ignore
+# pack deps
 vsce.cmd package --yarn
-($ext = (Get-Item $PSScriptRoot\mvext-*.vsix).FullName)
-if (-not $ext) {
-    return 1
-}
-code.cmd --install-extension $ext
-if (Get-Command code-insiders.cmd -ErrorAction Continue) {
-    code-insiders.cmd --install-extension $ext
+($extPath = (Get-Item $PSScriptRoot\mvext-*.vsix).FullName)
+# install
+code.cmd --install-extension $extPath
+if (Get-Command code-insiders.cmd -ErrorAction Ignore) {
+    code-insiders.cmd --install-extension $extPath
 }

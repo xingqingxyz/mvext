@@ -3,9 +3,8 @@ import * as vscode from 'vscode'
 
 export interface ExtConfig {
   'applyShellEdit.pwshExec': string
-  'applyShellEdit.useDeno': boolean
+  'applyShellEdit.nodeCommandLine': string[] | undefined
   'pathComplete.expandPaths': Record<string, string>
-  'cssSelectorComplete.includePaths': string[]
 }
 
 const extConfig = {} as unknown as ExtConfig
@@ -28,10 +27,9 @@ export function setupExtConfig(ctx: vscode.ExtensionContext) {
 function updateExtCfg() {
   const cfg = vscode.workspace.getConfiguration('mvext')
   extConfig['applyShellEdit.pwshExec'] = cfg.get('applyShellEdit.pwshExec')!
-  extConfig['applyShellEdit.useDeno'] = cfg.get('applyShellEdit.useDeno')!
-  // extConfig['cssSelectorComplete.includePaths'] = cfg.get(
-  //   'cssSelectorComplete.includePaths',
-  // )!
+  extConfig['applyShellEdit.nodeCommandLine'] = cfg.get(
+    'applyShellEdit.nodeCommandLine',
+  )
 
   // path mappings
   const wspFolder = vscode.workspace.workspaceFolders?.[0].uri.fsPath ?? ''

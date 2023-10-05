@@ -1,64 +1,111 @@
+import { LangIds } from '@/utils/constants'
 import * as vscode from 'vscode'
 
-const allCodeActionKind = (function () {
-  const { Refactor, RefactorRewrite } = vscode.CodeActionKind
-  return {
-    rewriteFunction: RefactorRewrite.append('function'),
-    expand: Refactor.append('expand'),
-  }
-})()
+export class SelectionCodeActionsProvider {
+  static readonly rewriteFunction =
+    vscode.CodeActionKind.RefactorRewrite.append('function')
+  static readonly expand = vscode.CodeActionKind.Refactor.append('expand')
+  static readonly reDelFc = /[\w$[\]]+\s*\(.*\)/
+  static readonly reSwapVar = /^\[(?:[^,]+,)+.*\]$/s
 
-export const selectionCodeActions = [provideDeleteFunctionCall, provideSwapVar]
+  provideCodeActions(
+    document: vscode.TextDocument,
+    range: vscode.Selection | vscode.Range,
+    context: vscode.CodeActionContext,
+    // token: vscode.CancellationToken,
+  ): vscode.ProviderResult<(vscode.CodeAction | vscode.Command)[]> {
+    if (context.triggerKind !== vscode.CodeActionTriggerKind.Invoke) {
+      return
+    }
 
-const reDelFc = /[\w$[\]]+\s*\(.*\)/
-export function provideDeleteFunctionCall(
-  document: vscode.TextDocument,
-  selection: vscode.Selection,
-) {
-  if (!reDelFc.test(document.getText(selection))) {
-    return
-  }
-
-  const delFcSnippet = new vscode.SnippetString(
-    '${TM_SELECTED_TEXT/^\\s*.+?\\((.*)\\)\\s*$/$1/s}',
-  )
-  const wspEdit = new vscode.WorkspaceEdit()
-  wspEdit.set(document.uri, [
-    new vscode.SnippetTextEdit(selection, delFcSnippet),
-  ])
-
-  const codeAction = new vscode.CodeAction(
-    'Delete Function Call',
-    allCodeActionKind.rewriteFunction,
-  )
-  codeAction.edit = wspEdit
-
-  return codeAction
-}
-
-function swapVar(text: string) {
-  return text + ' = [' + text.slice(1, -1).split(',').reverse().join(',') + ']'
-}
-
-const reSwapVar = /^\[(?:[^,]+,)+.*\]$/s
-export function provideSwapVar(
-  document: vscode.TextDocument,
-  selection: vscode.Selection,
-) {
-  if (!reSwapVar.test(document.getText(selection))) {
-    return
+    if (!range.isEmpty) {
+      return (
+        SelectionCodeActionsProvider.provideDeleteFunctionCall(
+          document,
+          range as vscode.Selection,
+        ) ??
+        SelectionCodeActionsProvider.provideSwapVar(
+          document,
+          range as vscode.Selection,
+        )
+      )
+    }
   }
 
-  const wspEdit = new vscode.WorkspaceEdit()
-  wspEdit.set(document.uri, [
-    new vscode.TextEdit(selection, swapVar(document.getText(selection))),
-  ])
+  //#region static
+  static provideDeleteFunctionCall(
+    document: vscode.TextDocument,
+    selection: vscode.Selection,
+  ) {
+    if (
+      !SelectionCodeActionsProvider.reDelFc.test(document.getText(selection))
+    ) {
+      return
+    }
 
-  const codeAction = new vscode.CodeAction(
-    'Swap Variables',
-    allCodeActionKind.expand,
-  )
-  codeAction.edit = wspEdit
+    const delFcSnippet = new vscode.SnippetString(
+      '${TM_SELECTED_TEXT/^\\s*.+?\\((.*)\\)\\s*$/$1/s}',
+    )
+    const wspEdit = new vscode.WorkspaceEdit()
+    wspEdit.set(document.uri, [
+      new vscode.SnippetTextEdit(selection, delFcSnippet),
+    ])
 
-  return codeAction
+    const codeAction = new vscode.CodeAction(
+      'Delete Function Call',
+      SelectionCodeActionsProvider.rewriteFunction,
+    )
+    codeAction.edit = wspEdit
+
+    return [codeAction]
+  }
+
+  static provideSwapVar(
+    document: vscode.TextDocument,
+    selection: vscode.Selection,
+  ) {
+    if (
+      !SelectionCodeActionsProvider.reSwapVar.test(document.getText(selection))
+    ) {
+      return
+    }
+
+    const wspEdit = new vscode.WorkspaceEdit()
+    wspEdit.set(document.uri, [
+      new vscode.TextEdit(
+        selection,
+        SelectionCodeActionsProvider.swapVar(document.getText(selection)),
+      ),
+    ])
+
+    const codeAction = new vscode.CodeAction(
+      'Swap Variables',
+      SelectionCodeActionsProvider.expand,
+    )
+    codeAction.edit = wspEdit
+
+    return [codeAction]
+  }
+
+  static swapVar(text: string) {
+    return (
+      text + ' = [' + text.slice(1, -1).split(',').reverse().join(',') + ']'
+    )
+  }
+
+  static register(ctx: vscode.ExtensionContext) {
+    ctx.subscriptions.push(
+      vscode.languages.registerCodeActionsProvider(
+        LangIds.langIdJsOrJsx,
+        new SelectionCodeActionsProvider(),
+        {
+          providedCodeActionKinds: [
+            SelectionCodeActionsProvider.rewriteFunction,
+            SelectionCodeActionsProvider.expand,
+          ],
+        },
+      ),
+    )
+  }
+  //#endregion
 }

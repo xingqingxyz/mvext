@@ -11,7 +11,9 @@
       "request": "launch",
       "args": [
         "--extensionDevelopmentPath=${workspaceFolder}",
-        "--disable-extensions"
+        "--disable-extensions",
+        "--enable-preposed-api undefined_publisher.mvext",
+        "${workspaceFolder}/test-workspace"
       ],
       "outFiles": ["${workspaceFolder}/out/**/*.js"],
       "skipFiles": ["<node_internals>/**", "**/node_modules/**"]
@@ -23,7 +25,9 @@
       "args": [
         "--extensionDevelopmentPath=${workspaceFolder}",
         "--extensionTestsPath=${workspaceFolder}/out/test/suite",
-        "--disable-extensions"
+        "--disable-extensions",
+        "--enable-preposed-api undefined_publisher.mvext",
+        "${workspaceFolder}/test-workspace"
       ],
       "outFiles": ["${workspaceFolder}/out/**/*.js"],
       "skipFiles": ["<node_internals>/**", "**/node_modules/**"],

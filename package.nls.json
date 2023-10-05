@@ -1,6 +1,5 @@
 {
   "cfg.pwshExecutable": "`pwsh` executable file path",
-  "cfg.useDeno": "Use `Deno` rather `Node.js` to eval JavaScript",
-  "cfg.pathComplete.expandPaths": "Path mappings maps to some path prefix:\n- `${workspaceFolder}` substitutes to main workspace folder\n- `${env:someVar}` substitutes to vscode's start env variable\n- `~` substitutes to `os.homedir()` with ease",
-  "cfg.cssSelectorComplete.includePaths": "Relative paths to search markup files for css selector completion"
+  "cfg.nodeCommandLine": "Child process command and args used to eval javascript/typescript",
+  "cfg.pathComplete.expandPaths": "Path mappings maps to some path prefix:\n- `${workspaceFolder}` substitutes to main workspace folder\n- `${env:someVar}` substitutes to vscode's start env variable\n- `~` substitutes to `os.homedir()` with ease"
 }

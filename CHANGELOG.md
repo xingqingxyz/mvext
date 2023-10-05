@@ -2,10 +2,6 @@
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
-## [0.6.0]
-
-- Feature: [`cssSelectorComplete`](./src/cssSelectorComplete.ts): CSS classes completion from relative dir markups.
-
 ## [0.5.0]
 
 - Feature: [`pathComplete`](./src/pathComplete.ts): files path completer.

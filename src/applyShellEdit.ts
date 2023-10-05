@@ -4,10 +4,11 @@ import * as path from 'path'
 import * as util from 'util'
 import * as vscode from 'vscode'
 import { Worker } from 'worker_threads'
+import { LangIds } from './utils/constants'
 import { getExtConfig } from './utils/getExtConfig'
 import { execFilePm } from './utils/nodeUtils'
 
-export type LangId = 'cjs' | 'mjs' | 'deno' | 'powershell' | 'python'
+export type LangId = 'cjs' | 'mjs' | 'node' | 'powershell' | 'python'
 
 export function registerApplyShellEdit(ctx: vscode.ExtensionContext) {
   const { registerCommand } = vscode.commands
@@ -62,24 +63,12 @@ export async function execByLangId(
       return formatObj(await cjsEval(text))
     case 'mjs':
       return formatObj(await mjsEval(text))
-    case 'deno':
+    case 'node':
       try {
-        return (
-          await execFilePm(
-            langId,
-            ['eval'].concat(reMjs.test(text) ? [text] : ['-p', text]),
-            options,
-          )
-        ).stdout.trimEnd()
+        const [cmd, ...args] = getExtConfig('applyShellEdit.nodeCommandLine')!
+        return (await execFilePm(cmd, args, options)).stdout.trimEnd()
       } catch (err) {
-        if (err instanceof SyntaxError) {
-          await vscode.window.showErrorMessage(
-            vscode.l10n.t(
-              'SyntaxError: You may use `IIFE` wrapper instead:\n\t`(function () { /* code */ })()`',
-            ),
-          )
-        }
-        throw err
+        return String(err)
       }
     case 'powershell':
       return (
@@ -102,14 +91,15 @@ export async function execByLangId(
   }
 }
 
-const reJs = /(?:java|type)script(?:react)?|vue|svelte|mdx|markdown/
-const reMjs = /^import\s+.*?\s+from\s+(['"]).*?\1\s*$/m
 function matchLangId(editorLangId: string, text: string): LangId {
-  if (reJs.test(editorLangId)) {
-    return getExtConfig('applyShellEdit.useDeno') ||
-      editorLangId.startsWith('t')
-      ? 'deno'
-      : reMjs.test(text)
+  if (
+    LangIds.langIdMarkup
+      .concat('javascript', 'typescript')
+      .includes(editorLangId)
+  ) {
+    return getExtConfig('applyShellEdit.nodeCommandLine')
+      ? 'node'
+      : /^import /m.test(text)
       ? 'mjs'
       : 'cjs'
   }
@@ -119,6 +109,7 @@ function matchLangId(editorLangId: string, text: string): LangId {
     case 'python':
       return editorLangId
     case 'ignore':
+    case 'properties':
       return 'powershell'
     default:
       throw Error('not supported langId: ' + editorLangId)
@@ -128,7 +119,7 @@ function matchLangId(editorLangId: string, text: string): LangId {
 export async function mjsEval(text: string) {
   const mjsFile = path.join(__dirname, 'eval.mjs')
   const jsCode = `import { parentPort } from 'worker_threads'
-;${text}
+;${text};
 parentPort.postMessage(await main())`
 
   await writeFile(mjsFile, jsCode, 'utf8')
@@ -148,7 +139,7 @@ export function cjsEval(text: string) {
 
   const jsCode = `const { parentPort } = require('worker_threads')
 void (async function () {
-  ${hasMainEntry ? text : ''}
+  ${hasMainEntry ? text : ''};
   parentPort.postMessage(${
     hasMainEntry ? 'await main()' : 'eval(' + JSON.stringify(text) + ')'
   })

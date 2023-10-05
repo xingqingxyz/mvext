@@ -8,7 +8,6 @@ This extension ships a set of pragmatic web dev features:
 - [TypeScript Code Actions](#typescript-code-actions)
 - [ESBuild Problem Matchers](#esbuild-problem-matchers)
 - [Path Complete](#path-complete)
-- [CSS Classes Complete](#css-classes-complete)
 
 ## Features
 
@@ -62,7 +61,3 @@ Ships `$esbuild` and `$esbuild-watch` problem matchers for tasks configuration.
 ### Path Complete
 
 Provide path completions for files.
-
-### CSS Classes Complete
-
-Provide CSS classes completion from relative dir markups.
