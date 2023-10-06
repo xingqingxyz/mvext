@@ -2,7 +2,7 @@ import { strict } from 'assert'
 import {
   ComplexWordCase,
   WordCase,
-  caseTransform,
+  caseTransformHelper,
   joinCaseActions,
 } from '../../../utils/caseTransformHelper'
 
@@ -56,11 +56,11 @@ describe('joinCaseActions', function () {
   })
 })
 
-describe(`#${caseTransform.name}()`, function () {
+describe(`#${caseTransformHelper.name}()`, function () {
   it('should return expected cased word', function () {
     complexCasesList.forEach((wc) => {
       complexCasesList.forEach((wc2) => {
-        strict.equal(caseTransform(casedMap[wc], wc2), casedMap[wc2])
+        strict.equal(caseTransformHelper(casedMap[wc], wc2), casedMap[wc2])
       })
     })
   })

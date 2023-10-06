@@ -1,7 +1,7 @@
 import { ExtensionContext, TextEditor, TextEditorEdit, commands } from 'vscode'
 import {
   WordCase,
-  caseTransform,
+  caseTransformHelper,
   joinCaseActions,
 } from './utils/caseTransformHelper'
 
@@ -16,13 +16,13 @@ export function registerCaseTransform(ctx: ExtensionContext) {
     ...casesList.map((wc) =>
       registerTextEditorCommand(
         `mvext.transformTo${wc[0].toUpperCase() + wc.slice(1)}`,
-        (editor, edit) => dispatch(editor, edit, wc),
+        (editor, edit) => caseTransform(editor, edit, wc),
       ),
     ),
   )
 }
 
-function dispatch(
+function caseTransform(
   editor: TextEditor,
   edit: TextEditorEdit,
   targetWc: WordCase,
@@ -33,7 +33,10 @@ function dispatch(
     const position = selections[0].start
     const range = document.getWordRangeAtPosition(position)
     if (range) {
-      edit.replace(range, caseTransform(document.getText(range), targetWc))
+      edit.replace(
+        range,
+        caseTransformHelper(document.getText(range), targetWc),
+      )
     }
     return
   }
@@ -42,13 +45,16 @@ function dispatch(
     if (selectionIt.isEmpty) {
       const range = document.getWordRangeAtPosition(selectionIt.start)
       if (range) {
-        edit.replace(range, caseTransform(document.getText(range), targetWc))
+        edit.replace(
+          range,
+          caseTransformHelper(document.getText(range), targetWc),
+        )
       }
       continue
     }
     edit.replace(
       selectionIt,
-      caseTransform(document.getText(selectionIt), targetWc),
+      caseTransformHelper(document.getText(selectionIt), targetWc),
     )
   }
 }

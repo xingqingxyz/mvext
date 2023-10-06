@@ -1,10 +1,4 @@
-import { ExtensionContext, commands, window } from 'vscode'
-
-export function registerQuicklySwitchFile(ctx: ExtensionContext) {
-  ctx.subscriptions.push(
-    commands.registerCommand('mvext.quicklySwitchFile', quicklySwitchFile),
-  )
-}
+import { window } from 'vscode'
 
 export async function quicklySwitchFile() {
   const documentUri = window.activeTextEditor?.document.uri

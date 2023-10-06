@@ -2,14 +2,7 @@ import { ExecFileOptions } from 'child_process'
 import { writeFile } from 'fs/promises'
 import * as path from 'path'
 import * as util from 'util'
-import {
-  ExtensionContext,
-  Range,
-  TextDocument,
-  commands,
-  window,
-  workspace,
-} from 'vscode'
+import { Range, TextDocument, window, workspace } from 'vscode'
 import { Worker } from 'worker_threads'
 import { LangIds, execFilePm } from './utils'
 
@@ -20,16 +13,6 @@ export type LangId =
   | 'powershell'
   | 'python'
   | 'unknown'
-
-export function registerApplyShellEdit(ctx: ExtensionContext) {
-  ctx.subscriptions.push(
-    commands.registerCommand('mvext.applyShellEdit', applyShellEdit),
-    commands.registerCommand(
-      'mvext.applyCurrentShellEdit',
-      applyCurrentShellEdit,
-    ),
-  )
-}
 
 export async function applyShellEdit() {
   const editor = window.activeTextEditor

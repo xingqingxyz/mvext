@@ -3,7 +3,7 @@
   "private": true,
   "displayName": "My VSCode Extension",
   "description": "An extension ships some pragmatic tools.",
-  "version": "0.6.4",
+  "version": "0.6.6",
   "engines": {
     "vscode": "^1.82.0"
   },
@@ -33,12 +33,12 @@
         "mvext.applyShellEdit.pwshExecutable": {
           "type": "string",
           "default": "pwsh",
-          "markdownDescription": "%cfg.applyShellEdit.pwshExecutable%"
+          "markdownDescription": "`pwsh` executable file path"
         },
         "mvext.applyShellEdit.useExternalNode": {
           "type": "boolean",
           "default": false,
-          "markdownDescription": "%cfg.applyShellEdit.useExternalNode%"
+          "markdownDescription": "Use external node to eval js/ts files"
         },
         "mvext.applyShellEdit.nodeCommandLine": {
           "type": "array",
@@ -49,20 +49,31 @@
             "node",
             "-e"
           ],
-          "markdownDescription": "%cfg.applyShellEdit.nodeCommandLine%"
+          "markdownDescription": "Child process command and args when #mvext.applyShellEdit.useExternalNode# turned on"
         },
         "mvext.pathComplete.expandPaths": {
           "type": "object",
           "additionalProperties": {
-            "type": "string"
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            ]
           },
           "default": {},
-          "markdownDescription": "%cfg.pathComplete.expandPaths%",
-          "examples": [
-            {
-              "": "${workspaceFolder}/"
-            }
-          ]
+          "examples": {
+            "": [
+              "${workspaceFolder}",
+              "${workspaceFolder}/public"
+            ]
+          },
+          "markdownDescription": "Path mappings prefixes(Use array to map one to many):\n- `${workspaceFolder}` substitutes to main workspace folder\n- `~` substitutes to `os.homedir()` with ease"
         }
       }
     },

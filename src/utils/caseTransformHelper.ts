@@ -49,7 +49,7 @@ export const joinCaseActions: Record<
  * @param targetWc transform target case
  * @returns transformed sequence
  */
-export function caseTransform(sequence: string, targetWc: WordCase) {
+export function caseTransformHelper(sequence: string, targetWc: WordCase) {
   switch (targetWc) {
     case 'lowerCase':
       return sequence.toLowerCase()

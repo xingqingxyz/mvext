@@ -1,6 +1,0 @@
-{
-  "cfg.applyShellEdit.pwshExecutable": "`pwsh` executable file path",
-  "cfg.applyShellEdit.useExternalNode": "Use external node to eval js/ts files",
-  "cfg.applyShellEdit.nodeCommandLine": "Child process command and args when #mvext.applyShellEdit.useExternalNode# turned on",
-  "cfg.pathComplete.expandPaths": "Path mappings maps to some path prefix:\n- `${workspaceFolder}` substitutes to main workspace folder\n- `~` substitutes to `os.homedir()` with ease"
-}
