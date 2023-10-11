@@ -1,7 +1,0 @@
-{
-  "import vscode": {
-    "scope": "javascript,typescript",
-    "prefix": "imvs",
-    "body": "import * as vscode from 'vscode'"
-  }
-}
