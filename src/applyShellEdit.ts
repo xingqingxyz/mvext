@@ -1,18 +1,12 @@
 import { ExecFileOptions } from 'child_process'
 import { writeFile } from 'fs/promises'
-import * as path from 'path'
-import * as util from 'util'
-import { Range, TextDocument, window, workspace } from 'vscode'
+import path from 'path'
+import util from 'util'
+import { Range, window, workspace } from 'vscode'
 import { Worker } from 'worker_threads'
-import { LangIds, execFilePm } from './utils'
+import { LangIds, execFilePm, noop } from './utils'
 
-export type LangId =
-  | 'cjs'
-  | 'mjs'
-  | 'node'
-  | 'powershell'
-  | 'python'
-  | 'unknown'
+const jsLangIds = LangIds.langIdMarkup.concat(['javascript', 'typescript'])
 
 export async function applyShellEdit() {
   const editor = window.activeTextEditor
@@ -21,20 +15,17 @@ export async function applyShellEdit() {
   }
 
   const { document } = editor
+  const { languageId, fileName } = document
   const selectMap = new Map<Range, string>()
 
   for (const selectionIt of editor.selections) {
     const line = document.lineAt(selectionIt.start.line)
     const range = selectionIt.isEmpty ? line.range : selectionIt
     const text = selectionIt.isEmpty ? line.text : document.getText(selectionIt)
-    const langId = matchLangId(document.languageId, text)
-
-    try {
-      const result = await execByLangId(text, langId, document)
-      selectMap.set(range, result)
-    } catch {
-      /* empty */
-    }
+    await execByLangId(text, languageId, fileName).then(
+      (result) => selectMap.set(range, result),
+      noop,
+    )
   }
 
   await editor.edit((edit) => {
@@ -46,27 +37,31 @@ export async function applyShellEdit() {
 
 export async function execByLangId(
   text: string,
-  langId: LangId,
-  document: TextDocument,
+  languageId: string,
+  fileName: string,
 ) {
   const options: ExecFileOptions = {
-    cwd: path.join(document.fileName, '..'),
+    cwd: path.join(fileName, '..'),
   }
 
-  switch (langId) {
-    case 'cjs':
-      return formatObj(await cjsEval(text))
-    case 'mjs':
-      return formatObj(await mjsEval(text))
-    case 'node':
-      try {
-        const [cmd, ...args] = workspace
-          .getConfiguration('mvext.applyShellEdit')
-          .get('nodeCommandLine', ['node', '-e'])
+  if (jsLangIds.includes(languageId)) {
+    const cfg = workspace.getConfiguration('mvext.applyShellEdit')
+    try {
+      if (cfg.get<boolean>('useExternalNode')) {
+        const [cmd, ...args] = cfg.get('nodeCommandLine', ['node', '-e'])
         return (await execFilePm(cmd, args, options)).stdout.trimEnd()
-      } catch (err) {
-        return String(err)
       }
+      if (/^(im|ex)port/.test(text)) {
+        return formatObj(await mjsEval(text))
+      } else {
+        return formatObj(await cjsEval(text))
+      }
+    } catch (err) {
+      return String(err)
+    }
+  }
+
+  switch (languageId) {
     case 'powershell':
       return (
         await execFilePm(
@@ -77,6 +72,8 @@ export async function execByLangId(
           options,
         )
       ).stdout.trimEnd()
+    case 'shellscript':
+      return (await execFilePm('bash', ['-c', text], options)).stdout.trimEnd()
     case 'python':
       return (
         await execFilePm(
@@ -87,33 +84,6 @@ export async function execByLangId(
       ).stdout.trimEnd()
     default:
       throw Error('not support langId')
-  }
-}
-
-function matchLangId(editorLangId: string, text: string): LangId {
-  if (
-    LangIds.langIdMarkup
-      .concat('javascript', 'typescript')
-      .includes(editorLangId)
-  ) {
-    return workspace
-      .getConfiguration('mvext.applyShellEdit')
-      .get<boolean>('useExternalNode')
-      ? 'node'
-      : /^(im|ex)port /m.test(text)
-      ? 'mjs'
-      : 'cjs'
-  }
-
-  switch (editorLangId) {
-    case 'powershell':
-    case 'python':
-      return editorLangId
-    case 'ignore':
-    case 'properties':
-      return 'powershell'
-    default:
-      return 'unknown'
   }
 }
 
@@ -162,7 +132,7 @@ function formatObj(result: unknown) {
     case 'object':
       return util.format('%o', result)
     case 'function':
-      return util.format('%o', result) + '\n' + result.toString()
+      return util.format('%o\n%s', result, result)
     default:
       return String(result)
   }

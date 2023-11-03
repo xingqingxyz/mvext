@@ -1,4 +1,5 @@
 import { window } from 'vscode'
+import { noop } from './utils'
 
 export async function quicklySwitchFile() {
   const documentUri = window.activeTextEditor?.document.uri
@@ -15,13 +16,11 @@ export async function quicklySwitchFile() {
       if (!(ext in map)) {
         return
       }
-      try {
-        await window.showTextDocument(
+      await window
+        .showTextDocument(
           documentUri.with({ path: segs.join('') + '.' + (map as any)[ext] }),
         )
-      } catch {
-        /* ignore ENOENT */
-      }
+        .then(noop, noop)
     }
   }
 }

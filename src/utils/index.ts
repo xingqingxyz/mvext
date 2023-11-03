@@ -1,5 +1,5 @@
 import { execFile } from 'child_process'
-import * as util from 'util'
+import util from 'util'
 import { CancellationToken, UIKind, env } from 'vscode'
 
 //#region constants
@@ -28,6 +28,8 @@ export namespace LangIds {
 //#endregion
 
 //#region node utils
+export function noop() {}
+
 export const execFilePm = util.promisify(execFile)
 
 export function tokenToSignal(token: CancellationToken): AbortSignal {

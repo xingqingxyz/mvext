@@ -22,7 +22,6 @@ export class SelectionCodeActionsProvider {
     CodeActionKind.RefactorRewrite.append('function')
   static readonly expand = CodeActionKind.Refactor.append('expand')
   static readonly reDelFc = /[\w$[\]]+\s*\(.*\)/
-  static readonly reSwapVar = /^\[(?:[^,]+,)+.*\]$/s
 
   provideCodeActions(
     document: TextDocument,
@@ -75,18 +74,14 @@ export class SelectionCodeActionsProvider {
   }
 
   static provideSwapVar(document: TextDocument, selection: Selection) {
-    if (
-      !SelectionCodeActionsProvider.reSwapVar.test(document.getText(selection))
-    ) {
+    const text = document.getText(selection)
+    if (!text.includes(',')) {
       return
     }
 
     const wspEdit = new WorkspaceEdit()
     wspEdit.set(document.uri, [
-      new TextEdit(
-        selection,
-        SelectionCodeActionsProvider.swapVar(document.getText(selection)),
-      ),
+      new TextEdit(selection, SelectionCodeActionsProvider.swapVar(text)),
     ])
 
     const codeAction = new CodeAction(
@@ -99,9 +94,9 @@ export class SelectionCodeActionsProvider {
   }
 
   static swapVar(text: string) {
-    return (
-      text + ' = [' + text.slice(1, -1).split(',').reverse().join(',') + ']'
-    )
+    text = text.trim().replace(/^\[|\]$/g, '')
+    const rev = text.split(',').reverse().join(',')
+    return `[${text}] = [${rev}]`
   }
 
   static register(ctx: ExtensionContext) {

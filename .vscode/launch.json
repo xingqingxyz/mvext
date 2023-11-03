@@ -12,7 +12,7 @@
       "args": [
         "--extensionDevelopmentPath=${workspaceFolder}",
         "--disable-extensions",
-        "--enable-preposed-api undefined_publisher.mvext",
+        "--enable-preposed-api xingqingxyz.mvext",
         "${workspaceFolder}/test-workspace"
       ],
       "outFiles": ["${workspaceFolder}/out/**/*.js"],
@@ -26,7 +26,7 @@
         "--extensionDevelopmentPath=${workspaceFolder}",
         "--extensionTestsPath=${workspaceFolder}/out/test/suite",
         "--disable-extensions",
-        "--enable-preposed-api undefined_publisher.mvext",
+        "--enable-preposed-api xingqingxyz.mvext",
         "${workspaceFolder}/test-workspace"
       ],
       "outFiles": ["${workspaceFolder}/out/**/*.js"],

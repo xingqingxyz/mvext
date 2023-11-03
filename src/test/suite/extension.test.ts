@@ -1,7 +1,7 @@
-import * as strict from 'assert/strict'
-import * as fs from 'fs/promises'
+import strict from 'assert/strict'
+import fs from 'fs/promises'
 import { homedir } from 'os'
-import * as path from 'path'
+import path from 'path'
 import { Uri, commands, window } from 'vscode'
 
 describe('vscode', function () {

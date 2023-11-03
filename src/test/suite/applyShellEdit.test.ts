@@ -1,8 +1,8 @@
-import { cjsEval, execByLangId, mjsEval } from '../../applyShellEdit'
-import * as strict from 'assert/strict'
+import strict from 'assert/strict'
 import { EOL, homedir } from 'os'
-import * as path from 'path'
+import path from 'path'
 import { Uri, window } from 'vscode'
+import { cjsEval, execByLangId, mjsEval } from '../../applyShellEdit'
 
 // eslint-disable-next-line @typescript-eslint/no-misused-promises
 describe(`#${execByLangId.name}()`, async function () {
@@ -14,7 +14,7 @@ describe(`#${execByLangId.name}()`, async function () {
   describe('should should not rejects', function () {
     it('#pwsh', async function () {
       await strict.doesNotReject(() =>
-        execByLangId(pwshCode, 'powershell', document),
+        execByLangId(pwshCode, 'powershell', document.fileName),
       )
     })
   })
@@ -22,7 +22,7 @@ describe(`#${execByLangId.name}()`, async function () {
   describe('should returns expected result', function () {
     it('#pwsh', async function () {
       strict.equal(
-        await execByLangId(pwshCode, 'powershell', document),
+        await execByLangId(pwshCode, 'powershell', document.fileName),
         homedir() + EOL + 'True' + EOL,
       )
     })

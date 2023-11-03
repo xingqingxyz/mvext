@@ -1,6 +1,6 @@
 import { glob } from 'glob'
 import Mocha from 'mocha'
-import * as path from 'path'
+import path from 'path'
 
 export function run() {
   const mocha = new Mocha({

@@ -1,6 +1,6 @@
-# My VSCode Extension
+# VSC mvext
 
-This extension ships a set of pragmatic web dev features:
+This extension ships a set of pragmatic tools:
 
 - [Case Transform](#case-transform)
 - [Quickly Switch File](#quickly-switch-file)
@@ -20,24 +20,20 @@ Quickly switch you source file between `.js/.css/.html` or `.js/.ts` (shortcut `
 
 #### Switch File
 
-| from            | to             |
-| --------------- | -------------- |
-| .js             | .html          |
-| .css            | .html          |
-| .html?          | .css           |
-| `src/**/*.tsx?` | `dist/**/*.js` |
-
-#### Switch Test File
-
-Or switch your source file between `/[base].[ext]` and `/__tests__/[base].{test,spec}.[ext]` (shortcut `alt+shift+t`)
+| from  | to    |
+| ----- | ----- |
+| .js   | .html |
+| .css  | .html |
+| .html | .css  |
+| .ts   | .js   |
 
 ### Apply Shell Edit
 
 Using current editor selection, according to `editorLangId`, to eval the code and instantly replace it. Supports language ids (shortcut `ctrl+alt+s`):
 
-- `/(java|type)script(react)?|vue|svelte|markdown|mdx/` (Node.js / Deno)
+- `/(java|type)script(react)?|vue|svelte|markdown|mdx/` (Node.js | Deno | Bun.js)
 - `powershell` (pwsh or `mvext.applyShellEdit.pwshExec`)
-- `ignore` (pwsh)
+- `ignore` (pwsh | bash)
 
 > Setting config `mvext.applyShellEdit.useDeno` to true to use deno to eval any javascript code.
 

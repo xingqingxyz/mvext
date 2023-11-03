@@ -1,34 +1,30 @@
 {
   "name": "mvext",
   "private": true,
-  "displayName": "My VSCode Extension",
+  "displayName": "VSC mvext",
   "description": "An extension ships some pragmatic tools.",
-  "version": "0.6.6",
+  "version": "0.6.7",
+  "preview": true,
   "engines": {
     "vscode": "^1.82.0"
   },
   "categories": [
     "Other"
   ],
-  "author": "Ming.Chen <cm.email@qq.com> (https://github.com/xingqingxyz)",
+  "author": "Ming Chen",
   "license": "MIT",
   "repository": {
-    "url": "https://github.com/xingqingxyz/mvext.git",
-    "type": "git"
+    "type": "git",
+    "url": "https://github.com/xingqingxyz/mvext"
   },
+  "publisher": "xingqingxyz",
   "bugs": {
     "url": "https://github.com/xingqingxyz/mvext/issues"
   },
   "main": "./out/extension.js",
-  "keywords": [
-    "case transform",
-    "quickly switch files",
-    "apply shell edit",
-    "path complete"
-  ],
   "contributes": {
     "configuration": {
-      "title": "My VSCode Extension",
+      "title": "VSC mvext",
       "properties": {
         "mvext.applyShellEdit.pwshExecutable": {
           "type": "string",
@@ -245,15 +241,13 @@
   "activationEvents": [
     "onStartupFinished"
   ],
-  "enabledApiProposals": [
-    "terminalExecuteCommandEvent"
-  ],
   "scripts": {
+    "prewatch": "npm pkg set enabledApiProposals=[\"terminalExecuteCommandEvent\"] --json",
     "watch": "yarn esbuild-base --watch --sourcemap",
     "pretest": "rimraf out && esbuild src/**/**.ts --platform=node --format=cjs --outdir=out --sourcemap",
     "prepare": "husky install",
-    "esbuild-base": "esbuild src/extension.ts --bundle --platform=node --outfile=out/extension.js --external:vscode",
-    "vscode:prepublish": "yarn esbuild-base --minify"
+    "esbuild-base": "esbuild src/extension.ts --bundle --platform=node --outfile=out/extension.js --external:vscode --define:DEV=true",
+    "vscode:prepublish": "npm pkg delete enabledApiProposals && yarn esbuild-base --minify --define:DEV=false"
   },
   "devDependencies": {
     "@types/mocha": "10.0.1",
