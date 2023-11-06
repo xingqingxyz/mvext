@@ -1,8 +1,7 @@
 import { ExecFileOptions } from 'child_process'
-import { writeFile } from 'fs/promises'
 import path from 'path'
 import util from 'util'
-import { Range, window, workspace } from 'vscode'
+import { Range, TextDocument, window, workspace } from 'vscode'
 import { Worker } from 'worker_threads'
 import { LangIds, execFilePm, noop } from './utils'
 
@@ -15,14 +14,13 @@ export async function applyShellEdit() {
   }
 
   const { document } = editor
-  const { languageId, fileName } = document
   const selectMap = new Map<Range, string>()
 
   for (const selectionIt of editor.selections) {
     const line = document.lineAt(selectionIt.start.line)
     const range = selectionIt.isEmpty ? line.range : selectionIt
     const text = selectionIt.isEmpty ? line.text : document.getText(selectionIt)
-    await execByLangId(text, languageId, fileName).then(
+    await execByLangId(text, document).then(
       (result) => selectMap.set(range, result),
       noop,
     )
@@ -35,33 +33,25 @@ export async function applyShellEdit() {
   })
 }
 
-export async function execByLangId(
-  text: string,
-  languageId: string,
-  fileName: string,
-) {
+export async function execByLangId(text: string, document: TextDocument) {
   const options: ExecFileOptions = {
-    cwd: path.join(fileName, '..'),
+    cwd: path.join(document.fileName, '..'),
   }
 
-  if (jsLangIds.includes(languageId)) {
+  if (jsLangIds.includes(document.languageId)) {
     const cfg = workspace.getConfiguration('mvext.applyShellEdit')
     try {
       if (cfg.get<boolean>('useExternalNode')) {
         const [cmd, ...args] = cfg.get('nodeCommandLine', ['node', '-e'])
         return (await execFilePm(cmd, args, options)).stdout.trimEnd()
       }
-      if (/^(im|ex)port/.test(text)) {
-        return formatObj(await mjsEval(text))
-      } else {
-        return formatObj(await cjsEval(text))
-      }
+      return formatObj(await cjsEval(text, document))
     } catch (err) {
       return String(err)
     }
   }
 
-  switch (languageId) {
+  switch (document.languageId) {
     case 'powershell':
       return (
         await execFilePm(
@@ -87,44 +77,23 @@ export async function execByLangId(
   }
 }
 
-export async function mjsEval(text: string) {
-  const mjsFile = path.join(__dirname, 'eval.mjs')
-  const jsCode = `import { parentPort } from 'worker_threads'
-;${text};
-parentPort.postMessage(await main())`
-
-  await writeFile(mjsFile, jsCode, 'utf8')
-  const worker = new Worker(mjsFile)
-
-  return new Promise<unknown>((resolve, reject) => {
-    worker.on('message', (result) => {
-      resolve(result)
-      void worker.terminate()
-    })
-    worker.on('error', reject)
+export async function cjsEval(text: string, { fileName }: TextDocument) {
+  const jsCode = `(async () => {
+  ({ __dirname, __filename }) = require('node:worker_threads').workerData;
+  return (${text})
+})().then((r) => require('node:worker_threads').parentPort.postMessage(r))`
+  const worker = new Worker(jsCode, {
+    eval: true,
+    workerData: {
+      __dirname: fileName.slice(0, fileName.lastIndexOf('/')),
+      __filename: fileName,
+    },
   })
-}
-
-export function cjsEval(text: string) {
-  const hasMainEntry = text.includes('function main(')
-
-  const jsCode = `const { parentPort } = require('worker_threads')
-void (async function () {
-  ${hasMainEntry ? text : ''};
-  parentPort.postMessage(${
-    hasMainEntry ? 'await main()' : 'eval(' + JSON.stringify(text) + ')'
-  })
-})()`
-
-  const worker = new Worker(jsCode, { eval: true })
-
-  return new Promise<unknown>((resolve, reject) => {
-    worker.on('message', (result) => {
-      resolve(result)
-      void worker.terminate()
-    })
-    worker.on('error', reject)
-  })
+  try {
+    return await new Promise((c, e) => worker.on('message', c).on('error', e))
+  } finally {
+    await worker.terminate()
+  }
 }
 
 function formatObj(result: unknown) {
@@ -132,7 +101,12 @@ function formatObj(result: unknown) {
     case 'object':
       return util.format('%o', result)
     case 'function':
-      return util.format('%o\n%s', result, result)
+      return util.format(
+        '// [function %s]:\n%s\n// as obj:\n%o',
+        result.name,
+        result,
+        Object.assign({}, result),
+      )
     default:
       return String(result)
   }

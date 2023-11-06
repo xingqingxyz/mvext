@@ -12,11 +12,11 @@
       "args": [
         "--extensionDevelopmentPath=${workspaceFolder}",
         "--disable-extensions",
-        "--enable-preposed-api xingqingxyz.mvext",
         "${workspaceFolder}/test-workspace"
       ],
       "outFiles": ["${workspaceFolder}/out/**/*.js"],
-      "skipFiles": ["<node_internals>/**", "**/node_modules/**"]
+      "skipFiles": ["<node_internals>/**", "**/node_modules/**"],
+      "preLaunchTask": "npm: watch"
     },
     {
       "name": "Extension Tests",
@@ -26,7 +26,6 @@
         "--extensionDevelopmentPath=${workspaceFolder}",
         "--extensionTestsPath=${workspaceFolder}/out/test/suite",
         "--disable-extensions",
-        "--enable-preposed-api xingqingxyz.mvext",
         "${workspaceFolder}/test-workspace"
       ],
       "outFiles": ["${workspaceFolder}/out/**/*.js"],

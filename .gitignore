@@ -1,5 +1,6 @@
 .vscode/*
 !.vscode/launch.json
+!.vscode/tasks.json
 node_modules
 out
 test-workspace

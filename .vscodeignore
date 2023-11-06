@@ -1,23 +1,4 @@
-.eslintrc.js
-.git
-.gitignore
-.husky
-.nvmrc
-.vscode
-.vscodeignore
-# CHANGELOG.md
-# LICENSE
-# README.md
-ext.d.ts
-install.ps1
-*.vsix
-node_modules
-out
+**
 !out/extension.js
-# package.json
-scripts
-src
-test-workspace
-tsconfig.json
-vscode.proposed.terminalExecuteCommandEvent.d.ts
-yarn.lock
+!CHANGELOG.md
+!LICENSE

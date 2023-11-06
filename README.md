@@ -1,6 +1,6 @@
 # VSC mvext
 
-This extension ships a set of pragmatic tools:
+This extension ships a set of useful tools:
 
 - [Case Transform](#case-transform)
 - [Quickly Switch File](#quickly-switch-file)
@@ -32,10 +32,8 @@ Quickly switch you source file between `.js/.css/.html` or `.js/.ts` (shortcut `
 Using current editor selection, according to `editorLangId`, to eval the code and instantly replace it. Supports language ids (shortcut `ctrl+alt+s`):
 
 - `/(java|type)script(react)?|vue|svelte|markdown|mdx/` (Node.js | Deno | Bun.js)
-- `powershell` (pwsh or `mvext.applyShellEdit.pwshExec`)
+- `powershell` (pwsh)
 - `ignore` (pwsh | bash)
-
-> Setting config `mvext.applyShellEdit.useDeno` to true to use deno to eval any javascript code.
 
 ### TypeScript Code Actions
 
@@ -52,3 +50,14 @@ Using current editor selection, according to `editorLangId`, to eval the code an
 ### Path Complete
 
 Provide path completions for files.
+
+## Extension Settings
+
+- `mvext.applyShellEdit.pwshExec`: set pwsh excutable path
+- `mvext.applyShellEdit.useExternalNode`: use custom node
+- `mvext.applyShellEdit.nodeCommandLine`: set node runtime and args, in one array
+- `mvext.pathComplete.expandPaths`: set workspace's path completion map
+
+## For more information
+
+Welcome to visit this [homepage](https://github.com/xingqingxyz/mvext)

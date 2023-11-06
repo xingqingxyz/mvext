@@ -11,7 +11,7 @@ import {
   languages,
   workspace,
 } from 'vscode'
-import { LangIds, mergeIterables } from '../utils'
+import { LangIds, mergeIterables } from '@/utils'
 
 export class CssSelectorCompleteProvider implements CompletionItemProvider {
   static readonly reHtmlClassName =

@@ -15,7 +15,7 @@ export function activate(ctx: ExtensionContext) {
     ctx.subscriptions.push(
       registerCommand('mvext.applyShellEdit', applyShellEdit),
     )
-    if (DEV) {
+    if (__DEV__) {
       ctx.subscriptions.push(
         registerCommand('mvext.applyCurrentShellEdit', applyCurrentShellEdit),
       )

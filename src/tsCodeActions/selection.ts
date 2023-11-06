@@ -15,7 +15,7 @@ import {
   WorkspaceEdit,
   languages,
 } from 'vscode'
-import { LangIds } from '../utils'
+import { LangIds } from '@/utils'
 
 export class SelectionCodeActionsProvider {
   static readonly rewriteFunction =

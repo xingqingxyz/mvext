@@ -4,7 +4,7 @@ import {
   WordCase,
   caseTransformHelper,
   joinCaseActions,
-} from '../../../utils/caseTransformHelper'
+} from '@/utils/caseTransformHelper'
 
 const casedMap: Record<WordCase, string> = {
   lowerCase: 'itisagoodweather',

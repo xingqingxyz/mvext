@@ -1,7 +1,7 @@
 /** @type {import('eslint').ESLint.ConfigData} */
 module.exports = {
   root: true,
-  ignorePatterns: ['/out/'],
+  ignorePatterns: ['*', '!/src'],
   env: {
     es2021: true,
     node: true,

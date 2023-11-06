@@ -17,6 +17,7 @@ import { LangIds } from './utils'
 
 export class PathCompleteProvider {
   static readonly reValidSuffix = /[^ '"`]*[\\/][^'"`?*:<>|]*$/
+  static readonly commitChars = ['\\', '/']
   static cfgPathMappings: Record<string, string | string[]>
 
   async provideCompletionItems(
@@ -35,15 +36,28 @@ export class PathCompleteProvider {
     }
 
     const baseDirs = PathCompleteProvider.getBaseDirsFromPaths(words, document)
-    let entries: [string, FileType][] = []
+
+    const compItems = []
     for (const baseDir of baseDirs) {
+      const baseDirPath = workspace.asRelativePath(baseDir)
       try {
-        entries = entries.concat(await workspace.fs.readDirectory(baseDir))
+        for (const [name, type] of await workspace.fs.readDirectory(baseDir)) {
+          const item = new CompletionItem(
+            name,
+            type === FileType.Directory
+              ? CompletionItemKind.Folder
+              : CompletionItemKind.File,
+          )
+          item.commitCharacters = PathCompleteProvider.commitChars
+          item.detail = baseDirPath
+          compItems.push(item)
+        }
       } catch {
         continue
       }
     }
-    return PathCompleteProvider.createCompItems(entries)
+
+    return compItems
   }
 
   //#region util
@@ -90,21 +104,6 @@ export class PathCompleteProvider {
       // relative wsp or untitled:
       return [Uri.joinPath(document.uri, '..', ...words)]
     }
-  }
-
-  static createCompItems(entries: [string, FileType][]) {
-    const { File, Folder } = CompletionItemKind
-    const { Directory } = FileType
-    const commitChars = ['\\', '/']
-    const compItems = entries.map(([filename, kind]) => {
-      const item = new CompletionItem(
-        filename,
-        kind === Directory ? Folder : File,
-      )
-      item.commitCharacters = commitChars
-      return item
-    })
-    return compItems
   }
 
   static getPathMappings() {
