@@ -1,4 +1,4 @@
-# VSC mvext
+# mvext
 
 This extension ships a set of useful tools:
 
@@ -12,7 +12,7 @@ This extension ships a set of useful tools:
 
 ### Case Transform
 
-Transform (multiple) cursor position or selection to many cases. Cases: `titleCase`, `camelCase`, `constantCase`, `pascalCase`, `kebabCase`, `snakeCase`, `sentenceCase`, `dotCase`, `pathCase`, `headerCase`, `noCase`, `lowerCase`, `upperCase` (command search _mvext_ to know shortcuts)
+Transform (multiple) cursor position or selection to many cases. Cases: `titleCase`, `camelCase`, `constantCase`, `pascalCase`, `kebabCase`, `snakeCase`, `sentenceCase`, `dotCase`, `pathCase`, `headerCase`, `noCase`, `lowerCase`, `upperCase`
 
 ### Quickly Switch File
 
@@ -33,7 +33,7 @@ Using current editor selection, according to `editorLangId`, to eval the code an
 
 - `/(java|type)script(react)?|vue|svelte|markdown|mdx/` (Node.js | Deno | Bun.js)
 - `powershell` (pwsh)
-- `ignore` (pwsh | bash)
+- `shellscript` (bash)
 
 ### TypeScript Code Actions
 
@@ -50,13 +50,6 @@ Using current editor selection, according to `editorLangId`, to eval the code an
 ### Path Complete
 
 Provide path completions for files.
-
-## Extension Settings
-
-- `mvext.applyShellEdit.pwshExec`: set pwsh excutable path
-- `mvext.applyShellEdit.useExternalNode`: use custom node
-- `mvext.applyShellEdit.nodeCommandLine`: set node runtime and args, in one array
-- `mvext.pathComplete.expandPaths`: set workspace's path completion map
 
 ## For more information
 

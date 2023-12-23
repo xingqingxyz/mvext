@@ -1,11 +1,21 @@
 import { ExecFileOptions } from 'child_process'
-import path from 'path'
-import util from 'util'
-import { Range, TextDocument, window, workspace } from 'vscode'
-import { Worker } from 'worker_threads'
-import { LangIds, execFilePm, noop } from './utils'
+import { EOL } from 'os'
+import * as path from 'path'
+import * as util from 'util'
+import { Range, TextDocument, window } from 'vscode'
+import { getConfig } from './config'
+import { execFilePm, isWin32 } from './util'
 
-const jsLangIds = LangIds.langIdMarkup.concat(['javascript', 'typescript'])
+const nodeLangIds = [
+  'javascript',
+  'typescript',
+  'javascriptreact',
+  'typescriptreact',
+  'vue',
+  'mdx',
+  'html',
+  'svelte',
+]
 
 export async function applyShellEdit() {
   const editor = window.activeTextEditor
@@ -16,100 +26,43 @@ export async function applyShellEdit() {
   const { document } = editor
   const selectMap = new Map<Range, string>()
 
-  for (const selectionIt of editor.selections) {
-    const line = document.lineAt(selectionIt.start.line)
-    const range = selectionIt.isEmpty ? line.range : selectionIt
-    const text = selectionIt.isEmpty ? line.text : document.getText(selectionIt)
-    await execByLangId(text, document).then(
-      (result) => selectMap.set(range, result),
-      noop,
-    )
+  for (const selectionRange of editor.selections) {
+    const line = document.lineAt(selectionRange.start.line)
+    const range = selectionRange.isEmpty ? line.range : selectionRange
+    const text = selectionRange.isEmpty
+      ? line.text
+      : document.getText(selectionRange)
+    const result = await execByLangId(text, document)
+    result && selectMap.set(range, result)
   }
 
   await editor.edit((edit) => {
-    selectMap.forEach((result, selectionIt) => {
-      edit.replace(selectionIt, result)
-    })
+    for (const [selectionRange, result] of selectMap.entries()) {
+      edit.replace(selectionRange, result)
+    }
   })
 }
 
 export async function execByLangId(text: string, document: TextDocument) {
+  const { languageId } = document
+  const config = getConfig(document, 'shellEdit')
+  let [exe, ...args] =
+    config[`${isWin32 ? 'powershell' : 'shellscript'}CommandLine`]
+  if (nodeLangIds.includes(languageId)) {
+    ;[exe, ...args] = config.nodeCommandLine
+  }
+  if (['python', 'shellscript', 'powershell'].includes(languageId)) {
+    ;[exe, ...args] = (config as any)[languageId + 'CommandLine']
+  }
+  args.push(text)
   const options: ExecFileOptions = {
-    cwd: path.join(document.fileName, '..'),
+    cwd: path.dirname(document.fileName),
   }
-
-  if (jsLangIds.includes(document.languageId)) {
-    const cfg = workspace.getConfiguration('mvext.applyShellEdit')
-    try {
-      if (cfg.get<boolean>('useExternalNode')) {
-        const [cmd, ...args] = cfg.get('nodeCommandLine', ['node', '-e'])
-        return (await execFilePm(cmd, args, options)).stdout.trimEnd()
-      }
-      return formatObj(await cjsEval(text, document))
-    } catch (err) {
-      return String(err)
-    }
-  }
-
-  switch (document.languageId) {
-    case 'powershell':
-      return (
-        await execFilePm(
-          workspace
-            .getConfiguration('mvext.applyShellEdit')
-            .get('pwshExec', 'pwsh'),
-          ['-NoProfile', '-C', text],
-          options,
-        )
-      ).stdout.trimEnd()
-    case 'shellscript':
-      return (await execFilePm('bash', ['-c', text], options)).stdout.trimEnd()
-    case 'python':
-      return (
-        await execFilePm(
-          process.platform === 'win32' ? 'py' : 'python3',
-          ['-c', text],
-          options,
-        )
-      ).stdout.trimEnd()
-    default:
-      throw Error('not support langId')
-  }
-}
-
-export async function cjsEval(text: string, { fileName }: TextDocument) {
-  const jsCode = `(async () => {
-  ({ __dirname, __filename }) = require('node:worker_threads').workerData;
-  return (${text})
-})().then((r) => require('node:worker_threads').parentPort.postMessage(r))`
-  const worker = new Worker(jsCode, {
-    eval: true,
-    workerData: {
-      __dirname: fileName.slice(0, fileName.lastIndexOf('/')),
-      __filename: fileName,
-    },
-  })
-  try {
-    return await new Promise((c, e) => worker.on('message', c).on('error', e))
-  } finally {
-    await worker.terminate()
-  }
-}
-
-function formatObj(result: unknown) {
-  switch (typeof result) {
-    case 'object':
-      return util.format('%o', result)
-    case 'function':
-      return util.format(
-        '// [function %s]:\n%s\n// as obj:\n%o',
-        result.name,
-        result,
-        Object.assign({}, result),
-      )
-    default:
-      return String(result)
-  }
+  return (
+    await execFilePm(exe, args, options).catch((err) => ({
+      stdout: String(err),
+    }))
+  ).stdout.trimEnd()
 }
 
 export async function applyCurrentShellEdit() {
@@ -122,18 +75,20 @@ export async function applyCurrentShellEdit() {
   const { document } = editor
   const selectMap = new Map<Range, string>()
 
-  for (const selectionIt of editor.selections) {
-    const line = document.lineAt(selectionIt.start.line)
-    const range = selectionIt.isEmpty ? line.range : selectionIt
-    const text = selectionIt.isEmpty ? line.text : document.getText(selectionIt)
+  for (const selectionRange of editor.selections) {
+    const line = document.lineAt(selectionRange.start.line)
+    const range = selectionRange.isEmpty ? line.range : selectionRange
+    const text = selectionRange.isEmpty
+      ? line.text
+      : document.getText(selectionRange)
     const result = await new Promise<string | undefined>((resolve) => {
-      terminal.sendText(text)
-      const event = window.onDidExecuteTerminalCommand((cmd) => {
-        if (cmd.commandLine === text) {
-          resolve(cmd.output?.trimEnd())
+      const event = window.onDidExecuteTerminalCommand((e) => {
+        if (e.terminal === terminal) {
+          resolve(e.output?.trimEnd())
           event.dispose()
         }
       })
+      terminal.sendText(text)
     })
     if (result) {
       selectMap.set(range, result)
@@ -141,8 +96,57 @@ export async function applyCurrentShellEdit() {
   }
 
   await editor.edit((edit) => {
-    selectMap.forEach((result, selectionIt) => {
-      edit.replace(selectionIt, result)
-    })
+    for (const [selectionRange, result] of selectMap.entries()) {
+      edit.replace(selectionRange, result)
+    }
   })
+}
+
+const shellFilterPrefix = {
+  pwsh: "@'\n%s\n'@ | ".replaceAll('\n', EOL),
+  bash: 'cat << EOF\n%s\nEOF | '.replaceAll('\n', EOL),
+}
+
+export async function applyShellFilter() {
+  const editor = window.activeTextEditor
+  const terminal = window.activeTerminal
+  if (!(editor && terminal)) {
+    return
+  }
+  terminal.show()
+
+  const { document, selections } = editor
+  const docEOL = ['\n', '\r\n'][document.eol - 1]
+  let text = ''
+  for (const selectionRange of selections) {
+    if (selectionRange.isEmpty) {
+      text += document.lineAt(selectionRange.start).text.trimEnd() + docEOL
+    } else {
+      text += document.getText(selectionRange).trimEnd() + docEOL
+    }
+  }
+  if (docEOL !== EOL) {
+    text = text.replaceAll(docEOL, EOL)
+  }
+  let shellType: 'pwsh' | 'bash' = isWin32 ? 'pwsh' : 'bash'
+  if (/pwsh|powershell/i.test(terminal.creationOptions.name ?? '')) {
+    shellType = 'pwsh'
+  }
+  text = util.format(shellFilterPrefix[shellType], text)
+
+  const result = await new Promise<string | undefined>((resolve) => {
+    const event = window.onDidExecuteTerminalCommand((e) => {
+      if (e.terminal === terminal) {
+        resolve(e.output)
+        event.dispose()
+      }
+    })
+    terminal.sendText(text)
+  })
+
+  if (result) {
+    await editor.edit((edit) => {
+      edit.replace(selections[0], result)
+    })
+  }
 }

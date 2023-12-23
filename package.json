@@ -9,7 +9,7 @@
   "preview": true,
   "license": "MIT",
   "engines": {
-    "vscode": "^1.82.0"
+    "vscode": "^1.85.0"
   },
   "categories": [
     "Other",
@@ -27,17 +27,7 @@
     "configuration": {
       "title": "VSC mvext",
       "properties": {
-        "mvext.applyShellEdit.pwshExec": {
-          "type": "string",
-          "default": "pwsh",
-          "markdownDescription": "`pwsh` executable file path"
-        },
-        "mvext.applyShellEdit.useExternalNode": {
-          "type": "boolean",
-          "default": false,
-          "markdownDescription": "Use external node to eval js/ts files"
-        },
-        "mvext.applyShellEdit.nodeCommandLine": {
+        "mvext.shellEdit.nodeCommandLine": {
           "type": "array",
           "items": {
             "type": "string"
@@ -46,31 +36,76 @@
             "node",
             "-e"
           ],
-          "markdownDescription": "Child process command and args when #mvext.applyShellEdit.useExternalNode# turned on"
+          "examples": [
+            [
+              "deno",
+              "eval"
+            ],
+            [
+              "deno",
+              "eval",
+              "-p"
+            ],
+            [
+              "node",
+              "-p"
+            ],
+            [
+              "bun",
+              "<(eval(process.argv[2]))"
+            ]
+          ],
+          "markdownDescription": "Child process command and args when eval JavaScript/TypeScript files"
         },
-        "mvext.pathComplete.expandPaths": {
+        "mvext.shellEdit.pythonCommandLine": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "py",
+            "-c"
+          ],
+          "markdownDescription": "Child process command and args when eval Python files"
+        },
+        "mvext.shellEdit.shellscriptCommandLine": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "bash",
+            "-c"
+          ],
+          "markdownDescription": "Child process command and args when eval ShellScript files"
+        },
+        "mvext.shellEdit.powershellCommandLine": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "pwsh",
+            "-NoProfile",
+            "-Command"
+          ],
+          "markdownDescription": "Child process command and args when eval PowerShell files"
+        },
+        "mvext.pathComplete.trimRelativePrefix": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "Trim relative prefix `./` of path completion"
+        },
+        "mvext.pathComplete.prefixMap": {
           "type": "object",
           "additionalProperties": {
-            "oneOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "array",
-                "items": {
-                  "type": "string"
-                }
-              }
-            ]
+            "type": "string"
           },
           "default": {},
           "examples": {
-            "": [
-              "${workspaceFolder}",
-              "${workspaceFolder}/public"
-            ]
+            "@": "${workspaceFolder}/src"
           },
-          "markdownDescription": "Path mappings prefixes(Use array to map one to many):\n- `${workspaceFolder}` substitutes to main workspace folder\n- `~` substitutes to `os.homedir()` with ease"
+          "markdownDescription": "Path mappings for path completion:\n- `${workspaceFolder}` means workspace folder\n- `~` means `os.homedir()`"
         }
       }
     },
@@ -141,9 +176,19 @@
         "command": "mvext.transformToUpperCase"
       },
       {
+        "title": "Rename Symbol's Case",
+        "category": "mvext",
+        "command": "mvext.renameSymbolCase"
+      },
+      {
         "title": "Apply Shell Edit",
         "category": "mvext",
         "command": "mvext.applyShellEdit"
+      },
+      {
+        "title": "Apply Shell Filter",
+        "category": "mvext",
+        "command": "mvext.applyShellFilter"
       },
       {
         "title": "Apply Current Shell Edit",
@@ -223,9 +268,19 @@
         "command": "mvext.transformToLowerCase"
       },
       {
+        "key": "alt+x alt+r",
+        "when": "editorTextFocus && !editorReadonly",
+        "command": "mvext.renameSymbolCase"
+      },
+      {
         "key": "ctrl+alt+s",
         "when": "editorTextFocus && !editorReadonly",
         "command": "mvext.applyShellEdit"
+      },
+      {
+        "key": "shift+alt+1",
+        "when": "editorTextFocus && !editorReadonly",
+        "command": "mvext.applyShellFilter"
       },
       {
         "key": "ctrl+alt+e",
@@ -242,34 +297,39 @@
   "activationEvents": [
     "onStartupFinished"
   ],
+  "enabledApiProposals": [
+    "terminalExecuteCommandEvent"
+  ],
   "scripts": {
     "prewatch": "npm pkg set 'enabledApiProposals=[\"terminalExecuteCommandEvent\"]' --json",
     "watch": "NODE_ENV=development rollup -c --watch",
     "pretest": "rimraf out && esbuild src/**/**.ts --platform=node --format=cjs --outdir=out --sourcemap --define:__DEV__=true",
     "prepare": "husky install",
-    "vscode:prepublish": "npm pkg delete enabledApiProposals && rollup -c"
+    "build": "npm pkg delete enabledApiProposals && install",
+    "install": "vsce package -o out/mvext.vsix && code --install-extension out/mvext.vsix",
+    "vscode:prepublish": "rollup -c"
   },
   "devDependencies": {
+    "@rollup/plugin-node-resolve": "^15.2.3",
     "@rollup/plugin-replace": "^5.0.5",
     "@rollup/plugin-terser": "^0.4.4",
     "@rollup/plugin-typescript": "^11.1.5",
-    "@types/mocha": "10.0.1",
-    "@types/node": "18.x",
-    "@types/vscode": "^1.82.0",
-    "@typescript-eslint/eslint-plugin": "^6.4.0",
-    "@typescript-eslint/parser": "^6.4.0",
+    "@types/mocha": "^10.0.6",
+    "@types/node": "18.15.x",
+    "@types/vscode": "^1.85.0",
+    "@typescript-eslint/eslint-plugin": "^6.15.0",
+    "@typescript-eslint/parser": "^6.15.0",
     "@vscode/dts": "^0.4.0",
-    "esbuild": "^0.19.4",
-    "eslint": "^8.48.0",
-    "glob": "^10.3.4",
+    "esbuild": "^0.19.10",
+    "eslint": "^8.56.0",
+    "glob": "^10.3.10",
     "husky": "^8.0.3",
-    "lint-staged": "^14.0.0",
-    "mocha": "10.2.0",
-    "prettier": "^3.0.2",
-    "rimraf": "^5.0.1",
-    "rollup": "^4.2.0",
-    "tslib": "^2.6.2",
-    "typescript": "^5.1.6"
+    "lint-staged": "^15.2.0",
+    "mocha": "^10.2.0",
+    "prettier": "^3.1.1",
+    "rimraf": "^5.0.5",
+    "rollup": "^4.9.1",
+    "typescript": "^5.3.3"
   },
   "prettier": {
     "semi": false,

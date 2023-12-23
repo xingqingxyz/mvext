@@ -1,10 +1,10 @@
-import { strict } from 'assert'
 import {
   ComplexWordCase,
   WordCase,
   caseTransformHelper,
   joinCaseActions,
-} from '@/utils/caseTransformHelper'
+} from '@/util/caseTransformHelper'
+import { strict } from 'assert'
 
 const casedMap: Record<WordCase, string> = {
   lowerCase: 'itisagoodweather',

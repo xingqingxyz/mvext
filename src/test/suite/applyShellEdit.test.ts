@@ -1,8 +1,9 @@
+import { execByLangId } from '@/applyShellEdit'
+import { cjsEval } from '@/util/cjsEval'
 import strict from 'assert/strict'
 import { EOL, homedir } from 'os'
 import path from 'path'
 import { Uri, window } from 'vscode'
-import { cjsEval, execByLangId } from '@/applyShellEdit'
 
 const { document } = await window.showTextDocument(
   Uri.file(path.join(homedir(), 'test.js')),
@@ -45,11 +46,11 @@ function main() {
 
   describe(`#${cjsEval.name}()`, function () {
     it('should not rejects', async function () {
-      await strict.doesNotReject(cjsEval(jsCode, document))
+      await strict.doesNotReject(cjsEval(jsCode, ''))
     })
 
     it('should returns object', async function () {
-      strict.deepEqual(await cjsEval(jsCode, document), {
+      strict.deepEqual(await cjsEval(jsCode, ''), {
         hello: 'main',
         num: 1024,
       })
@@ -67,11 +68,11 @@ if (homedir() !== ${homedirJson}) {
 ;({ hello: 'world', num: 42 })`
 
     it('should not rejects', async function () {
-      await strict.doesNotReject(cjsEval(cjsCode, document))
+      await strict.doesNotReject(cjsEval(cjsCode, ''))
     })
 
     it('should returns object', async function () {
-      strict.deepEqual(await cjsEval(cjsCode, document), {
+      strict.deepEqual(await cjsEval(cjsCode, ''), {
         hello: 'world',
         num: 42,
       })

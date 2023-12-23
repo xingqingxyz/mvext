@@ -1,10 +1,11 @@
+import { extContext } from '@/context'
 import {
   CodeAction,
   CodeActionContext,
   CodeActionKind,
+  CodeActionProvider,
   CodeActionTriggerKind,
   Command,
-  ExtensionContext,
   ProviderResult,
   Range,
   Selection,
@@ -15,13 +16,13 @@ import {
   WorkspaceEdit,
   languages,
 } from 'vscode'
-import { LangIds } from '@/utils'
 
-export class SelectionCodeActionsProvider {
-  static readonly rewriteFunction =
+class SelectionCodeActionsProvider implements CodeActionProvider {
+  static readonly kindRewriteFunction =
     CodeActionKind.RefactorRewrite.append('function')
-  static readonly expand = CodeActionKind.Refactor.append('expand')
-  static readonly reDelFc = /[\w$[\]]+\s*\(.*\)/
+  static readonly kindTransform = CodeActionKind.Refactor.append('transform')
+  static readonly allKinds = ['Delete Function Call', 'Swap Variable'] as const
+  static readonly reDelFc = /^\s*[\w$[\]'"]+\s*\(.*\)\s*$/
 
   provideCodeActions(
     document: TextDocument,
@@ -34,84 +35,69 @@ export class SelectionCodeActionsProvider {
     }
 
     if (!range.isEmpty) {
-      return (
-        SelectionCodeActionsProvider.provideDeleteFunctionCall(
-          document,
-          range as Selection,
-        ) ??
-        SelectionCodeActionsProvider.provideSwapVar(
+      const text = document.getText(range)
+      if (SelectionCodeActionsProvider.reDelFc.test(text)) {
+        return SelectionCodeActionsProvider.delFc(document, range as Selection)
+      } else if (text.includes(',')) {
+        return SelectionCodeActionsProvider.swapVar(
           document,
           range as Selection,
         )
-      )
+      }
     }
   }
 
   //#region static
-  static provideDeleteFunctionCall(
-    document: TextDocument,
-    selection: Selection,
-  ) {
-    if (
-      !SelectionCodeActionsProvider.reDelFc.test(document.getText(selection))
-    ) {
-      return
-    }
-
+  static delFc(document: TextDocument, range: Selection) {
     const delFcSnippet = new SnippetString(
       '${TM_SELECTED_TEXT/^\\s*.+?\\((.*)\\)\\s*$/$1/s}',
     )
     const wspEdit = new WorkspaceEdit()
-    wspEdit.set(document.uri, [new SnippetTextEdit(selection, delFcSnippet)])
+    wspEdit.set(document.uri, [new SnippetTextEdit(range, delFcSnippet)])
 
     const codeAction = new CodeAction(
       'Delete Function Call',
-      SelectionCodeActionsProvider.rewriteFunction,
+      SelectionCodeActionsProvider.kindRewriteFunction,
     )
     codeAction.edit = wspEdit
 
     return [codeAction]
   }
 
-  static provideSwapVar(document: TextDocument, selection: Selection) {
-    const text = document.getText(selection)
-    if (!text.includes(',')) {
-      return
-    }
-
+  static swapVar(document: TextDocument, range: Selection) {
     const wspEdit = new WorkspaceEdit()
     wspEdit.set(document.uri, [
-      new TextEdit(selection, SelectionCodeActionsProvider.swapVar(text)),
+      new TextEdit(range, swapVar(document.getText(range))),
     ])
 
     const codeAction = new CodeAction(
-      'Swap Variables',
-      SelectionCodeActionsProvider.expand,
+      'Swap Variable',
+      SelectionCodeActionsProvider.kindRewriteFunction,
     )
     codeAction.edit = wspEdit
 
     return [codeAction]
   }
-
-  static swapVar(text: string) {
-    text = text.trim().replace(/^\[|\]$/g, '')
-    const rev = text.split(',').reverse().join(',')
-    return `[${text}] = [${rev}]`
-  }
-
-  static register(ctx: ExtensionContext) {
-    ctx.subscriptions.push(
-      languages.registerCodeActionsProvider(
-        LangIds.langIdJsOrJsx,
-        new SelectionCodeActionsProvider(),
-        {
-          providedCodeActionKinds: [
-            SelectionCodeActionsProvider.rewriteFunction,
-            SelectionCodeActionsProvider.expand,
-          ],
-        },
-      ),
-    )
-  }
   //#endregion
+}
+
+function swapVar(text: string) {
+  text = text.trim().replace(/^\[|\]$/g, '')
+  const rev = text.split(/,\s*/).reverse().join(', ')
+  return `[${text}] = [${rev}]`
+}
+
+export function register() {
+  extContext.subscriptions.push(
+    languages.registerCodeActionsProvider(
+      ['javascript', 'typescript', 'javascriptreact', 'typescriptreact'],
+      new SelectionCodeActionsProvider(),
+      {
+        providedCodeActionKinds: [
+          SelectionCodeActionsProvider.kindRewriteFunction,
+          SelectionCodeActionsProvider.kindTransform,
+        ],
+      },
+    ),
+  )
 }

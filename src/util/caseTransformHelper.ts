@@ -43,25 +43,30 @@ export const joinCaseActions: Record<
     words.map((w) => w[0].toUpperCase() + w.slice(1)).join('-'),
 }
 
+export const casesList = Object.keys(joinCaseActions).concat(
+  'lowerCase',
+  'upperCase',
+) as WordCase[]
+
 /**
- * Only transform a sequence string belongs {@link WordCase}.
- * @param sequence sequence to be transform
- * @param targetWc transform target case
- * @returns transformed sequence
+ * Only transform a word match any {@link WordCase}.
+ * @param word word to be transform
+ * @param targetWc target case
+ * @returns transformed word
  */
-export function caseTransformHelper(sequence: string, targetWc: WordCase) {
+export function caseTransformHelper(word: string, targetWc: WordCase) {
   switch (targetWc) {
     case 'lowerCase':
-      return sequence.toLowerCase()
+      return word.toLowerCase()
     case 'upperCase':
-      return sequence.toUpperCase()
+      return word.toUpperCase()
     default: {
       const reSpiltChar = /[^a-zA-Z-/_.\s]+|$/g
       const targetSegments: string[] = []
 
       let lastIdx = 0
-      for (const { index, 0: spiltChar } of sequence.matchAll(reSpiltChar)) {
-        const piece = sequence.slice(lastIdx, index)
+      for (const { index, 0: spiltChar } of word.matchAll(reSpiltChar)) {
+        const piece = word.slice(lastIdx, index)
         if (piece.length) {
           const words = getWords(piece)
           if (words) {

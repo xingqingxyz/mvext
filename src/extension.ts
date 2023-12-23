@@ -1,27 +1,33 @@
 import { ExtensionContext, commands } from 'vscode'
-import { applyCurrentShellEdit, applyShellEdit } from './applyShellEdit'
-import { registerCaseTransform } from './caseTransform'
-import { PathCompleteProvider } from './pathComplete'
+import {
+  applyCurrentShellEdit,
+  applyShellEdit,
+  applyShellFilter,
+} from './applyShellEdit'
+import { register as registerCaseTransform } from './caseTransform'
+import { setExtContext } from './context'
+import { register as registerCssSeletorComplete } from './cssSelectorComplete'
+import { register as registerPathComplete } from './pathComplete'
 import { quicklySwitchFile } from './quicklySwitchFile'
-import { SelectionCodeActionsProvider } from './tsCodeActions/selection'
-import { isDesktop } from './utils'
+import { register as registerTsCodeAction } from './tsCodeActions/selection'
 
-export function activate(ctx: ExtensionContext) {
-  const { registerCommand } = commands
-  ctx.subscriptions.push(
-    registerCommand('mvext.quicklySwitchFile', quicklySwitchFile),
+export function activate(context: ExtensionContext) {
+  setExtContext(context)
+  registerPathComplete()
+  registerCssSeletorComplete()
+  registerCaseTransform()
+  registerTsCodeAction()
+  context.subscriptions.push(
+    commands.registerCommand('mvext.quicklySwitchFile', quicklySwitchFile),
+    commands.registerCommand('mvext.applyShellEdit', applyShellEdit),
   )
-  if (isDesktop) {
-    ctx.subscriptions.push(
-      registerCommand('mvext.applyShellEdit', applyShellEdit),
+  if (__DEV__) {
+    context.subscriptions.push(
+      commands.registerCommand(
+        'mvext.applyCurrentShellEdit',
+        applyCurrentShellEdit,
+      ),
+      commands.registerCommand('mvext.applyShellFilter', applyShellFilter),
     )
-    if (__DEV__) {
-      ctx.subscriptions.push(
-        registerCommand('mvext.applyCurrentShellEdit', applyCurrentShellEdit),
-      )
-    }
   }
-  registerCaseTransform(ctx)
-  PathCompleteProvider.register(ctx)
-  SelectionCodeActionsProvider.register(ctx)
 }

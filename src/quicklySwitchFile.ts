@@ -1,26 +1,23 @@
+import path from 'path'
 import { window } from 'vscode'
-import { noop } from './utils'
 
 export async function quicklySwitchFile() {
-  const documentUri = window.activeTextEditor?.document.uri
-  if (documentUri) {
-    const segs = documentUri.fsPath.split('.')
-    if (segs.length > 1) {
-      const ext = segs.pop()!
-      const map = {
-        html: 'css',
-        css: 'html',
-        js: 'html',
-        ts: 'js',
-      }
-      if (!(ext in map)) {
-        return
-      }
-      await window
-        .showTextDocument(
-          documentUri.with({ path: segs.join('') + '.' + (map as any)[ext] }),
+  const uri = window.activeTextEditor?.document.uri
+  if (uri) {
+    const uriPath = uri.path
+    const ext = path.extname(uriPath)
+    const map = {
+      html: 'css',
+      css: 'html',
+      js: 'html',
+      ts: 'js',
+    }
+    if (ext in map) {
+      try {
+        await window.showTextDocument(
+          uri.with({ path: uriPath.slice(0, -ext.length) + (map as any)[ext] }),
         )
-        .then(noop, noop)
+      } catch {}
     }
   }
 }
