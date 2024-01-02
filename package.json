@@ -1,7 +1,7 @@
 {
   "name": "mvext",
   "description": "An extension ships some useful tools.",
-  "version": "0.8.0",
+  "version": "0.9.0",
   "author": "Ming Chen",
   "displayName": "mvext",
   "publisher": "xingqingxyz",
@@ -25,7 +25,7 @@
   "main": "./out/extension",
   "contributes": {
     "configuration": {
-      "title": "VSC mvext",
+      "title": "mvext",
       "properties": {
         "mvext.shellEdit.nodeCommandLine": {
           "type": "array",
@@ -289,16 +289,13 @@
       },
       {
         "key": "alt+o",
-        "when": "editorTextFocus && editorLangId =~ /html|css|javascript|typescript/",
+        "when": "editorTextFocus && resourceExtname =~ /^(js|ts|css|html)$/",
         "command": "mvext.quicklySwitchFile"
       }
     ]
   },
   "activationEvents": [
     "onStartupFinished"
-  ],
-  "enabledApiProposals": [
-    "terminalExecuteCommandEvent"
   ],
   "scripts": {
     "prewatch": "npm pkg set 'enabledApiProposals=[\"terminalExecuteCommandEvent\"]' --json",

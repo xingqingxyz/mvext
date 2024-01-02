@@ -17,11 +17,12 @@ import {
   languages,
 } from 'vscode'
 
+const allKinds = {
+  function: CodeActionKind.RefactorRewrite.append('function'),
+  transform: CodeActionKind.Refactor.append('transform'),
+}
+
 class SelectionCodeActionsProvider implements CodeActionProvider {
-  static readonly kindRewriteFunction =
-    CodeActionKind.RefactorRewrite.append('function')
-  static readonly kindTransform = CodeActionKind.Refactor.append('transform')
-  static readonly allKinds = ['Delete Function Call', 'Swap Variable'] as const
   static readonly reDelFc = /^\s*[\w$[\]'"]+\s*\(.*\)\s*$/
 
   provideCodeActions(
@@ -55,10 +56,7 @@ class SelectionCodeActionsProvider implements CodeActionProvider {
     const wspEdit = new WorkspaceEdit()
     wspEdit.set(document.uri, [new SnippetTextEdit(range, delFcSnippet)])
 
-    const codeAction = new CodeAction(
-      'Delete Function Call',
-      SelectionCodeActionsProvider.kindRewriteFunction,
-    )
+    const codeAction = new CodeAction('Delete Function Call', allKinds.function)
     codeAction.edit = wspEdit
 
     return [codeAction]
@@ -70,10 +68,7 @@ class SelectionCodeActionsProvider implements CodeActionProvider {
       new TextEdit(range, swapVar(document.getText(range))),
     ])
 
-    const codeAction = new CodeAction(
-      'Swap Variable',
-      SelectionCodeActionsProvider.kindRewriteFunction,
-    )
+    const codeAction = new CodeAction('Swap Variable', allKinds.transform)
     codeAction.edit = wspEdit
 
     return [codeAction]
@@ -93,10 +88,7 @@ export function register() {
       ['javascript', 'typescript', 'javascriptreact', 'typescriptreact'],
       new SelectionCodeActionsProvider(),
       {
-        providedCodeActionKinds: [
-          SelectionCodeActionsProvider.kindRewriteFunction,
-          SelectionCodeActionsProvider.kindTransform,
-        ],
+        providedCodeActionKinds: Object.values(allKinds),
       },
     ),
   )

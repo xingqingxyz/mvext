@@ -4,5 +4,8 @@
   },
   "search.exclude": {
     "out": true
-  }
+  },
+    "mvext.pathComplete.prefixMap": {
+      "#":"${workspaceFolder}/src"
+    }
 }

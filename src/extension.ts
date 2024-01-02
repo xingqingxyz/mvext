@@ -7,13 +7,13 @@ import {
 import { register as registerCaseTransform } from './caseTransform'
 import { setExtContext } from './context'
 import { register as registerCssSeletorComplete } from './cssSelectorComplete'
-import { register as registerPathComplete } from './pathComplete'
+import { PathCompleteProvider } from './pathComplete'
 import { quicklySwitchFile } from './quicklySwitchFile'
 import { register as registerTsCodeAction } from './tsCodeActions/selection'
 
 export function activate(context: ExtensionContext) {
   setExtContext(context)
-  registerPathComplete()
+  PathCompleteProvider.register!()
   registerCssSeletorComplete()
   registerCaseTransform()
   registerTsCodeAction()
