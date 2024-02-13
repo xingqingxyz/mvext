@@ -3,6 +3,7 @@ import { ConfigurationScope, workspace } from 'vscode'
 interface PathCompleteConfig {
   trimRelativePrefix: boolean
   prefixMap: Record<string, string>
+  debounce: number
 }
 
 type ShellEditConfig = Record<

@@ -1,7 +1,7 @@
 {
   "name": "mvext",
   "description": "An extension ships some useful tools.",
-  "version": "0.10.0",
+  "version": "0.10.1",
   "author": "Ming Chen",
   "displayName": "mvext",
   "publisher": "xingqingxyz",
@@ -9,7 +9,7 @@
   "preview": true,
   "license": "MIT",
   "engines": {
-    "vscode": "^1.85.0"
+    "vscode": "^1.86.0"
   },
   "categories": [
     "Other",
@@ -95,6 +95,11 @@
           "type": "boolean",
           "default": true,
           "markdownDescription": "Trim relative prefix `./` of path completion"
+        },
+        "mvext.pathComplete.debounce": {
+          "type": "integer",
+          "default": 80,
+          "markdownDescription": "Timeout (ms) of completion triggers"
         },
         "mvext.pathComplete.prefixMap": {
           "type": "object",
@@ -312,20 +317,22 @@
     "@rollup/plugin-terser": "^0.4.4",
     "@rollup/plugin-typescript": "^11.1.5",
     "@types/mocha": "^10.0.6",
-    "@types/node": "18.15.x",
-    "@types/vscode": "^1.85.0",
-    "@typescript-eslint/eslint-plugin": "^6.15.0",
-    "@typescript-eslint/parser": "^6.15.0",
+    "@types/node": "18.17.x",
+    "@types/vscode": "^1.86.0",
+    "@typescript-eslint/eslint-plugin": "^7.0.1",
+    "@typescript-eslint/parser": "^7.0.1",
     "@vscode/dts": "^0.4.0",
-    "esbuild": "^0.19.10",
+    "@vscode/vsce": "^2.23.0",
+    "esbuild": "^0.20.0",
     "eslint": "^8.56.0",
     "glob": "^10.3.10",
-    "husky": "^8.0.3",
+    "husky": "^9.0.10",
     "lint-staged": "^15.2.0",
     "mocha": "^10.2.0",
     "prettier": "^3.1.1",
     "rimraf": "^5.0.5",
     "rollup": "^4.9.1",
+    "tslib": "^2.6.2",
     "typescript": "^5.3.3"
   },
   "prettier": {

@@ -1,7 +1,7 @@
-import { Dirent } from 'fs'
 import fs from 'fs/promises'
 import os from 'os'
 import path from 'path'
+import { setTimeout } from 'timers/promises'
 import {
   CancellationToken,
   CompletionContext,
@@ -11,7 +11,6 @@ import {
   Disposable,
   Position,
   ProviderResult,
-  Range,
   TextDocument,
   languages,
   workspace,
@@ -35,6 +34,7 @@ export class PathCompleteProvider
   dispose: () => void
   private base = ''
   private prefixMap!: typeof PathCompleteProvider.defaultPrefixMap
+  private deferring?: true
 
   private constructor() {
     this.readPrefixMapSettings()
@@ -52,21 +52,23 @@ export class PathCompleteProvider
     token: CancellationToken,
     context: CompletionContext,
   ) {
+    delete this.deferring
     if (context.triggerKind !== CompletionTriggerKind.TriggerCharacter) {
       return
     } else {
+      this.deferring = true
+      await setTimeout(getConfig(document, 'pathComplete').debounce)
+      if (token.isCancellationRequested || !this.deferring) {
+        return
+      }
       const [prefix, path] = PathCompleteProvider.getPrefixPath(
         document,
         position,
       )
-      this.base = this.expandPrefixPath(prefix, path, document)
-      let dirents: Dirent[]
-      try {
-        dirents = await fs.readdir(this.base, { withFileTypes: true })
-      } catch {
-        return
-      }
 
+      this.base = this.expandPrefixPath(prefix, path, document)
+
+      const dirents = await fs.readdir(this.base, { withFileTypes: true })
       const commitCharacters = [context.triggerCharacter!]
       const items: CompletionItem[] = dirents.map((dirent) => ({
         label: dirent.name,
@@ -78,18 +80,6 @@ export class PathCompleteProvider
         commitCharacters,
       }))
 
-      const { trimRelativePrefix } = getConfig(document, 'pathComplete')
-
-      if (trimRelativePrefix && /^\.[\\/]/.test(path)) {
-        const range = new Range(
-          position.with({ character: position.character - 2 }),
-          position.with({ character: position.character + 1 }),
-        )
-        for (const item of items) {
-          item.range = range
-          // item.insertText = item.label as string
-        }
-      }
       return items
     }
   }
