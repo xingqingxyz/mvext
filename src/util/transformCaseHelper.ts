@@ -1,19 +1,19 @@
 export type WordCase =
-  | 'lowerCase'
-  | 'upperCase'
-  | 'dotCase'
-  | 'pathCase'
-  | 'snakeCase'
-  | 'kebabCase'
-  | 'noCase'
-  | 'sentenceCase'
-  | 'constantCase'
-  | 'pascalCase'
-  | 'camelCase'
-  | 'titleCase'
-  | 'headerCase'
+  | 'camel'
+  | 'constant'
+  | 'dot'
+  | 'header'
+  | 'kebab'
+  | 'lower'
+  | 'normal'
+  | 'pascal'
+  | 'path'
+  | 'sentence'
+  | 'snake'
+  | 'title'
+  | 'upper'
 
-export type ComplexWordCase = Exclude<WordCase, 'lowerCase' | 'upperCase'>
+export type ComplexWordCase = Exclude<WordCase, 'lower' | 'upper'>
 
 /**
  * Functions join the `words` (raw`[a-zA-Z_-$][\w$]*`) array and transform to target case.
@@ -22,30 +22,28 @@ export const joinCaseActions: Record<
   ComplexWordCase,
   (words: string[]) => string
 > = {
-  dotCase: (words) => words.join('.'),
-  pathCase: (words) => words.join('/'),
-  snakeCase: (words) => words.join('_'),
-  kebabCase: (words) => words.join('-'),
-  noCase: (words) => words.join(' '),
-  sentenceCase: (words) => {
+  camel: (words) =>
+    words.reduce((pv, cv) => pv + cv[0].toUpperCase() + cv.slice(1)),
+  constant: (words) => words.join('_').toUpperCase(),
+  dot: (words) => words.join('.'),
+  header: (words) =>
+    words.map((w) => w[0].toUpperCase() + w.slice(1)).join('-'),
+  kebab: (words) => words.join('-'),
+  normal: (words) => words.join(' '),
+  pascal: (words) => words.map((w) => w[0].toUpperCase() + w.slice(1)).join(''),
+  path: (words) => words.join('/'),
+  sentence: (words) => {
     const first = words[0]
     words[0] = first[0].toUpperCase() + first.slice(1)
     return words.join(' ')
   },
-  constantCase: (words) => words.join('_').toUpperCase(),
-  pascalCase: (words) =>
-    words.map((w) => w[0].toUpperCase() + w.slice(1)).join(''),
-  camelCase: (words) =>
-    words.reduce((pv, cv) => pv + cv[0].toUpperCase() + cv.slice(1)),
-  titleCase: (words) =>
-    words.map((w) => w[0].toUpperCase() + w.slice(1)).join(' '),
-  headerCase: (words) =>
-    words.map((w) => w[0].toUpperCase() + w.slice(1)).join('-'),
+  snake: (words) => words.join('_'),
+  title: (words) => words.map((w) => w[0].toUpperCase() + w.slice(1)).join(' '),
 }
 
 export const casesList = Object.keys(joinCaseActions).concat(
-  'lowerCase',
-  'upperCase',
+  'lower',
+  'upper',
 ) as WordCase[]
 
 /**
@@ -54,11 +52,11 @@ export const casesList = Object.keys(joinCaseActions).concat(
  * @param targetWc target case
  * @returns transformed word
  */
-export function caseTransformHelper(word: string, targetWc: WordCase) {
+export function transformCaseHelper(word: string, targetWc: WordCase) {
   switch (targetWc) {
-    case 'lowerCase':
+    case 'lower':
       return word.toLowerCase()
-    case 'upperCase':
+    case 'upper':
       return word.toUpperCase()
     default: {
       const reSpiltChar = /[^a-zA-Z-/_.\s]+|$/g

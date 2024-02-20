@@ -1,7 +1,7 @@
 {
   "name": "mvext",
   "description": "An extension ships some useful tools.",
-  "version": "0.10.1",
+  "version": "0.10.3",
   "author": "Ming Chen",
   "displayName": "mvext",
   "publisher": "xingqingxyz",
@@ -27,8 +27,9 @@
     "configuration": {
       "title": "mvext",
       "properties": {
-        "mvext.shellEdit.nodeCommandLine": {
+        "mvext.shellEdit.node.cmd": {
           "type": "array",
+          "scope": "resource",
           "items": {
             "type": "string"
           },
@@ -52,24 +53,34 @@
             ],
             [
               "bun",
-              "<(eval(process.argv[2]))"
+              "-e"
+            ],
+            [
+              "esno",
+              "-p"
+            ],
+            [
+              "esno",
+              "-e"
             ]
           ],
-          "markdownDescription": "Child process command and args when eval JavaScript/TypeScript files"
+          "markdownDescription": "Child process command and args when eval javascript/typescript files"
         },
-        "mvext.shellEdit.pythonCommandLine": {
+        "mvext.shellEdit.python.cmd": {
           "type": "array",
+          "scope": "resource",
           "items": {
             "type": "string"
           },
           "default": [
-            "py",
+            "python",
             "-c"
           ],
-          "markdownDescription": "Child process command and args when eval Python files"
+          "markdownDescription": "Child process command and args when eval python files"
         },
-        "mvext.shellEdit.shellscriptCommandLine": {
+        "mvext.shellEdit.shellscript.cmd": {
           "type": "array",
+          "scope": "resource",
           "items": {
             "type": "string"
           },
@@ -77,10 +88,11 @@
             "bash",
             "-c"
           ],
-          "markdownDescription": "Child process command and args when eval ShellScript files"
+          "markdownDescription": "Child process command and args when eval shellscript files"
         },
-        "mvext.shellEdit.powershellCommandLine": {
+        "mvext.shellEdit.powershell.cmd": {
           "type": "array",
+          "scope": "resource",
           "items": {
             "type": "string"
           },
@@ -89,20 +101,11 @@
             "-NoProfile",
             "-Command"
           ],
-          "markdownDescription": "Child process command and args when eval PowerShell files"
-        },
-        "mvext.pathComplete.trimRelativePrefix": {
-          "type": "boolean",
-          "default": true,
-          "markdownDescription": "Trim relative prefix `./` of path completion"
-        },
-        "mvext.pathComplete.debounce": {
-          "type": "integer",
-          "default": 80,
-          "markdownDescription": "Timeout (ms) of completion triggers"
+          "markdownDescription": "Child process command and args when eval powershell files"
         },
         "mvext.pathComplete.prefixMap": {
           "type": "object",
+          "scope": "resource",
           "additionalProperties": {
             "type": "string"
           },
@@ -110,80 +113,41 @@
           "examples": {
             "@": "${workspaceFolder}/src"
           },
-          "markdownDescription": "Path mappings for path completion:\n- `${workspaceFolder}` means workspace folder\n- `~` means `os.homedir()`"
+          "markdownDescription": "Path mappings for path completion:\n- `${workspaceFolder}` means workspace folder\n- `~` means `os.homedir()`\n- use $VAR to substitute to environment variables"
+        },
+        "mvext.transformCase.targetCase": {
+          "type": "string",
+          "scope": "language-overridable",
+          "enum": [
+            "camel",
+            "constant",
+            "dot",
+            "header",
+            "kebab",
+            "lower",
+            "normal",
+            "pascal",
+            "path",
+            "sentence",
+            "snake",
+            "title",
+            "upper"
+          ],
+          "default": "camel",
+          "markdownDescription": "Command `mvext.transformCase` use this as transform target case"
         }
       }
     },
     "commands": [
       {
-        "title": "Title",
-        "category": "Transform Case",
-        "command": "mvext.transformToTitleCase"
-      },
-      {
-        "title": "Camel",
-        "category": "Transform Case",
-        "command": "mvext.transformToCamelCase"
-      },
-      {
-        "title": "Constant",
-        "category": "Transform Case",
-        "command": "mvext.transformToConstantCase"
-      },
-      {
-        "title": "Pascal",
-        "category": "Transform Case",
-        "command": "mvext.transformToPascalCase"
-      },
-      {
-        "title": "Kebab",
-        "category": "Transform Case",
-        "command": "mvext.transformToKebabCase"
-      },
-      {
-        "title": "Snake",
-        "category": "Transform Case",
-        "command": "mvext.transformToSnakeCase"
-      },
-      {
-        "title": "Dot",
-        "category": "Transform Case",
-        "command": "mvext.transformToDotCase"
-      },
-      {
-        "title": "Path",
-        "category": "Transform Case",
-        "command": "mvext.transformToPathCase"
-      },
-      {
-        "title": "Sentence",
-        "category": "Transform Case",
-        "command": "mvext.transformToSentenceCase"
-      },
-      {
-        "title": "No",
-        "category": "Transform Case",
-        "command": "mvext.transformToNoCase"
-      },
-      {
-        "title": "Header",
-        "category": "Transform Case",
-        "command": "mvext.transformToHeaderCase"
-      },
-      {
-        "title": "Lower",
-        "category": "Transform Case",
-        "command": "mvext.transformToLowerCase"
-      },
-      {
-        "title": "Upper",
-        "category": "Transform Case",
-        "command": "mvext.transformToUpperCase"
-      },
-      {
-        "title": "Rename Symbol's Case",
         "category": "mvext",
-        "command": "mvext.renameSymbolCase"
+        "title": "Transform Case",
+        "command": "mvext.transformCase"
+      },
+      {
+        "title": "Rename With Case",
+        "category": "mvext",
+        "command": "mvext.renameWithCase"
       },
       {
         "title": "Apply Shell Edit",
@@ -210,72 +174,12 @@
       {
         "when": "editorTextFocus && !editorReadonly",
         "key": "alt+x t",
-        "command": "mvext.transformToTitleCase"
-      },
-      {
-        "when": "editorTextFocus && !editorReadonly",
-        "key": "alt+x c",
-        "command": "mvext.transformToCamelCase"
-      },
-      {
-        "key": "alt+x shift+c",
-        "when": "editorTextFocus && !editorReadonly",
-        "command": "mvext.transformToConstantCase"
-      },
-      {
-        "key": "alt+x p",
-        "when": "editorTextFocus && !editorReadonly",
-        "command": "mvext.transformToPascalCase"
-      },
-      {
-        "key": "alt+x k",
-        "when": "editorTextFocus && !editorReadonly",
-        "command": "mvext.transformToKebabCase"
-      },
-      {
-        "key": "alt+x s",
-        "when": "editorTextFocus && !editorReadonly",
-        "command": "mvext.transformToSnakeCase"
-      },
-      {
-        "key": "alt+x .",
-        "when": "editorTextFocus && !editorReadonly",
-        "command": "mvext.transformToDotCase"
-      },
-      {
-        "key": "alt+x /",
-        "when": "editorTextFocus && !editorReadonly",
-        "command": "mvext.transformToPathCase"
-      },
-      {
-        "key": "alt+x space",
-        "when": "editorTextFocus && !editorReadonly",
-        "command": "mvext.transformToSentenceCase"
-      },
-      {
-        "key": "alt+x n",
-        "when": "editorTextFocus && !editorReadonly",
-        "command": "mvext.transformToNoCase"
-      },
-      {
-        "key": "alt+x h",
-        "when": "editorTextFocus && !editorReadonly",
-        "command": "mvext.transformToHeaderCase"
-      },
-      {
-        "key": "alt+x u",
-        "when": "editorTextFocus && !editorReadonly",
-        "command": "mvext.transformToUpperCase"
-      },
-      {
-        "key": "alt+x l",
-        "when": "editorTextFocus && !editorReadonly",
-        "command": "mvext.transformToLowerCase"
+        "command": "mvext.transformCase"
       },
       {
         "key": "alt+x alt+r",
         "when": "editorTextFocus && !editorReadonly",
-        "command": "mvext.renameSymbolCase"
+        "command": "mvext.renameWithCase"
       },
       {
         "key": "ctrl+alt+s",
@@ -283,7 +187,7 @@
         "command": "mvext.applyShellEdit"
       },
       {
-        "key": "shift+alt+1",
+        "key": "ctrl+alt+1",
         "when": "editorTextFocus && !editorReadonly",
         "command": "mvext.applyShellFilter"
       },
@@ -302,14 +206,15 @@
   "activationEvents": [
     "onStartupFinished"
   ],
+  "enabledApiProposals": [
+    "terminalExecuteCommandEvent"
+  ],
   "scripts": {
-    "prewatch": "npm pkg set 'enabledApiProposals=[\"terminalExecuteCommandEvent\"]' --json",
     "watch": "NODE_ENV=development rollup -c --watch",
     "pretest": "rimraf out && esbuild src/**/**.ts --platform=node --format=cjs --outdir=out --sourcemap --define:__DEV__=true",
-    "prepare": "husky install",
-    "build": "npm pkg delete enabledApiProposals && install",
-    "install": "vsce package -o out/mvext.vsix && code --install-extension out/mvext.vsix",
-    "vscode:prepublish": "rollup -c"
+    "prepare": "husky",
+    "extension": "vsce package -o out/mvext.vsix && code --install-extension out/mvext.vsix",
+    "vscode:prepublish": "rimraf out && rollup -c"
   },
   "devDependencies": {
     "@rollup/plugin-node-resolve": "^15.2.3",

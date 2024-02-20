@@ -12,6 +12,8 @@
       "args": [
         "--extensionDevelopmentPath=${workspaceFolder}",
         "--disable-extensions",
+        "--enable-proposed-api",
+        "xingqingxyz.mvext",
         "${workspaceFolder}/test-workspace"
       ],
       "outFiles": ["${workspaceFolder}/out/**/*.js"],
@@ -26,6 +28,8 @@
         "--extensionDevelopmentPath=${workspaceFolder}",
         "--extensionTestsPath=${workspaceFolder}/out/test/suite",
         "--disable-extensions",
+        "--enab-propos-api",
+        "xingqingxyz.mvext",
         "${workspaceFolder}/test-workspace"
       ],
       "outFiles": ["${workspaceFolder}/out/**/*.js"],

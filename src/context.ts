@@ -1,7 +1,11 @@
 import { ExtensionContext } from 'vscode'
 
-export let extContext: ExtensionContext
+let context: ExtensionContext
 
-export function setExtContext(context: ExtensionContext) {
-  extContext = context
+export function getExtContext(): ExtensionContext {
+  return context
+}
+
+export function setExtContext(ctx: ExtensionContext) {
+  context = ctx
 }

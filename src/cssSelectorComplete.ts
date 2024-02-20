@@ -1,4 +1,4 @@
-import { extContext } from '@/context'
+import { getExtContext } from '@/context'
 import { mergeIterables } from '@/util'
 import path from 'path'
 import {
@@ -124,7 +124,7 @@ class CssSelectorCompleteProvider implements CompletionItemProvider {
 }
 
 export function register() {
-  extContext.subscriptions.push(
+  getExtContext().subscriptions.push(
     languages.registerCompletionItemProvider(
       ['css', 'scss', 'tailwindcss', 'html', 'vue', 'svelte', 'mdx'],
       new CssSelectorCompleteProvider(),

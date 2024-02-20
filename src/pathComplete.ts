@@ -1,24 +1,24 @@
-import fs from 'fs/promises'
 import os from 'os'
 import path from 'path'
-import { setTimeout } from 'timers/promises'
 import {
   CancellationToken,
   CompletionContext,
   CompletionItem,
   CompletionItemKind,
+  CompletionItemProvider,
   CompletionTriggerKind,
   Disposable,
+  FileType,
   Position,
   ProviderResult,
   TextDocument,
+  Uri,
   languages,
   workspace,
-  type CompletionItemProvider,
 } from 'vscode'
-import { getConfig } from './config'
-import { extContext } from './context'
+import { getExtConfig } from './config'
 import { isWin32 } from './util'
+import fs = workspace.fs
 
 export class PathCompleteProvider
   implements CompletionItemProvider, Disposable
@@ -26,24 +26,63 @@ export class PathCompleteProvider
   static readonly reFilePath = isWin32
     ? /(?:[-\w\\/.+,#$%{}[\]@!~=]|[^\x00-\xff])*$/
     : /(?:[-\w/.+,#$%~=]|[^\x00-\xff])*$/
+  static readonly reEnvVar = isWin32 ? /\$(\w+)|\${(\w+)}/g : /\${\w+}/g
   static readonly triggerCharacters = isWin32 ? ['\\', '/'] : ['/']
-  static readonly defaultPrefixMap: Map<string, string> = new Map().set(
-    '~',
-    os.homedir(),
-  )
+  static readonly prefixMapConfigKey = 'mvext.pathComplete.prefixMap'
+  private _base = ''
   dispose: () => void
-  private base = ''
-  private prefixMap!: typeof PathCompleteProvider.defaultPrefixMap
-  private deferring?: true
 
-  private constructor() {
-    this.readPrefixMapSettings()
-    const disposable = workspace.onDidChangeConfiguration((e) => {
-      if (e.affectsConfiguration('mvext.pathComplete.prefixMap')) {
-        this.readPrefixMapSettings()
+  constructor() {
+    const provider = languages.registerCompletionItemProvider(
+      { pattern: '**' },
+      this,
+      ...PathCompleteProvider.triggerCharacters,
+    )
+    this.dispose = () => provider.dispose()
+  }
+
+  private _expandPrefixPath(
+    prefix: string,
+    path_: string,
+    document: TextDocument,
+  ) {
+    const prefixMap = getExtConfig('pathComplete.prefixMap', document)
+    for (const [lhs, rhs] of Object.entries(prefixMap)) {
+      if (path_.startsWith(lhs)) {
+        path_ = rhs + path_.slice(lhs.length)
+        break
       }
-    })
-    this.dispose = () => disposable.dispose()
+      if (prefix.endsWith(lhs)) {
+        path_ = rhs + path_
+        break
+      }
+    }
+    if (path_.startsWith('${workspaceFolder}')) {
+      path_ = path.join(
+        workspace.getWorkspaceFolder(document.uri)?.uri.fsPath ?? os.homedir(),
+        path_.slice(19),
+      )
+    }
+    path_ = path_.replace(
+      PathCompleteProvider.reEnvVar,
+      (keep, name) => process.env[name] ?? keep,
+    )
+    for (const sep of PathCompleteProvider.triggerCharacters) {
+      path_ = path_.replace('~' + sep, os.homedir() + sep)
+    }
+    if (!PathCompleteProvider.triggerCharacters.includes(path_[0])) {
+      path_ = path.join(document.fileName, '..', path_)
+    }
+    return path_
+  }
+
+  private static _getPrefixPath(
+    document: TextDocument,
+    position: Position,
+  ): [prefix: string, path: string] {
+    const text = document.lineAt(position).text.slice(0, position.character)
+    const path_ = text.match(PathCompleteProvider.reFilePath)![0]
+    return [text.slice(0, -path_.length), path_]
   }
 
   async provideCompletionItems(
@@ -52,104 +91,46 @@ export class PathCompleteProvider
     token: CancellationToken,
     context: CompletionContext,
   ) {
-    delete this.deferring
     if (context.triggerKind !== CompletionTriggerKind.TriggerCharacter) {
       return
-    } else {
-      this.deferring = true
-      await setTimeout(getConfig(document, 'pathComplete').debounce)
-      if (token.isCancellationRequested || !this.deferring) {
-        return
-      }
-      const [prefix, path] = PathCompleteProvider.getPrefixPath(
-        document,
-        position,
-      )
-
-      this.base = this.expandPrefixPath(prefix, path, document)
-
-      const dirents = await fs.readdir(this.base, { withFileTypes: true })
-      const commitCharacters = [context.triggerCharacter!]
-      const items: CompletionItem[] = dirents.map((dirent) => ({
-        label: dirent.name,
-        kind: dirent.isDirectory()
+    }
+    this._base = this._expandPrefixPath(
+      ...PathCompleteProvider._getPrefixPath(document, position),
+      document,
+    )
+    const commitCharacters = [context.triggerCharacter!]
+    const items: CompletionItem[] = (
+      await fs.readDirectory(Uri.file(this._base))
+    ).map(([name, type]) => ({
+      label: name,
+      kind:
+        type === FileType.Directory
           ? CompletionItemKind.Folder
-          : dirent.isSymbolicLink()
+          : FileType.SymbolicLink
             ? CompletionItemKind.Reference
             : CompletionItemKind.File,
-        commitCharacters,
-      }))
-
-      return items
+      commitCharacters,
+    }))
+    if (context.triggerCharacter === '/') {
+      // FIXME: preselect to avoid consequentially type '/'
+      items.push({
+        label: '..',
+        kind: CompletionItemKind.Folder,
+        preselect: true,
+      })
     }
+    return items
   }
 
   resolveCompletionItem(
     item: CompletionItem,
     token: CancellationToken,
   ): ProviderResult<CompletionItem> {
-    item.detail = path.join(this.base, item.label as string)
+    item.detail = path.join(this._base, item.label as string)
     return item
   }
+}
 
-  //#region util
-  readPrefixMapSettings() {
-    const wspFolder = workspace.workspaceFolders?.[0]
-    const wspPath = wspFolder?.uri.fsPath ?? '/'
-    const replacements = {
-      '~': os.homedir(),
-      '${workspaceFolder}': wspPath,
-    }
-    const json = getConfig(wspFolder, 'pathComplete').prefixMap
-    this.prefixMap = new Map(PathCompleteProvider.defaultPrefixMap)
-    for (let [key, val] of Object.entries(json)) {
-      for (const [lhs, rhs] of Object.entries(replacements)) {
-        if (val.startsWith(lhs)) {
-          val = rhs + val.slice(lhs.length)
-          break
-        }
-      }
-      this.prefixMap.set(key, val)
-    }
-  }
-
-  expandPrefixPath(prefix: string, basePath: string, document: TextDocument) {
-    for (const [lhs, rhs] of this.prefixMap) {
-      if (basePath.startsWith(lhs)) {
-        basePath = rhs + basePath.slice(lhs.length)
-        break
-      }
-      if (prefix.endsWith(lhs)) {
-        basePath = rhs + basePath
-        break
-      }
-    }
-    if (!PathCompleteProvider.triggerCharacters.includes(basePath[0])) {
-      basePath = path.join(document.fileName, '..', basePath)
-    }
-    return basePath
-  }
-
-  static getPrefixPath(
-    document: TextDocument,
-    position: Position,
-  ): [prefix: string, path: string] {
-    const text = document.lineAt(position).text.slice(0, position.character)
-    const path = text.match(PathCompleteProvider.reFilePath)![0]
-    return [text.slice(0, -path.length), path]
-  }
-  //#endregion
-
-  static register?() {
-    const provider = new PathCompleteProvider()
-    extContext.subscriptions.push(
-      provider,
-      languages.registerCompletionItemProvider(
-        { pattern: '**' },
-        provider,
-        ...PathCompleteProvider.triggerCharacters,
-      ),
-    )
-    delete PathCompleteProvider.register
-  }
+export type ABC = {
+  src: 'hello' | 'world'
 }

@@ -8,7 +8,7 @@ import {
   TextDocument,
   languages,
 } from 'vscode'
-import { extContext } from './context'
+import { getExtContext } from './context'
 
 class TsSignatureHelp implements SignatureHelpProvider {
   provideSignatureHelp(
@@ -28,7 +28,7 @@ class TsSignatureHelp implements SignatureHelpProvider {
 }
 
 export function register() {
-  extContext.subscriptions.push(
+  getExtContext().subscriptions.push(
     languages.registerSignatureHelpProvider(
       { language: 'typescript' },
       new TsSignatureHelp(),

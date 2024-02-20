@@ -1,4 +1,4 @@
-import { extContext } from '@/context'
+import { getExtContext } from '@/context'
 import {
   CodeAction,
   CodeActionContext,
@@ -83,7 +83,7 @@ function swapVar(text: string) {
 }
 
 export function register() {
-  extContext.subscriptions.push(
+  getExtContext().subscriptions.push(
     languages.registerCodeActionsProvider(
       ['javascript', 'typescript', 'javascriptreact', 'typescriptreact'],
       new SelectionCodeActionsProvider(),

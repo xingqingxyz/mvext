@@ -1,5 +1,4 @@
 import {
-  QuickPickItem,
   Range,
   TextEditor,
   TextEditorEdit,
@@ -8,21 +7,26 @@ import {
   window,
   workspace,
 } from 'vscode'
-import { extContext } from './context'
+import { getExtConfig } from './config'
 import {
   WordCase,
-  caseTransformHelper,
   casesList,
-} from './util/caseTransformHelper'
+  transformCaseHelper,
+} from './util/transformCaseHelper'
 
-function caseTransform(editor: TextEditor, edit: TextEditorEdit, wc: WordCase) {
+export function transformCase(
+  editor: TextEditor,
+  edit: TextEditorEdit,
+  wc?: WordCase,
+) {
+  wc ??= getExtConfig('transformCase.targetCase', editor.document)
   const { document, selections } = editor
 
   if (selections.length < 2 && selections[0].isEmpty) {
     const position = selections[0].start
     const range = document.getWordRangeAtPosition(position)
     if (range) {
-      edit.replace(range, caseTransformHelper(document.getText(range), wc))
+      edit.replace(range, transformCaseHelper(document.getText(range), wc))
     }
     return
   }
@@ -31,13 +35,13 @@ function caseTransform(editor: TextEditor, edit: TextEditorEdit, wc: WordCase) {
     if (selectionRange.isEmpty) {
       const range = document.getWordRangeAtPosition(selectionRange.start)
       if (range) {
-        edit.replace(range, caseTransformHelper(document.getText(range), wc))
+        edit.replace(range, transformCaseHelper(document.getText(range), wc))
       }
       continue
     }
     edit.replace(
       selectionRange,
-      caseTransformHelper(document.getText(selectionRange), wc),
+      transformCaseHelper(document.getText(selectionRange), wc),
     )
   }
 }
@@ -45,7 +49,7 @@ function caseTransform(editor: TextEditor, edit: TextEditorEdit, wc: WordCase) {
 /**
  * Display a picker to select case to rename current / multiselected symbol
  */
-async function renameSymbolCase() {
+export async function renameWithCase(wc?: WordCase) {
   const editor = window.activeTextEditor
   if (!editor) {
     return
@@ -58,10 +62,9 @@ async function renameSymbolCase() {
         range: Range
         placeholder: string
       }>('vscode.prepareRename', document.uri, selectionRange.start)
-      const newName = await showRenameSymbolUI(placeholder)
-      if (!newName) {
-        return
-      }
+      const newName = wc
+        ? transformCaseHelper(placeholder, wc)
+        : await showRenameUI(placeholder)
       const wspEdit = await commands.executeCommand<WorkspaceEdit>(
         'vscode.executeDocumentRenameProvider',
         document.uri,
@@ -70,28 +73,28 @@ async function renameSymbolCase() {
       )
       await workspace.applyEdit(wspEdit)
     }
-  } catch {
-    return
-  }
+  } catch {}
 }
 
-async function showRenameSymbolUI(currentWord: string) {
-  const items: QuickPickItem[] = casesList.map((wc) => ({
-    label: wc,
-    description: caseTransformHelper(currentWord, wc),
-  }))
-  return (await window.showQuickPick(items, { title: 'Rename Symbol' }))
-    ?.description
-}
-
-export function register() {
-  extContext.subscriptions.push(
-    commands.registerCommand('mvext.renameSymbolCase', renameSymbolCase),
-    ...casesList.map((wc) =>
-      commands.registerTextEditorCommand(
-        `mvext.transformTo${wc[0].toUpperCase() + wc.slice(1)}`,
-        (editor, edit) => caseTransform(editor, edit, wc),
-      ),
-    ),
+async function showRenameUI(currentWord: string) {
+  const item = await window.showQuickPick(
+    casesList.map((wc) => ({
+      label: wc,
+      description: transformCaseHelper(currentWord, wc),
+    })),
+    { title: 'Rename' },
   )
+  if (item === undefined) {
+    throw new Error('No case selected')
+  }
+  const value = await window.showInputBox({
+    title: 'Rename',
+    placeHolder: 'New name',
+    ignoreFocusOut: true,
+    value: item.description,
+  })
+  if (value === undefined) {
+    throw new Error('User canceled')
+  }
+  return value
 }

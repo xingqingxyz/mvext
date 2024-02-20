@@ -3,7 +3,7 @@ import { EOL } from 'os'
 import * as path from 'path'
 import * as util from 'util'
 import { Range, TextDocument, window } from 'vscode'
-import { getConfig } from './config'
+import { getExtConfig } from './config'
 import { execFilePm, isWin32 } from './util'
 
 const nodeLangIds = [
@@ -37,7 +37,7 @@ export async function applyShellEdit() {
   }
 
   await editor.edit((edit) => {
-    for (const [selectionRange, result] of selectMap.entries()) {
+    for (const [selectionRange, result] of selectMap) {
       edit.replace(selectionRange, result)
     }
   })
@@ -45,21 +45,22 @@ export async function applyShellEdit() {
 
 export async function execByLangId(text: string, document: TextDocument) {
   const { languageId } = document
-  const config = getConfig(document, 'shellEdit')
-  let [exe, ...args] =
-    config[`${isWin32 ? 'powershell' : 'shellscript'}CommandLine`]
+  let cmd: string[]
   if (nodeLangIds.includes(languageId)) {
-    ;[exe, ...args] = config.nodeCommandLine
+    cmd = getExtConfig('shellEdit.node.cmd', document)
+  } else if (['python', 'shellscript', 'powershell'].includes(languageId)) {
+    cmd = getExtConfig(`shellEdit.${languageId}.cmd` as any, document)
+  } else {
+    cmd = isWin32
+      ? getExtConfig('shellEdit.powershell.cmd', document)
+      : getExtConfig('shellEdit.shellscript.cmd', document)
   }
-  if (['python', 'shellscript', 'powershell'].includes(languageId)) {
-    ;[exe, ...args] = (config as any)[languageId + 'CommandLine']
-  }
-  args.push(text)
+  cmd.push(text)
   const options: ExecFileOptions = {
     cwd: path.dirname(document.fileName),
   }
   return (
-    await execFilePm(exe, args, options).catch((err) => ({
+    await execFilePm(cmd.shift()!, cmd, options).catch((err) => ({
       stdout: String(err),
     }))
   ).stdout.trimEnd()
@@ -81,22 +82,26 @@ export async function applyCurrentShellEdit() {
     const text = selectionRange.isEmpty
       ? line.text
       : document.getText(selectionRange)
-    const result = await new Promise<string | undefined>((resolve) => {
+
+    await new Promise<void>((resolve, reject) => {
       const event = window.onDidExecuteTerminalCommand((e) => {
         if (e.terminal === terminal) {
-          resolve(e.output?.trimEnd())
           event.dispose()
+          const result = e.output?.trimEnd()
+          if (result) {
+            selectMap.set(range, result)
+            resolve()
+          } else {
+            reject('snippets produces no outputs')
+          }
         }
       })
       terminal.sendText(text)
     })
-    if (result) {
-      selectMap.set(range, result)
-    }
   }
 
   await editor.edit((edit) => {
-    for (const [selectionRange, result] of selectMap.entries()) {
+    for (const [selectionRange, result] of selectMap) {
       edit.replace(selectionRange, result)
     }
   })

@@ -1,25 +1,22 @@
 import { ConfigurationScope, workspace } from 'vscode'
+import type { WordCase } from './util/transformCaseHelper'
 
-interface PathCompleteConfig {
-  trimRelativePrefix: boolean
-  prefixMap: Record<string, string>
-  debounce: number
-}
-
-type ShellEditConfig = Record<
-  `${'node' | 'python' | 'shellscript' | 'powershell'}CommandLine`,
+export type MvextConfig = {
+  // path complete
+  'pathComplete.prefixMap': Record<string, string>
+  // case transform
+  'transformCase.targetCase': WordCase
+} & Record<
+  // shell edit
+  `shellEdit.${'node' | 'python' | 'shellscript' | 'powershell'}.cmd`,
   string[]
 >
 
-export interface MvextConfig {
-  pathComplete: PathCompleteConfig
-  shellEdit: ShellEditConfig
-}
-
-export function getConfig<const T extends keyof MvextConfig>(
-  scope: ConfigurationScope | null | undefined,
-  submodule: T,
+export function getExtConfig<const T extends keyof MvextConfig>(
+  key: T,
+  scope?: ConfigurationScope | null,
 ) {
-  const config = workspace.getConfiguration('mvext.' + submodule, scope)
-  return config as unknown as MvextConfig[typeof submodule]
+  return workspace
+    .getConfiguration('mvext', scope)
+    .get<MvextConfig[typeof key]>(key)!
 }

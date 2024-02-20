@@ -12,7 +12,7 @@ This extension ships a set of useful tools:
 
 ### Case Transform
 
-Transform (multiple) cursor position or selection to many cases. Cases: `titleCase`, `camelCase`, `constantCase`, `pascalCase`, `kebabCase`, `snakeCase`, `sentenceCase`, `dotCase`, `pathCase`, `headerCase`, `noCase`, `lowerCase`, `upperCase`
+Transform (multiple) cursor position or selection to many cases. Cases: `title`, `camel`, `constant`, `pascal`, `kebab`, `snake`, `sentence`, `dot`, `path`, `header`, `normal`, `lower`, `upper`
 
 ### Quickly Switch File
 
