@@ -15,10 +15,8 @@ export function tokenToSignal(token: CancellationToken): AbortSignal {
   return controller.signal
 }
 
-export function mergeIterables<T>(iterables: Iterable<T>[]) {
-  return (function* () {
-    for (const iterable of iterables) {
-      yield* iterable
-    }
-  })()
+export function* mergeIterables<T>(iterables: Iterable<Iterable<T>>) {
+  for (const iterable of iterables) {
+    yield* iterable
+  }
 }

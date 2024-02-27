@@ -3,14 +3,12 @@ import path from 'path'
 import {
   CancellationToken,
   CompletionContext,
-  CompletionItem,
   CompletionItemKind,
   CompletionItemProvider,
   CompletionTriggerKind,
   Disposable,
   FileType,
   Position,
-  ProviderResult,
   TextDocument,
   Uri,
   languages,
@@ -23,22 +21,28 @@ import fs = workspace.fs
 export class PathCompleteProvider
   implements CompletionItemProvider, Disposable
 {
+  // reference to the Vim editor's regex '\f'
   static readonly reFilePath = isWin32
     ? /(?:[-\w\\/.+,#$%{}[\]@!~=]|[^\x00-\xff])*$/
     : /(?:[-\w/.+,#$%~=]|[^\x00-\xff])*$/
-  static readonly reEnvVar = isWin32 ? /\$(\w+)|\${(\w+)}/g : /\${\w+}/g
+  // resolve powershell env var and bash like env var
+  static readonly reEnvVar = isWin32 ? /\${Env:(\w+)}/gi : /\$(\w+)|\${(\w+)}/g
   static readonly triggerCharacters = isWin32 ? ['\\', '/'] : ['/']
+  static readonly kindMap = {
+    [FileType.Directory]: CompletionItemKind.Folder,
+    [FileType.SymbolicLink]: CompletionItemKind.Reference,
+    [FileType.File]: CompletionItemKind.File,
+    [FileType.Unknown]: CompletionItemKind.Value,
+  }
   static readonly prefixMapConfigKey = 'mvext.pathComplete.prefixMap'
-  private _base = ''
   dispose: () => void
 
   constructor() {
-    const provider = languages.registerCompletionItemProvider(
+    this.dispose = languages.registerCompletionItemProvider(
       { pattern: '**' },
       this,
       ...PathCompleteProvider.triggerCharacters,
-    )
-    this.dispose = () => provider.dispose()
+    ).dispose
   }
 
   private _expandPrefixPath(
@@ -76,15 +80,6 @@ export class PathCompleteProvider
     return path_
   }
 
-  private static _getPrefixPath(
-    document: TextDocument,
-    position: Position,
-  ): [prefix: string, path: string] {
-    const text = document.lineAt(position).text.slice(0, position.character)
-    const path_ = text.match(PathCompleteProvider.reFilePath)![0]
-    return [text.slice(0, -path_.length), path_]
-  }
-
   async provideCompletionItems(
     document: TextDocument,
     position: Position,
@@ -94,43 +89,26 @@ export class PathCompleteProvider
     if (context.triggerKind !== CompletionTriggerKind.TriggerCharacter) {
       return
     }
-    this._base = this._expandPrefixPath(
-      ...PathCompleteProvider._getPrefixPath(document, position),
+    const line = document.lineAt(position.line)
+    const half = line.text.slice(0, position.character)
+    switch (true) {
+      case position.character <= line.firstNonWhitespaceCharacterIndex + 2:
+      case /:\/+/.test(half):
+        return
+    }
+    // path_ always endswith `triggerCharacters`
+    const path_ = half.match(PathCompleteProvider.reFilePath)![0]
+    const baseDir = this._expandPrefixPath(
+      half.slice(0, -path_.length),
+      path_,
       document,
     )
     const commitCharacters = [context.triggerCharacter!]
-    const items: CompletionItem[] = (
-      await fs.readDirectory(Uri.file(this._base))
-    ).map(([name, type]) => ({
+    return (await fs.readDirectory(Uri.file(baseDir))).map(([name, type]) => ({
       label: name,
-      kind:
-        type === FileType.Directory
-          ? CompletionItemKind.Folder
-          : FileType.SymbolicLink
-            ? CompletionItemKind.Reference
-            : CompletionItemKind.File,
+      kind: PathCompleteProvider.kindMap[type],
+      detail: baseDir + name,
       commitCharacters,
     }))
-    if (context.triggerCharacter === '/') {
-      // FIXME: preselect to avoid consequentially type '/'
-      items.push({
-        label: '..',
-        kind: CompletionItemKind.Folder,
-        preselect: true,
-      })
-    }
-    return items
   }
-
-  resolveCompletionItem(
-    item: CompletionItem,
-    token: CancellationToken,
-  ): ProviderResult<CompletionItem> {
-    item.detail = path.join(this._base, item.label as string)
-    return item
-  }
-}
-
-export type ABC = {
-  src: 'hello' | 'world'
 }

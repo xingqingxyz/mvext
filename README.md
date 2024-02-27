@@ -2,38 +2,46 @@
 
 This extension ships a set of useful tools:
 
-- [Case Transform](#case-transform)
-- [Quickly Switch File](#quickly-switch-file)
-- [Apply Shell Edit](#apply-shell-edit)
-- [TypeScript Code Actions](#typescript-code-actions)
+- [Transform Case](#transform-case)
+- [Edit by Shell](#edit-by-shell)
 - [Path Complete](#path-complete)
+- [TypeScript Code Actions](#typescript-code-actions)
+- [Quickly Switch File](#quickly-switch-file)
 
 ## Features
 
-### Case Transform
+### Transform Case
 
-Transform (multiple) cursor position or selection to many cases. Cases: `title`, `camel`, `constant`, `pascal`, `kebab`, `snake`, `sentence`, `dot`, `path`, `header`, `normal`, `lower`, `upper`
+Transform editor selections (empty selection fallback to cursor line) to target
+word case. All word cases: `title`, `camel`, `constant`, `pascal`, `kebab`,
+`snake`, `sentence`, `dot`, `path`, `header`, `normal`, `lower`, `upper`
 
-### Quickly Switch File
+### Edit by Shell
 
-Quickly switch you source file between `.js/.css/.html` or `.js/.ts` (shortcut `alt+o`).
+#### Apply Shell Edit
 
-#### Switch File
+Using current editor selections, according to `editorLangId`, for each eval the
+code and replace it (shortcut `ctrl+alt+s`) with process's stdout if success
+else stderr. Supported language ids are:
 
-| from  | to    |
-| ----- | ----- |
-| .js   | .html |
-| .css  | .html |
-| .html | .css  |
-| .ts   | .js   |
-
-### Apply Shell Edit
-
-Using current editor selection, according to `editorLangId`, to eval the code and instantly replace it. Supports language ids (shortcut `ctrl+alt+s`):
-
-- `/(java|type)script(react)?|vue|svelte|markdown|mdx/` (Node.js | Deno | Bun.js)
+- `/(java|type)script(react)?|vue|svelte|markdown|mdx/` (javascript)
 - `powershell` (pwsh)
 - `shellscript` (bash)
+
+#### Apply Terminal Filter
+
+Join editor selections by '\n' and send it to the active terminal, then wait for
+user edits and run, if command is not failed and has outputs, replace the first
+selection to command output.
+
+#### Apply Terminal Edit
+
+For each editor selections, eval it's text in active terminal and replace it to
+command output if command is not failed and has outputs.
+
+### Path Complete
+
+Provide path completions for files.
 
 ### TypeScript Code Actions
 
@@ -45,12 +53,17 @@ Using current editor selection, according to `editorLangId`, to eval the code an
 
   transform from `[a.b, c.d, e.f]` to `[a.b, c.d, e.f] = [e.f, c.d, a.b]`
 
----
+### Quickly Switch File
 
-### Path Complete
+Quickly switch you source file between `.js/.css/.html` or `.js/.ts` (shortcut `alt+o`).
 
-Provide path completions for files.
+| from  | to    |
+| ----- | ----- |
+| .js   | .html |
+| .css  | .html |
+| .html | .css  |
+| .ts   | .js   |
 
-## For more information
+## For More Information
 
-Welcome to visit this [homepage](https://github.com/xingqingxyz/mvext)
+Repository: [mvext](https://github.com/xingqingxyz/mvext)

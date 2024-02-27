@@ -1,4 +1,3 @@
-import { getExtContext } from '@/context'
 import {
   CodeAction,
   CodeActionContext,
@@ -15,15 +14,31 @@ import {
   TextEdit,
   WorkspaceEdit,
   languages,
+  type Disposable,
 } from 'vscode'
 
-const allKinds = {
-  function: CodeActionKind.RefactorRewrite.append('function'),
-  transform: CodeActionKind.Refactor.append('transform'),
-}
-
-class SelectionCodeActionsProvider implements CodeActionProvider {
+export class SelectionCodeActionsProvider
+  implements CodeActionProvider, Disposable
+{
   static readonly reDelFc = /^\s*[\w$[\]'"]+\s*\(.*\)\s*$/
+  static readonly allKinds = {
+    function: CodeActionKind.RefactorRewrite.append('function'),
+    transform: CodeActionKind.Refactor.append('transform'),
+  }
+
+  dispose: () => void
+
+  constructor() {
+    this.dispose = languages.registerCodeActionsProvider(
+      ['javascript', 'typescript', 'javascriptreact', 'typescriptreact'],
+      this,
+      {
+        providedCodeActionKinds: Object.values(
+          SelectionCodeActionsProvider.allKinds,
+        ),
+      },
+    ).dispose
+  }
 
   provideCodeActions(
     document: TextDocument,
@@ -56,40 +71,37 @@ class SelectionCodeActionsProvider implements CodeActionProvider {
     const wspEdit = new WorkspaceEdit()
     wspEdit.set(document.uri, [new SnippetTextEdit(range, delFcSnippet)])
 
-    const codeAction = new CodeAction('Delete Function Call', allKinds.function)
+    const codeAction = new CodeAction(
+      'Delete Function Call',
+      SelectionCodeActionsProvider.allKinds.function,
+    )
     codeAction.edit = wspEdit
 
     return [codeAction]
+  }
+
+  static _swapVar(text: string) {
+    text = text.trim().replace(/^\[|\]$/g, '')
+    const rev = text.split(/,\s*/).reverse().join(', ')
+    return `[${text}] = [${rev}]`
   }
 
   static swapVar(document: TextDocument, range: Selection) {
     const wspEdit = new WorkspaceEdit()
     wspEdit.set(document.uri, [
-      new TextEdit(range, swapVar(document.getText(range))),
+      new TextEdit(
+        range,
+        SelectionCodeActionsProvider._swapVar(document.getText(range)),
+      ),
     ])
 
-    const codeAction = new CodeAction('Swap Variable', allKinds.transform)
+    const codeAction = new CodeAction(
+      'Swap Variable',
+      SelectionCodeActionsProvider.allKinds.transform,
+    )
     codeAction.edit = wspEdit
 
     return [codeAction]
   }
   //#endregion
-}
-
-function swapVar(text: string) {
-  text = text.trim().replace(/^\[|\]$/g, '')
-  const rev = text.split(/,\s*/).reverse().join(', ')
-  return `[${text}] = [${rev}]`
-}
-
-export function register() {
-  getExtContext().subscriptions.push(
-    languages.registerCodeActionsProvider(
-      ['javascript', 'typescript', 'javascriptreact', 'typescriptreact'],
-      new SelectionCodeActionsProvider(),
-      {
-        providedCodeActionKinds: Object.values(allKinds),
-      },
-    ),
-  )
 }

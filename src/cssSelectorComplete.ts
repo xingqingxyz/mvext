@@ -1,5 +1,3 @@
-import { getExtContext } from '@/context'
-import { mergeIterables } from '@/util'
 import path from 'path'
 import {
   CancellationToken,
@@ -7,27 +5,42 @@ import {
   CompletionItem,
   CompletionItemKind,
   CompletionItemProvider,
-  CompletionTriggerKind,
   Position,
   TextDocument,
   languages,
   workspace,
+  type Disposable,
 } from 'vscode'
+import { mergeIterables as mergeIterable } from './util'
 
-const markupLangIds = [
-  'vue',
-  'mdx',
-  'html',
-  'svelte',
-  'javascriptreact',
-  'typescriptreact',
-]
+export class CssSelectorCompleteProvider
+  implements CompletionItemProvider, Disposable
+{
+  static readonly reMarkupClassName = /(?<=\bclass(?:Name)?=")[^"]+/g
+  static readonly reCssClassName = /^(?:\s*\.)\S+/gm
+  static readonly reCssSelectorLine = /^\s*[-.:#,>+~()[\]]/
+  static readonly markupLangIds = [
+    'vue',
+    'mdx',
+    'html',
+    'svelte',
+    'javascript',
+    'typescript',
+    'javascriptreact',
+    'typescriptreact',
+  ]
+  static readonly cssLangIds = ['css', 'scss', 'tailwindcss']
+  dispose: () => void
 
-class CssSelectorCompleteProvider implements CompletionItemProvider {
-  static readonly reHtmlClassName =
-    /(?<=\bclass(?:Name)?="(?:\S+\s+)*)[\w-]+(?=(?:\s+\S+)*")/g
-
-  static readonly reClassesLine = /^[-.:#\w,>+~\\()[\] ]*$/
+  constructor() {
+    this.dispose = languages.registerCompletionItemProvider(
+      CssSelectorCompleteProvider.markupLangIds.concat(
+        CssSelectorCompleteProvider.cssLangIds,
+      ),
+      this,
+      '.',
+    ).dispose
+  }
 
   /**
    * Completes scenarios:
@@ -40,95 +53,92 @@ class CssSelectorCompleteProvider implements CompletionItemProvider {
     token: CancellationToken,
     context: CompletionContext,
   ) {
-    if (context.triggerKind !== CompletionTriggerKind.TriggerCharacter) {
-      return
-    }
+    // if (context.triggerKind !== CompletionTriggerKind.TriggerCharacter) {
+    //   return
+    // }
+
     const line = document.lineAt(position)
-    if (
-      position.character - line.firstNonWhitespaceCharacterIndex > 21 ||
-      !CssSelectorCompleteProvider.reClassesLine.test(
-        line.text.slice(
-          line.firstNonWhitespaceCharacterIndex,
-          position.character,
-        ),
-      )
-    ) {
-      return
+    switch (true) {
+      case position.character - line.firstNonWhitespaceCharacterIndex > 21:
+      case !CssSelectorCompleteProvider.reCssSelectorLine.test(
+        line.text.slice(0, position.character),
+      ):
+        return
+      case CssSelectorCompleteProvider.markupLangIds.includes(
+        document.languageId,
+      ):
+        return CssSelectorCompleteProvider.mergeResults(
+          CssSelectorCompleteProvider.getDocumentClasses(
+            document.getText(),
+            'markup',
+          ),
+        )
+      case CssSelectorCompleteProvider.cssLangIds.includes(document.languageId):
+        return CssSelectorCompleteProvider.mergeResults(
+          CssSelectorCompleteProvider.getDocumentClasses(
+            document.getText(),
+            'css',
+          ),
+        )
     }
 
-    if (markupLangIds.includes(document.languageId)) {
-      const classNames = new Set(
-        CssSelectorCompleteProvider.getMarkupClasses(document.getText()),
-      )
-      return Array.from(
-        classNames,
-        (className) =>
-          new CompletionItem(className, CompletionItemKind.Constant),
-      )
-    }
+    return CssSelectorCompleteProvider.mergeResults(
+      await CssSelectorCompleteProvider.getRelativeDirClasses(document, token),
+    )
+  }
 
-    const relativeDirClasses =
-      await CssSelectorCompleteProvider.getRelativeDirClasses(document, token)
-    const items = Array.from(
-      relativeDirClasses,
+  static *getDocumentClasses(docText: string, kind: 'markup' | 'css') {
+    for (const [text] of docText.matchAll(
+      this[kind === 'markup' ? 'reMarkupClassName' : 'reCssClassName'],
+    )) {
+      yield* text.split(' ')
+    }
+  }
+
+  static async mergeResults(iterable: Iterable<string>) {
+    const classSet = new Set<string>()
+    for (const className of iterable) {
+      classSet.add(className)
+    }
+    return Array.from(
+      classSet,
       (className) => new CompletionItem(className, CompletionItemKind.Constant),
     )
-
-    return items
   }
 
   static async getRelativeDirClasses(
     document: TextDocument,
     token: CancellationToken,
   ) {
-    const wspFolder = workspace.getWorkspaceFolder(document.uri)
-    if (!wspFolder) {
-      return new Set<string>()
+    const baseDir = workspace.getWorkspaceFolder(document.uri)
+      ? ''
+      : path
+          .join(workspace.asRelativePath(document.uri, false), '../')
+          .replaceAll('\\', '/')
+    const fileMap = {
+      markup: '**/*.{html,vue,tsx,jsx,svelte}',
+      css: '**/*.{css,scss}',
     }
-
-    const markups = await workspace.findFiles(
-      `${
-        __DEV__
-          ? '**'
-          : path
-              .dirname(workspace.asRelativePath(document.uri, false))
-              .replaceAll('\\', '/')
-      }/*.{vue,html,jsx,tsx,mdx,svelte}`,
-      undefined,
-      20,
-      token,
-    )
     const { readFile } = workspace.fs
-    const relativeDirClasses = new Set(
-      mergeIterables(
-        await Promise.all(
-          markups.map(async (m) => {
-            const documentText = (await readFile(m)).toString()
-            return CssSelectorCompleteProvider.getMarkupClasses(documentText)
+    const iterableMap: Record<string, Iterable<string>[]> = {}
+    for (const [kind, pattern] of Object.entries(fileMap)) {
+      iterableMap[kind] = await Promise.all<Iterable<string>>(
+        await workspace
+          .findFiles(baseDir + pattern, undefined, 20, token)
+          .then(function* (files) {
+            for (const file of files) {
+              yield readFile(file).then((r) =>
+                CssSelectorCompleteProvider.getDocumentClasses(
+                  r.toString(),
+                  kind as any,
+                ),
+              )
+            }
           }),
-        ),
-      ),
+      )
+    }
+    return mergeIterable(
+      mergeIterable<Iterable<string>>(Object.values(iterableMap)),
     )
-    return relativeDirClasses
   }
-
-  static getMarkupClasses(documentText: string) {
-    return (function* () {
-      for (const m of documentText.matchAll(
-        CssSelectorCompleteProvider.reHtmlClassName,
-      )) {
-        yield m[0]
-      }
-    })()
-  }
-}
-
-export function register() {
-  getExtContext().subscriptions.push(
-    languages.registerCompletionItemProvider(
-      ['css', 'scss', 'tailwindcss', 'html', 'vue', 'svelte', 'mdx'],
-      new CssSelectorCompleteProvider(),
-      '.',
-    ),
-  )
 }

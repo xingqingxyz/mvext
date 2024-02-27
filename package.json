@@ -1,7 +1,7 @@
 {
   "name": "mvext",
   "description": "An extension ships some useful tools.",
-  "version": "0.10.3",
+  "version": "0.10.4",
   "author": "Ming Chen",
   "displayName": "mvext",
   "publisher": "xingqingxyz",
@@ -115,7 +115,7 @@
           },
           "markdownDescription": "Path mappings for path completion:\n- `${workspaceFolder}` means workspace folder\n- `~` means `os.homedir()`\n- use $VAR to substitute to environment variables"
         },
-        "mvext.transformCase.targetCase": {
+        "mvext.transformCase.defaultCase": {
           "type": "string",
           "scope": "language-overridable",
           "enum": [
@@ -138,14 +138,57 @@
         }
       }
     },
+    "languages": [
+      {
+        "id": "c",
+        "configuration": "./resources/snake-case.json"
+      },
+      {
+        "id": "cpp",
+        "configuration": "./resources/snake-case.json"
+      },
+      {
+        "id": "rust",
+        "configuration": "./resources/snake-case.json"
+      },
+      {
+        "id": "python",
+        "configuration": "./resources/snake-case.json"
+      },
+      {
+        "id": "lua",
+        "configuration": "./resources/snake-case.json"
+      },
+      {
+        "id": "shellscript",
+        "configuration": "./resources/snake-case.json"
+      },
+      {
+        "id": "html",
+        "configuration": "./resources/kebab-case.json"
+      },
+      {
+        "id": "scss",
+        "configuration": "./resources/kebab-case.json"
+      },
+      {
+        "id": "csharp",
+        "configuration": "./resources/pascal-case.json"
+      }
+    ],
     "commands": [
       {
+        "title": "Transform Case (default)",
         "category": "mvext",
-        "title": "Transform Case",
         "command": "mvext.transformCase"
       },
       {
-        "title": "Rename With Case",
+        "title": "Transform Case with Picker",
+        "category": "mvext",
+        "command": "mvext.transformCaseWithPicker"
+      },
+      {
+        "title": "Rename with Case",
         "category": "mvext",
         "command": "mvext.renameWithCase"
       },
@@ -155,14 +198,14 @@
         "command": "mvext.applyShellEdit"
       },
       {
-        "title": "Apply Shell Filter",
+        "title": "Apply Terminal Edit",
         "category": "mvext",
-        "command": "mvext.applyShellFilter"
+        "command": "mvext.applyTerminalEdit"
       },
       {
-        "title": "Apply Current Shell Edit",
+        "title": "Apply Terminal Filter",
         "category": "mvext",
-        "command": "mvext.applyCurrentShellEdit"
+        "command": "mvext.applyTerminalFilter"
       },
       {
         "title": "Quickly Switch File",
@@ -173,11 +216,16 @@
     "keybindings": [
       {
         "when": "editorTextFocus && !editorReadonly",
-        "key": "alt+x t",
+        "key": "alt+x d",
         "command": "mvext.transformCase"
       },
       {
-        "key": "alt+x alt+r",
+        "when": "editorTextFocus && !editorReadonly",
+        "key": "alt+x t",
+        "command": "mvext.transformCaseWithPicker"
+      },
+      {
+        "key": "alt+x r",
         "when": "editorTextFocus && !editorReadonly",
         "command": "mvext.renameWithCase"
       },
@@ -187,14 +235,14 @@
         "command": "mvext.applyShellEdit"
       },
       {
-        "key": "ctrl+alt+1",
-        "when": "editorTextFocus && !editorReadonly",
-        "command": "mvext.applyShellFilter"
-      },
-      {
         "key": "ctrl+alt+e",
         "when": "editorTextFocus && !editorReadonly",
-        "command": "mvext.applyCurrentShellEdit"
+        "command": "mvext.applyTerminalEdit"
+      },
+      {
+        "key": "alt+x 1",
+        "when": "editorTextFocus && !editorReadonly",
+        "command": "mvext.applyTerminalFilter"
       },
       {
         "key": "alt+o",

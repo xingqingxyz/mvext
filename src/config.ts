@@ -5,7 +5,7 @@ export type MvextConfig = {
   // path complete
   'pathComplete.prefixMap': Record<string, string>
   // case transform
-  'transformCase.targetCase': WordCase
+  'transformCase.defaultCase': WordCase
 } & Record<
   // shell edit
   `shellEdit.${'node' | 'python' | 'shellscript' | 'powershell'}.cmd`,

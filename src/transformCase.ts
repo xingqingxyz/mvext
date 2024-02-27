@@ -6,6 +6,7 @@ import {
   commands,
   window,
   workspace,
+  type QuickPickItem,
 } from 'vscode'
 import { getExtConfig } from './config'
 import {
@@ -19,17 +20,8 @@ export function transformCase(
   edit: TextEditorEdit,
   wc?: WordCase,
 ) {
-  wc ??= getExtConfig('transformCase.targetCase', editor.document)
+  wc ??= getExtConfig('transformCase.defaultCase', editor.document)
   const { document, selections } = editor
-
-  if (selections.length < 2 && selections[0].isEmpty) {
-    const position = selections[0].start
-    const range = document.getWordRangeAtPosition(position)
-    if (range) {
-      edit.replace(range, transformCaseHelper(document.getText(range), wc))
-    }
-    return
-  }
 
   for (const selectionRange of selections) {
     if (selectionRange.isEmpty) {
@@ -37,13 +29,32 @@ export function transformCase(
       if (range) {
         edit.replace(range, transformCaseHelper(document.getText(range), wc))
       }
-      continue
+    } else {
+      edit.replace(
+        selectionRange,
+        transformCaseHelper(document.getText(selectionRange), wc),
+      )
     }
-    edit.replace(
-      selectionRange,
-      transformCaseHelper(document.getText(selectionRange), wc),
-    )
   }
+}
+
+export async function transformCaseWithPicker() {
+  const editor = window.activeTextEditor
+  if (!editor) {
+    return
+  }
+  const defaultWc = getExtConfig('transformCase.defaultCase', editor.document)
+  await window
+    .showQuickPick(
+      casesList.map(
+        (wc) =>
+          ({ label: wc, picked: wc === defaultWc }) satisfies QuickPickItem,
+      ),
+    )
+    .then(
+      (item) =>
+        item && editor.edit((edit) => transformCase(editor, edit, item.label)),
+    )
 }
 
 /**
@@ -64,7 +75,10 @@ export async function renameWithCase(wc?: WordCase) {
       }>('vscode.prepareRename', document.uri, selectionRange.start)
       const newName = wc
         ? transformCaseHelper(placeholder, wc)
-        : await showRenameUI(placeholder)
+        : await showRenameUI(
+            placeholder,
+            getExtConfig('transformCase.defaultCase', document),
+          )
       const wspEdit = await commands.executeCommand<WorkspaceEdit>(
         'vscode.executeDocumentRenameProvider',
         document.uri,
@@ -76,25 +90,29 @@ export async function renameWithCase(wc?: WordCase) {
   } catch {}
 }
 
-async function showRenameUI(currentWord: string) {
+async function showRenameUI(curWord: string, preselect?: WordCase) {
   const item = await window.showQuickPick(
-    casesList.map((wc) => ({
-      label: wc,
-      description: transformCaseHelper(currentWord, wc),
-    })),
-    { title: 'Rename' },
+    casesList.map(
+      (wc) =>
+        ({
+          label: wc,
+          description: transformCaseHelper(curWord, wc),
+          picked: preselect === wc,
+        }) satisfies QuickPickItem,
+    ),
+    { title: 'Rename Case' },
   )
-  if (item === undefined) {
-    throw new Error('No case selected')
+  if (!item) {
+    throw new Error('no item selected')
   }
   const value = await window.showInputBox({
-    title: 'Rename',
+    title: 'Rename Symbol',
     placeHolder: 'New name',
     ignoreFocusOut: true,
     value: item.description,
   })
-  if (value === undefined) {
-    throw new Error('User canceled')
+  if (!value) {
+    throw new Error('invalid value')
   }
   return value
 }

@@ -2,6 +2,11 @@
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## [0.10.4]
+
+- Feature: [`transformCase`] with UI, rename symbol with UI
+- Feature: [`applyShellEdit`] apply terminal edit, apply terminal filter
+
 ## [0.5.0]
 
 - Feature: [`pathComplete`](./src/pathComplete.ts): files path completer.
