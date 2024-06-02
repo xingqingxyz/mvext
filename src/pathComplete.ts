@@ -1,32 +1,31 @@
-import os from 'os'
-import path from 'path'
+import { homedir } from 'os'
+import { join as pathJoin } from 'path'
 import {
-  CancellationToken,
-  CompletionContext,
   CompletionItemKind,
-  CompletionItemProvider,
   CompletionTriggerKind,
-  Disposable,
   FileType,
-  Position,
-  TextDocument,
   Uri,
   languages,
   workspace,
+  type CancellationToken,
+  type CompletionContext,
+  type CompletionItemProvider,
+  type Disposable,
+  type Position,
+  type TextDocument,
 } from 'vscode'
 import { getExtConfig } from './config'
 import { isWin32 } from './util'
-import fs = workspace.fs
 
 export class PathCompleteProvider
   implements CompletionItemProvider, Disposable
 {
   // reference to the Vim editor's regex '\f'
   static readonly reFilePath = isWin32
-    ? /(?:[-\w\\/.+,#$%{}[\]@!~=]|[^\x00-\xff])*$/
-    : /(?:[-\w/.+,#$%~=]|[^\x00-\xff])*$/
+    ? /(?:[-\w\\/.+,#$%{}[\]@!~=:]|[^\x00-\xff])*$/
+    : /(?:[-\w/.+,#$%~=:]|[^\x00-\xff])*$/
   // resolve powershell env var and bash like env var
-  static readonly reEnvVar = isWin32 ? /\${Env:(\w+)}/gi : /\$(\w+)|\${(\w+)}/g
+  static readonly reEnvVar = isWin32 ? /\${Env:(\w+)}/gi : /\$(\w+)/g
   static readonly triggerCharacters = isWin32 ? ['\\', '/'] : ['/']
   static readonly kindMap = {
     [FileType.Directory]: CompletionItemKind.Folder,
@@ -47,37 +46,37 @@ export class PathCompleteProvider
 
   private _expandPrefixPath(
     prefix: string,
-    path_: string,
+    path: string,
     document: TextDocument,
   ) {
     const prefixMap = getExtConfig('pathComplete.prefixMap', document)
     for (const [lhs, rhs] of Object.entries(prefixMap)) {
-      if (path_.startsWith(lhs)) {
-        path_ = rhs + path_.slice(lhs.length)
+      if (path.startsWith(lhs)) {
+        path = rhs + path.slice(lhs.length)
         break
       }
       if (prefix.endsWith(lhs)) {
-        path_ = rhs + path_
+        path = rhs + path
         break
       }
     }
-    if (path_.startsWith('${workspaceFolder}')) {
-      path_ = path.join(
-        workspace.getWorkspaceFolder(document.uri)?.uri.fsPath ?? os.homedir(),
-        path_.slice(19),
+    if (path.startsWith('${workspaceFolder}')) {
+      path = pathJoin(
+        workspace.getWorkspaceFolder(document.uri)?.uri.fsPath ?? homedir(),
+        path.slice(19),
       )
     }
-    path_ = path_.replace(
+    path = path.replace(
       PathCompleteProvider.reEnvVar,
       (keep, name) => process.env[name] ?? keep,
     )
     for (const sep of PathCompleteProvider.triggerCharacters) {
-      path_ = path_.replace('~' + sep, os.homedir() + sep)
+      path = path.replace('~' + sep, homedir() + sep)
     }
-    if (!PathCompleteProvider.triggerCharacters.includes(path_[0])) {
-      path_ = path.join(document.fileName, '..', path_)
+    if (!PathCompleteProvider.triggerCharacters.includes(path[0])) {
+      path = pathJoin(document.fileName, '..', path)
     }
-    return path_
+    return path
   }
 
   async provideCompletionItems(
@@ -93,22 +92,24 @@ export class PathCompleteProvider
     const half = line.text.slice(0, position.character)
     switch (true) {
       case position.character <= line.firstNonWhitespaceCharacterIndex + 2:
-      case /:\/+/.test(half):
+      case /[\\/]{2,}/.test(half):
         return
     }
     // path_ always endswith `triggerCharacters`
-    const path_ = half.match(PathCompleteProvider.reFilePath)![0]
+    const path = half.match(PathCompleteProvider.reFilePath)![0]
     const baseDir = this._expandPrefixPath(
-      half.slice(0, -path_.length),
-      path_,
+      half.slice(0, -path.length),
+      path,
       document,
     )
     const commitCharacters = [context.triggerCharacter!]
-    return (await fs.readDirectory(Uri.file(baseDir))).map(([name, type]) => ({
-      label: name,
-      kind: PathCompleteProvider.kindMap[type],
-      detail: baseDir + name,
-      commitCharacters,
-    }))
+    return (await workspace.fs.readDirectory(Uri.file(baseDir))).map(
+      ([name, type]) => ({
+        label: name,
+        kind: PathCompleteProvider.kindMap[type],
+        detail: baseDir + name,
+        commitCharacters,
+      }),
+    )
   }
 }

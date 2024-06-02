@@ -1,7 +1,7 @@
-import { ExecFileOptions } from 'child_process'
-import * as path from 'path'
-import * as util from 'util'
-import { Range, TextDocument, window } from 'vscode'
+import type { ExecFileOptions } from 'child_process'
+import path from 'path'
+import util from 'util'
+import { window, type Range, type TextDocument } from 'vscode'
 import { getExtConfig } from './config'
 import { execFilePm, isWin32, noop } from './util'
 

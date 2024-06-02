@@ -1,5 +1,5 @@
 import path from 'path'
-import * as util from 'util'
+import util from 'util'
 import { Worker } from 'worker_threads'
 
 export async function cjsEval(text: string, virtualFile: string) {

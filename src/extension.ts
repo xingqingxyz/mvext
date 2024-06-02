@@ -1,4 +1,4 @@
-import { ExtensionContext, commands } from 'vscode'
+import { ExtensionContext, commands, languages } from 'vscode'
 import {
   applyShellEdit,
   applyTerminalEdit,
@@ -6,6 +6,9 @@ import {
 } from './applyShellEdit'
 import { setExtContext } from './context'
 import { CssSelectorCompleteProvider } from './cssSelectorComplete'
+import { ShfmtFormatter } from './formatter/shfmt'
+import { StyluaFormatter } from './formatter/stylua'
+import { HexColorProvider } from './hexColor'
 import { PathCompleteProvider } from './pathComplete'
 import { quicklySwitchFile } from './quicklySwitchFile'
 import {
@@ -29,6 +32,19 @@ export function activate(context: ExtensionContext) {
     ),
     commands.registerCommand('mvext.applyShellEdit', applyShellEdit),
     commands.registerCommand('mvext.quicklySwitchFile', quicklySwitchFile),
+    languages.registerColorProvider('**', new HexColorProvider()),
+    languages.registerDocumentFormattingEditProvider(
+      ['shellscript'],
+      new ShfmtFormatter(),
+    ),
+    languages.registerDocumentRangeFormattingEditProvider(
+      ['lua'],
+      new StyluaFormatter(),
+    ),
+    languages.registerDocumentFormattingEditProvider(
+      ['lua'],
+      new StyluaFormatter(),
+    ),
   )
   if (__DEV__) {
     context.subscriptions.push(

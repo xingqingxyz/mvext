@@ -1,21 +1,28 @@
 import {
   CodeAction,
-  CodeActionContext,
   CodeActionKind,
-  CodeActionProvider,
   CodeActionTriggerKind,
-  Command,
-  ProviderResult,
-  Range,
-  Selection,
   SnippetString,
   SnippetTextEdit,
-  TextDocument,
   TextEdit,
   WorkspaceEdit,
   languages,
+  type CancellationToken,
+  type CodeActionContext,
+  type CodeActionProvider,
+  type Command,
   type Disposable,
+  type ProviderResult,
+  type Range,
+  type Selection,
+  type TextDocument,
 } from 'vscode'
+
+function swapVarHelper(text: string) {
+  text = text.trim().replace(/^\[|\]$/g, '')
+  const rev = text.split(/,\s*/).reverse().join(', ')
+  return `[${text}] = [${rev}]`
+}
 
 export class SelectionCodeActionsProvider
   implements CodeActionProvider, Disposable
@@ -44,7 +51,7 @@ export class SelectionCodeActionsProvider
     document: TextDocument,
     range: Selection | Range,
     context: CodeActionContext,
-    // token: CancellationToken,
+    token: CancellationToken,
   ): ProviderResult<(CodeAction | Command)[]> {
     if (context.triggerKind !== CodeActionTriggerKind.Invoke) {
       return
@@ -80,19 +87,10 @@ export class SelectionCodeActionsProvider
     return [codeAction]
   }
 
-  static _swapVar(text: string) {
-    text = text.trim().replace(/^\[|\]$/g, '')
-    const rev = text.split(/,\s*/).reverse().join(', ')
-    return `[${text}] = [${rev}]`
-  }
-
   static swapVar(document: TextDocument, range: Selection) {
     const wspEdit = new WorkspaceEdit()
     wspEdit.set(document.uri, [
-      new TextEdit(
-        range,
-        SelectionCodeActionsProvider._swapVar(document.getText(range)),
-      ),
+      new TextEdit(range, swapVarHelper(document.getText(range))),
     ])
 
     const codeAction = new CodeAction(

@@ -1,4 +1,4 @@
-import { ConfigurationScope, workspace } from 'vscode'
+import { workspace, type ConfigurationScope } from 'vscode'
 import type { WordCase } from './util/transformCaseHelper'
 
 export type MvextConfig = {
@@ -6,6 +6,8 @@ export type MvextConfig = {
   'pathComplete.prefixMap': Record<string, string>
   // case transform
   'transformCase.defaultCase': WordCase
+  'shfmt.extraArgs': string[]
+  'stylua.extraArgs': string[]
 } & Record<
   // shell edit
   `shellEdit.${'node' | 'python' | 'shellscript' | 'powershell'}.cmd`,

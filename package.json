@@ -1,7 +1,7 @@
 {
   "name": "mvext",
   "description": "An extension ships some useful tools.",
-  "version": "0.10.4",
+  "version": "0.11.0",
   "author": "Ming Chen",
   "displayName": "mvext",
   "publisher": "xingqingxyz",
@@ -9,7 +9,7 @@
   "preview": true,
   "license": "MIT",
   "engines": {
-    "vscode": "^1.86.0"
+    "vscode": "^1.89.0"
   },
   "categories": [
     "Other",
@@ -135,6 +135,26 @@
           ],
           "default": "camel",
           "markdownDescription": "Command `mvext.transformCase` use this as transform target case"
+        },
+        "mvext.shfmt.extraArgs": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "-bn",
+            "-ci",
+            "-sr"
+          ],
+          "markdownDescription": "Formatter shfmt's extra command line args"
+        },
+        "mvext.stylua.extraArgs": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [],
+          "markdownDescription": "Formatter stylua's extra command line args"
         }
       }
     },

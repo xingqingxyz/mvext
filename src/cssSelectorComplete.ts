@@ -1,17 +1,17 @@
 import path from 'path'
 import {
-  CancellationToken,
-  CompletionContext,
   CompletionItem,
   CompletionItemKind,
-  CompletionItemProvider,
-  Position,
-  TextDocument,
   languages,
   workspace,
+  type CancellationToken,
+  type CompletionContext,
+  type CompletionItemProvider,
   type Disposable,
+  type Position,
+  type TextDocument,
 } from 'vscode'
-import { mergeIterables as mergeIterable } from './util'
+import { mergeIterables } from './util'
 
 export class CssSelectorCompleteProvider
   implements CompletionItemProvider, Disposable
@@ -137,8 +137,8 @@ export class CssSelectorCompleteProvider
           }),
       )
     }
-    return mergeIterable(
-      mergeIterable<Iterable<string>>(Object.values(iterableMap)),
+    return mergeIterables(
+      mergeIterables<Iterable<string>>(Object.values(iterableMap)),
     )
   }
 }

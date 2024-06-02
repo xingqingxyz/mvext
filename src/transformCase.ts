@@ -1,12 +1,12 @@
 import {
-  Range,
-  TextEditor,
-  TextEditorEdit,
-  WorkspaceEdit,
   commands,
   window,
   workspace,
   type QuickPickItem,
+  type Range,
+  type TextEditor,
+  type TextEditorEdit,
+  type WorkspaceEdit,
 } from 'vscode'
 import { getExtConfig } from './config'
 import {
