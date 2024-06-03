@@ -27,7 +27,6 @@ export class ShfmtFormatter implements DocumentFormattingEditProvider {
         this._exePath,
         [
           ...getExtConfig('shfmt.extraArgs'),
-          '-',
           '--filename',
           document.fileName,
           '-i',

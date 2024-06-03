@@ -32,13 +32,13 @@ export class StyluaFormatter
         this._exePath,
         [
           ...getExtConfig('stylua.extraArgs'),
-          '-',
           '--stdin-filepath',
           document.fileName,
           '--indent-type',
           options.insertSpaces ? 'Spaces' : 'Tabs',
           '--indent-width',
           options.tabSize + '',
+          '-',
         ],
         {
           encoding: 'utf-8',
@@ -74,7 +74,6 @@ export class StyluaFormatter
         this._exePath,
         [
           ...getExtConfig('stylua.extraArgs'),
-          '-',
           '--stdin-filepath',
           document.fileName,
           '--range-start',
@@ -85,6 +84,7 @@ export class StyluaFormatter
           options.insertSpaces ? 'Spaces' : 'Tabs',
           '--indent-width',
           options.tabSize + '',
+          '-',
         ],
         {
           encoding: 'utf-8',

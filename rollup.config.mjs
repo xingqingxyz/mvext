@@ -5,7 +5,7 @@ import typescript from '@rollup/plugin-typescript'
 import path from 'path'
 import { defineConfig } from 'rollup'
 
-const isDev = process.env.NODE_ENV === 'development'
+const isDev = process.env.NODE_ENV !== 'production'
 
 export default defineConfig({
   input: 'src/extension.ts',

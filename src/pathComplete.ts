@@ -88,15 +88,14 @@ export class PathCompleteProvider
     if (context.triggerKind !== CompletionTriggerKind.TriggerCharacter) {
       return
     }
-    const line = document.lineAt(position.line)
-    const half = line.text.slice(0, position.character)
-    switch (true) {
-      case position.character <= line.firstNonWhitespaceCharacterIndex + 2:
-      case /[\\/]{2,}/.test(half):
-        return
-    }
-    // path_ always endswith `triggerCharacters`
+    // half always endswith `triggerCharacters`
+    const half = document
+      .lineAt(position.line)
+      .text.slice(0, position.character)
     const path = half.match(PathCompleteProvider.reFilePath)![0]
+    if (/[\\/]{2,}/.test(path)) {
+      return
+    }
     const baseDir = this._expandPrefixPath(
       half.slice(0, -path.length),
       path,

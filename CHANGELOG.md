@@ -2,6 +2,11 @@
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## [0.11.0]
+
+- Feature: [`formatter`] provides shfmt, stylua integration based on executables.
+- Feature: [`hexColor`] toggle language color provider
+
 ## [0.10.4]
 
 - Feature: [`transformCase`] with UI, rename symbol with UI

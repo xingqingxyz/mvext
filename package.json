@@ -158,44 +158,6 @@
         }
       }
     },
-    "languages": [
-      {
-        "id": "c",
-        "configuration": "./resources/snake-case.json"
-      },
-      {
-        "id": "cpp",
-        "configuration": "./resources/snake-case.json"
-      },
-      {
-        "id": "rust",
-        "configuration": "./resources/snake-case.json"
-      },
-      {
-        "id": "python",
-        "configuration": "./resources/snake-case.json"
-      },
-      {
-        "id": "lua",
-        "configuration": "./resources/snake-case.json"
-      },
-      {
-        "id": "shellscript",
-        "configuration": "./resources/snake-case.json"
-      },
-      {
-        "id": "html",
-        "configuration": "./resources/kebab-case.json"
-      },
-      {
-        "id": "scss",
-        "configuration": "./resources/kebab-case.json"
-      },
-      {
-        "id": "csharp",
-        "configuration": "./resources/pascal-case.json"
-      }
-    ],
     "commands": [
       {
         "title": "Transform Case (default)",
@@ -231,6 +193,11 @@
         "title": "Quickly Switch File",
         "category": "mvext",
         "command": "mvext.quicklySwitchFile"
+      },
+      {
+        "title": "Toggle Hex Color Language",
+        "category": "mvext",
+        "command": "mvext.hexColor.toggleLanguage"
       }
     ],
     "keybindings": [
@@ -274,12 +241,8 @@
   "activationEvents": [
     "onStartupFinished"
   ],
-  "enabledApiProposals": [
-    "terminalExecuteCommandEvent"
-  ],
   "scripts": {
-    "watch": "NODE_ENV=development rollup -c --watch",
-    "pretest": "rimraf out && esbuild src/**/**.ts --platform=node --format=cjs --outdir=out --sourcemap --define:__DEV__=true",
+    "watch": "rollup -c -w",
     "prepare": "husky",
     "extension": "vsce package -o out/mvext.vsix && code --install-extension out/mvext.vsix",
     "vscode:prepublish": "rimraf out && rollup -c"
@@ -296,7 +259,6 @@
     "@typescript-eslint/parser": "^7.0.1",
     "@vscode/dts": "^0.4.0",
     "@vscode/vsce": "^2.23.0",
-    "esbuild": "^0.20.0",
     "eslint": "^8.56.0",
     "glob": "^10.3.10",
     "husky": "^9.0.10",

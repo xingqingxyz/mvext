@@ -13,8 +13,7 @@
         "--extensionDevelopmentPath=${workspaceFolder}",
         "--disable-extensions",
         "--enable-proposed-api",
-        "xingqingxyz.mvext",
-        "${workspaceFolder}/test-workspace"
+        "xingqingxyz.mvext"
       ],
       "outFiles": ["${workspaceFolder}/out/**/*.js"],
       "skipFiles": ["<node_internals>/**", "**/node_modules/**"],
@@ -28,9 +27,8 @@
         "--extensionDevelopmentPath=${workspaceFolder}",
         "--extensionTestsPath=${workspaceFolder}/out/test/suite",
         "--disable-extensions",
-        "--enab-propos-api",
-        "xingqingxyz.mvext",
-        "${workspaceFolder}/test-workspace"
+        "--enable-proposed-api",
+        "xingqingxyz.mvext"
       ],
       "outFiles": ["${workspaceFolder}/out/**/*.js"],
       "skipFiles": ["<node_internals>/**", "**/node_modules/**"],

@@ -5,7 +5,6 @@ import {
   applyTerminalFilter,
 } from './applyShellEdit'
 import { setExtContext } from './context'
-import { CssSelectorCompleteProvider } from './cssSelectorComplete'
 import { ShfmtFormatter } from './formatter/shfmt'
 import { StyluaFormatter } from './formatter/stylua'
 import { HexColorProvider } from './hexColor'
@@ -23,7 +22,7 @@ export function activate(context: ExtensionContext) {
   context.subscriptions.push(
     new PathCompleteProvider(),
     new SelectionCodeActionsProvider(),
-    new CssSelectorCompleteProvider(),
+    // new CssSelectorCompleteProvider(),
     commands.registerCommand('mvext.renameWithCase', renameWithCase),
     commands.registerTextEditorCommand('mvext.transformCase', transformCase),
     commands.registerCommand(
@@ -32,7 +31,11 @@ export function activate(context: ExtensionContext) {
     ),
     commands.registerCommand('mvext.applyShellEdit', applyShellEdit),
     commands.registerCommand('mvext.quicklySwitchFile', quicklySwitchFile),
-    languages.registerColorProvider('**', new HexColorProvider()),
+    commands.registerTextEditorCommand(
+      'mvext.hexColor.toggleLanguage',
+      HexColorProvider.toggleHexColor.bind(HexColorProvider),
+    ),
+    HexColorProvider,
     languages.registerDocumentFormattingEditProvider(
       ['shellscript'],
       new ShfmtFormatter(),

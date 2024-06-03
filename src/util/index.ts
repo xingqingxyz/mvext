@@ -1,4 +1,5 @@
 import { execFile } from 'child_process'
+import { EOL } from 'os'
 import util from 'util'
 import type { CancellationToken } from 'vscode'
 
@@ -28,7 +29,7 @@ export async function findExeInPath(name: string) {
     }
     execFile(finder, [name], { encoding: 'utf8' }, (err, stdout, stderr) => {
       if (err) reject(err)
-      else resolve(stdout.split('\n')[0])
+      else resolve(stdout.split(EOL)[0])
     })
   })
 }
