@@ -15,12 +15,7 @@ import {
   transformCaseHelper,
 } from './util/transformCaseHelper'
 
-export function transformCase(
-  editor: TextEditor,
-  edit: TextEditorEdit,
-  wc?: WordCase,
-) {
-  wc ??= getExtConfig('transformCase.defaultCase', editor.document)
+function transformCase(editor: TextEditor, edit: TextEditorEdit, wc: WordCase) {
   const { document, selections } = editor
 
   for (const selectionRange of selections) {
@@ -38,18 +33,36 @@ export function transformCase(
   }
 }
 
+export function transformCaseDefault(editor: TextEditor, edit: TextEditorEdit) {
+  const wc = getExtConfig('transformCase.defaultCase', editor.document)
+  transformCase(editor, edit, wc)
+}
+
 export async function transformCaseWithPicker() {
   const editor = window.activeTextEditor
   if (!editor) {
     return
   }
-  const defaultWc = getExtConfig('transformCase.defaultCase', editor.document)
+  const { document, selection } = editor
+  const defaultWc = getExtConfig('transformCase.defaultCase', document)
+  const word = document.getText(
+    selection.isEmpty
+      ? document.getWordRangeAtPosition(selection.start)
+      : selection,
+  )
   await window
     .showQuickPick(
       casesList.map(
         (wc) =>
-          ({ label: wc, picked: wc === defaultWc }) satisfies QuickPickItem,
+          ({
+            label: wc,
+            description: transformCaseHelper(word, wc),
+            picked: wc === defaultWc,
+          }) satisfies QuickPickItem,
       ),
+      {
+        title: 'Transform Case',
+      },
     )
     .then(
       (item) =>
@@ -100,7 +113,7 @@ async function showRenameUI(curWord: string, preselect?: WordCase) {
           picked: preselect === wc,
         }) satisfies QuickPickItem,
     ),
-    { title: 'Rename Case' },
+    { title: 'Rename with Case' },
   )
   if (!item) {
     throw new Error('no item selected')

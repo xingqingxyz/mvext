@@ -4,6 +4,8 @@ import type { WordCase } from './util/transformCaseHelper'
 export type MvextConfig = {
   // path complete
   'pathComplete.prefixMap': Record<string, string>
+  // path complete debounceTimeMs
+  'pathComplete.debounceTimeMs': number
   // case transform
   'transformCase.defaultCase': WordCase
   'shfmt.extraArgs': string[]

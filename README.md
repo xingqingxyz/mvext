@@ -5,6 +5,7 @@ This extension ships a set of useful tools:
 - [Transform Case](#transform-case)
 - [Edit by Shell](#edit-by-shell)
 - [Path Complete](#path-complete)
+- [Toggle Hex Color Language](#toggle-hex-color-language)
 - [TypeScript Code Actions](#typescript-code-actions)
 - [Quickly Switch File](#quickly-switch-file)
 
@@ -43,6 +44,10 @@ command output if command is not failed and has outputs.
 
 Provide path completions for files.
 
+### Toggle Hex Color Language
+
+Simply toggle hex color blocks for each language.
+
 ### TypeScript Code Actions
 
 - `Delete Function Call`
@@ -66,4 +71,4 @@ Quickly switch you source file between `.js/.css/.html` or `.js/.ts` (shortcut `
 
 ## For More Information
 
-Repository: [mvext](https://github.com/xingqingxyz/mvext)
+[!Read the source](https://github.com/xingqingxyz/mvext)

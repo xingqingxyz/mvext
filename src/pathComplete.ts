@@ -1,5 +1,6 @@
 import { homedir } from 'os'
 import { join as pathJoin } from 'path'
+import { setTimeout as setTimeoutPromise } from 'timers/promises'
 import {
   CompletionItemKind,
   CompletionTriggerKind,
@@ -20,10 +21,10 @@ import { isWin32 } from './util'
 export class PathCompleteProvider
   implements CompletionItemProvider, Disposable
 {
-  // reference to the Vim editor's regex '\f'
+  // reference to the Vim editor's 'isfname'
   static readonly reFilePath = isWin32
-    ? /(?:[-\w\\/.+,#$%{}[\]@!~=:]|[^\x00-\xff])*$/
-    : /(?:[-\w/.+,#$%~=:]|[^\x00-\xff])*$/
+    ? /(?:[-\w\\/.+,#$%{}[\]@!~=:]|[^\x30-\x39])*$/
+    : /(?:[-\w/.+,#$%~=:]|[^\x30-\x39])*$/
   // resolve powershell env var and bash like env var
   static readonly reEnvVar = isWin32 ? /\${Env:(\w+)}/gi : /\$(\w+)/g
   static readonly triggerCharacters = isWin32 ? ['\\', '/'] : ['/']
@@ -33,7 +34,6 @@ export class PathCompleteProvider
     [FileType.File]: CompletionItemKind.File,
     [FileType.Unknown]: CompletionItemKind.Value,
   }
-  static readonly prefixMapConfigKey = 'mvext.pathComplete.prefixMap'
   dispose: () => void
 
   constructor() {
@@ -92,23 +92,34 @@ export class PathCompleteProvider
     const half = document
       .lineAt(position.line)
       .text.slice(0, position.character)
-    const path = half.match(PathCompleteProvider.reFilePath)![0]
-    if (/[\\/]{2,}/.test(path)) {
+    const uri = Uri.parse(
+      half.match(PathCompleteProvider.reFilePath)![0],
+      false,
+    )
+    if (uri.scheme !== 'file') {
       return
     }
+    const path = uri.fsPath
     const baseDir = this._expandPrefixPath(
       half.slice(0, -path.length),
       path,
       document,
     )
-    const commitCharacters = [context.triggerCharacter!]
-    return (await workspace.fs.readDirectory(Uri.file(baseDir))).map(
-      ([name, type]) => ({
+    return workspace.fs.readDirectory(Uri.file(baseDir)).then((x) => {
+      if (token.isCancellationRequested) {
+        return
+      }
+      const commitCharacters = [context.triggerCharacter!]
+      const items = x.map(([name, type]) => ({
         label: name,
         kind: PathCompleteProvider.kindMap[type],
         detail: baseDir + name,
         commitCharacters,
-      }),
-    )
+      }))
+      return setTimeoutPromise(
+        getExtConfig('pathComplete.debounceTimeMs', document),
+        items,
+      )
+    })
   }
 }

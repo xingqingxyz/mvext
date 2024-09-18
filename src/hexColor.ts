@@ -2,15 +2,17 @@ import {
   Color,
   ColorInformation,
   ColorPresentation,
-  Range,
+  commands,
   languages,
+  Range,
   type CancellationToken,
   type Disposable,
   type DocumentColorProvider,
+  type ExtensionContext,
   type ProviderResult,
   type TextDocument,
-  type TextEditor,
 } from 'vscode'
+import { getExtContext, WspStatKey } from './context'
 
 function hexToColor(hex: string): Color {
   const step = hex.length > 5 ? 2 : 1
@@ -39,6 +41,7 @@ function colorToHex(color: Color): string {
 export class HexColorProvider implements DocumentColorProvider, Disposable {
   static readonly reColor = /#(?:[\da-f]{8}|[\da-f]{6}|[\da-f]{3,4})/gi
   static readonly providers = new Map<string, HexColorProvider>()
+  static readonly _disposables: Disposable[] = []
   private provider: Disposable
   constructor(private languageId: string) {
     this.provider = languages.registerColorProvider([languageId], this)
@@ -68,8 +71,7 @@ export class HexColorProvider implements DocumentColorProvider, Disposable {
   ): ProviderResult<ColorPresentation[]> {
     return [new ColorPresentation(colorToHex(color))]
   }
-  static toggleHexColor(editor: TextEditor) {
-    const { languageId } = editor.document
+  static toggleHexColorLanguage(languageId: string) {
     if (this.providers.has(languageId)) {
       this.providers.get(languageId)!.dispose()
       this.providers.delete(languageId)
@@ -78,8 +80,22 @@ export class HexColorProvider implements DocumentColorProvider, Disposable {
     }
   }
   static dispose() {
+    getExtContext().workspaceState.update(
+      WspStatKey[WspStatKey.hexColorEnabled],
+      this.providers.keys,
+    )
     for (const provider of this.providers.values()) {
       provider.dispose()
     }
+  }
+  static register(context: ExtensionContext) {
+    context.subscriptions.push(
+      commands.registerTextEditorCommand('mvext.hexColor.toggleLanguage', (e) =>
+        HexColorProvider.toggleHexColorLanguage(e.document.languageId),
+      ),
+    )
+    context.workspaceState
+      .get<string[]>(WspStatKey[WspStatKey.hexColorEnabled])
+      ?.forEach((languageId) => this.toggleHexColorLanguage(languageId))
   }
 }

@@ -1,16 +1,15 @@
 {
   "name": "mvext",
   "description": "An extension ships some useful tools.",
-  "version": "0.11.1",
+  "version": "0.12.0",
   "author": "Ming Chen",
   "displayName": "mvext",
   "publisher": "xingqingxyz",
   "private": true,
   "preview": true,
-  "type": "module",
   "license": "MIT",
   "engines": {
-    "vscode": "^1.92.0"
+    "vscode": "^1.93.0"
   },
   "categories": [
     "Other",
@@ -116,6 +115,12 @@
           },
           "markdownDescription": "Path mappings for path completion:\n- `${workspaceFolder}` means workspace folder\n- `~` means `os.homedir()`\n- use $VAR to substitute to environment variables"
         },
+        "mvext.pathComplete.debounceTimeMs": {
+          "type": "integer",
+          "scope": "resource",
+          "default": 200,
+          "markdownDescription": "Path completion debounceTimeMs"
+        },
         "mvext.transformCase.defaultCase": {
           "type": "string",
           "scope": "language-overridable",
@@ -135,7 +140,7 @@
             "upper"
           ],
           "default": "camel",
-          "markdownDescription": "Command `mvext.transformCase` use this as transform target case"
+          "markdownDescription": "Command `mvext.transformCaseDefault` use this as transform to target case"
         },
         "mvext.shfmt.extraArgs": {
           "type": "array",
@@ -163,7 +168,7 @@
       {
         "title": "Transform Case (default)",
         "category": "mvext",
-        "command": "mvext.transformCase"
+        "command": "mvext.transformCaseDefault"
       },
       {
         "title": "Transform Case with Picker",
@@ -205,7 +210,7 @@
       {
         "when": "editorTextFocus && !editorReadonly",
         "key": "alt+x d",
-        "command": "mvext.transformCase"
+        "command": "mvext.transformCaseDefault"
       },
       {
         "when": "editorTextFocus && !editorReadonly",
@@ -250,13 +255,16 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.8.0",
+    "@johnnymorganz/stylua": "^0.20.0",
     "@rollup/plugin-commonjs": "^26.0.1",
     "@rollup/plugin-node-resolve": "^15.2.3",
+    "@rollup/plugin-replace": "^5.0.7",
     "@rollup/plugin-terser": "^0.4.4",
     "@rollup/plugin-typescript": "^11.1.6",
+    "@rollup/plugin-wasm": "^6.2.2",
     "@types/eslint__js": "^8.42.3",
     "@types/mocha": "^10.0.7",
-    "@types/node": "20.14.x",
+    "@types/node": "20.15.x",
     "@types/vscode": "^1.92.0",
     "@vscode/dts": "^0.4.0",
     "eslint": "^9.8.0",

@@ -6,47 +6,46 @@ import {
 } from './applyShellEdit'
 import { setExtContext } from './context'
 import { ShfmtFormatter } from './formatter/shfmt'
-import { StyluaFormatter } from './formatter/stylua'
+import { StyluaFormatter2 } from './formatter/stylua'
 import { HexColorProvider } from './hexColor'
 import { PathCompleteProvider } from './pathComplete'
 import { quicklySwitchFile } from './quicklySwitchFile'
 import {
   renameWithCase,
-  transformCase,
+  transformCaseDefault,
   transformCaseWithPicker,
 } from './transformCase'
 import { SelectionCodeActionsProvider } from './tsCodeActions/selection'
 
 export function activate(context: ExtensionContext) {
   setExtContext(context)
+  HexColorProvider.register(context)
   context.subscriptions.push(
     new PathCompleteProvider(),
     new SelectionCodeActionsProvider(),
     // new CssSelectorCompleteProvider(),
     commands.registerCommand('mvext.renameWithCase', renameWithCase),
-    commands.registerTextEditorCommand('mvext.transformCase', transformCase),
+    commands.registerTextEditorCommand(
+      'mvext.transformCaseDefault',
+      transformCaseDefault,
+    ),
     commands.registerCommand(
       'mvext.transformCaseWithPicker',
       transformCaseWithPicker,
     ),
     commands.registerCommand('mvext.applyShellEdit', applyShellEdit),
     commands.registerCommand('mvext.quicklySwitchFile', quicklySwitchFile),
-    commands.registerTextEditorCommand(
-      'mvext.hexColor.toggleLanguage',
-      HexColorProvider.toggleHexColor.bind(HexColorProvider),
-    ),
-    HexColorProvider,
     languages.registerDocumentFormattingEditProvider(
       ['shellscript'],
       new ShfmtFormatter(),
     ),
     languages.registerDocumentRangeFormattingEditProvider(
       ['lua'],
-      new StyluaFormatter(),
+      new StyluaFormatter2(),
     ),
     languages.registerDocumentFormattingEditProvider(
       ['lua'],
-      new StyluaFormatter(),
+      new StyluaFormatter2(),
     ),
   )
   if (__DEV__) {

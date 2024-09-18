@@ -1,5 +1,5 @@
 import { getExtConfig } from '@/config'
-import { findExeInPath, tokenToSignal } from '@/util'
+import { findExeInPathSync, tokenToSignal } from '@/util'
 import { execFile } from 'child_process'
 import {
   Position,
@@ -12,10 +12,7 @@ import {
 } from 'vscode'
 
 export class ShfmtFormatter implements DocumentFormattingEditProvider {
-  private _exePath!: string
-  constructor() {
-    findExeInPath('shfmt').then((p) => (this._exePath = p))
-  }
+  static readonly exePath = findExeInPathSync('shfmt')
 
   async provideDocumentFormattingEdits(
     document: TextDocument,
@@ -24,7 +21,7 @@ export class ShfmtFormatter implements DocumentFormattingEditProvider {
   ): Promise<TextEdit[]> {
     const output = await new Promise<string>((resolve, reject) => {
       const p = execFile(
-        this._exePath,
+        ShfmtFormatter.exePath,
         [
           ...getExtConfig('shfmt.extraArgs'),
           '--filename',

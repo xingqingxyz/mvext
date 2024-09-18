@@ -1,10 +1,9 @@
-import { getExtConfig } from '@/config'
-import { findExeInPath, tokenToSignal } from '@/util'
-import { execFile } from 'child_process'
+import stylua from '@johnnymorganz/stylua'
 import {
   Position,
   Range,
   TextEdit,
+  workspace,
   type CancellationToken,
   type DocumentFormattingEditProvider,
   type DocumentRangeFormattingEditProvider,
@@ -12,92 +11,65 @@ import {
   type TextDocument,
 } from 'vscode'
 
-export class StyluaFormatter
+export class StyluaFormatter2
   implements
     DocumentRangeFormattingEditProvider,
     DocumentFormattingEditProvider
 {
-  private _exePath!: string
-  constructor() {
-    findExeInPath('stylua').then((p) => (this._exePath = p))
+  static makeConfig(options: FormattingOptions) {
+    const config = stylua.Config.new()
+    config.indent_type =
+      stylua.IndentType[options.insertSpaces ? 'Spaces' : 'Tabs']
+    config.indent_width = options.tabSize
+    config.column_width =
+      workspace.getConfiguration('editor.rulers').get<number[]>('')?.[0] ?? 80
+    config.call_parentheses = stylua.CallParenType.None
+    config.collapse_simple_statement = stylua.CollapseSimpleStatement.Never
+    config.line_endings = stylua.LineEndings.Unix
+    config.quote_style = stylua.QuoteStyle.AutoPreferSingle
+    return config
   }
 
-  async provideDocumentFormattingEdits(
+  provideDocumentFormattingEdits(
     document: TextDocument,
     options: FormattingOptions,
     token: CancellationToken,
-  ): Promise<TextEdit[]> {
-    const output = await new Promise<string>((resolve, reject) => {
-      const p = execFile(
-        this._exePath,
-        [
-          ...getExtConfig('stylua.extraArgs'),
-          '--stdin-filepath',
-          document.fileName,
-          '--indent-type',
-          options.insertSpaces ? 'Spaces' : 'Tabs',
-          '--indent-width',
-          options.tabSize + '',
-          '-',
-        ],
-        {
-          encoding: 'utf-8',
-          signal: tokenToSignal(token),
-        },
-        (err, stdout, stderr) => {
-          if (err) reject(err)
-          else resolve(stdout)
-        },
-      )
-      p.stdin!.write(document.getText())
-      p.stdin!.end()
-    })
+  ) {
     return [
       new TextEdit(
         new Range(
           new Position(0, 0),
           document.lineAt(document.lineCount - 1).range.end,
         ),
-        output,
+        stylua.formatCode(
+          document.getText(),
+          StyluaFormatter2.makeConfig(options),
+          undefined,
+          stylua.OutputVerification.Full,
+        ),
       ),
     ]
   }
 
-  async provideDocumentRangeFormattingEdits(
+  provideDocumentRangeFormattingEdits(
     document: TextDocument,
     range: Range,
     options: FormattingOptions,
     token: CancellationToken,
-  ): Promise<TextEdit[] | null | undefined> {
-    const output = await new Promise<string>((resolve, reject) => {
-      const p = execFile(
-        this._exePath,
-        [
-          ...getExtConfig('stylua.extraArgs'),
-          '--stdin-filepath',
-          document.fileName,
-          '--range-start',
-          document.offsetAt(range.start) + '',
-          '--range-end',
-          document.offsetAt(range.end) + '',
-          '--indent-type',
-          options.insertSpaces ? 'Spaces' : 'Tabs',
-          '--indent-width',
-          options.tabSize + '',
-          '-',
-        ],
-        {
-          encoding: 'utf-8',
-          signal: tokenToSignal(token),
-        },
-        (err, stdout, stderr) => {
-          if (err) reject(err)
-          else resolve(stdout)
-        },
-      )
-      p.stdin!.write(document.getText())
-      p.stdin!.end()
-    })
-    return [new TextEdit(range, output)]
+  ) {
+    return [
+      new TextEdit(
+        range,
+        stylua.formatCode(
+          document.getText(),
+          StyluaFormatter2.makeConfig(options),
+          stylua.Range.from_values(
+            document.offsetAt(range.start),
+            document.offsetAt(range.end),
+          ),
+          stylua.OutputVerification.Full,
+        ),
+      ),
+    ]
   }
 }

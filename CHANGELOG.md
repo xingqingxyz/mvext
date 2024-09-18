@@ -2,6 +2,12 @@
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## [0.12.0]
+
+- Fix: [`pathComplete`] add `debounceTimeMs` opts for quickly typing double '\\' or '/'.
+- Fix: [`styluaFormatter`] use stylua wasm instead of stylua binary.
+- Feature: [`toggleHexColorLanguage`] toggle hex color blocks for each language.
+
 ## [0.11.0]
 
 - Feature: [`formatter`] provides shfmt, stylua integration based on executables.

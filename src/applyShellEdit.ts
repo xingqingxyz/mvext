@@ -148,7 +148,7 @@ export async function applyTerminalFilter() {
   text = util.format(
     {
       pwsh: "@'\n%s\n'@ | ",
-      bash: "cat << 'EOF'\n%s\nEOF | ",
+      bash: "(cat << 'EOF'\n%s\nEOF\n) | ",
     }[shellType],
     text,
   )
