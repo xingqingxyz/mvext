@@ -251,11 +251,13 @@
     "watch": "rollup -c -w",
     "prepare": "husky",
     "extension": "vsce package -o out/mvext.vsix && code --install-extension out/mvext.vsix",
-    "vscode:prepublish": "rollup -c"
+    "vscode:prepublish": "rollup -c --environment NODE_ENV:production"
+  },
+  "dependencies": {
+    "@johnnymorganz/stylua": "^0.20.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.8.0",
-    "@johnnymorganz/stylua": "^0.20.0",
     "@rollup/plugin-commonjs": "^26.0.1",
     "@rollup/plugin-node-resolve": "^15.2.3",
     "@rollup/plugin-replace": "^5.0.7",
