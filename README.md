@@ -71,4 +71,4 @@ Quickly switch you source file between `.js/.css/.html` or `.js/.ts` (shortcut `
 
 ## For More Information
 
-[!Read the source](https://github.com/xingqingxyz/mvext)
+[Read the source](https://github.com/xingqingxyz/mvext)

@@ -3,7 +3,7 @@
 !.vscode/tasks.json
 node_modules
 out
-test-workspace
+testdir
 
 /.eslintcache
 /*.vsix
