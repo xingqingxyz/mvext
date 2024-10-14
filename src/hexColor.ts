@@ -8,7 +8,6 @@ import {
   type CancellationToken,
   type Disposable,
   type DocumentColorProvider,
-  type ExtensionContext,
   type ProviderResult,
   type TextDocument,
 } from 'vscode'
@@ -41,14 +40,36 @@ function colorToHex(color: Color): string {
 export class HexColorProvider implements DocumentColorProvider, Disposable {
   static readonly reColor = /#(?:[\da-f]{8}|[\da-f]{6}|[\da-f]{3,4})/gi
   static readonly providers = new Map<string, HexColorProvider>()
-  static readonly _disposables: Disposable[] = []
-  private provider: Disposable
+  static _disposables: Disposable[] = [
+    commands.registerTextEditorCommand('mvext.hexColor.toggleLanguage', (e) =>
+      HexColorProvider.toggleHexColorLanguage(e.document.languageId),
+    ),
+    this,
+  ]
+  static dispose() {
+    getExtContext().workspaceState.update(
+      WspStatKey[WspStatKey.hexColorEnabled],
+      this.providers.keys,
+    )
+    for (const provider of this.providers.values()) {
+      provider.dispose()
+    }
+  }
+  static getOnce?() {
+    getExtContext()
+      .workspaceState.get<string[]>(WspStatKey[WspStatKey.hexColorEnabled])
+      ?.forEach((languageId) => this.toggleHexColorLanguage(languageId))
+    delete this.getOnce
+    return this
+  }
+  private _disposables: Disposable[]
   constructor(private languageId: string) {
-    this.provider = languages.registerColorProvider([languageId], this)
+    this._disposables = [languages.registerColorProvider([languageId], this)]
   }
   dispose() {
-    HexColorProvider.providers.delete(this.languageId)
-    this.provider.dispose()
+    for (const d of this._disposables) {
+      d.dispose()
+    }
   }
   provideDocumentColors(
     document: TextDocument,
@@ -78,24 +99,5 @@ export class HexColorProvider implements DocumentColorProvider, Disposable {
     } else {
       this.providers.set(languageId, new this(languageId))
     }
-  }
-  static dispose() {
-    getExtContext().workspaceState.update(
-      WspStatKey[WspStatKey.hexColorEnabled],
-      this.providers.keys,
-    )
-    for (const provider of this.providers.values()) {
-      provider.dispose()
-    }
-  }
-  static register(context: ExtensionContext) {
-    context.subscriptions.push(
-      commands.registerTextEditorCommand('mvext.hexColor.toggleLanguage', (e) =>
-        HexColorProvider.toggleHexColorLanguage(e.document.languageId),
-      ),
-    )
-    context.workspaceState
-      .get<string[]>(WspStatKey[WspStatKey.hexColorEnabled])
-      ?.forEach((languageId) => this.toggleHexColorLanguage(languageId))
   }
 }

@@ -34,14 +34,22 @@ export class PathCompleteProvider
     [FileType.File]: CompletionItemKind.File,
     [FileType.Unknown]: CompletionItemKind.Value,
   }
-  dispose: () => void
+  private _disposables: Disposable[]
 
   constructor() {
-    this.dispose = languages.registerCompletionItemProvider(
-      { pattern: '**' },
-      this,
-      ...PathCompleteProvider.triggerCharacters,
-    ).dispose
+    this._disposables = [
+      languages.registerCompletionItemProvider(
+        { pattern: '**' },
+        this,
+        ...PathCompleteProvider.triggerCharacters,
+      ),
+    ]
+  }
+
+  dispose() {
+    for (const d of this._disposables) {
+      d.dispose()
+    }
   }
 
   private _expandPrefixPath(

@@ -1,4 +1,4 @@
-import { ExtensionContext, commands, languages } from 'vscode'
+import { ExtensionContext, commands } from 'vscode'
 import {
   applyShellEdit,
   applyTerminalEdit,
@@ -19,10 +19,12 @@ import { SelectionCodeActionsProvider } from './tsCodeActions/selection'
 
 export function activate(context: ExtensionContext) {
   setExtContext(context)
-  HexColorProvider.register(context)
   context.subscriptions.push(
+    HexColorProvider.getOnce!(),
     new PathCompleteProvider(),
     new SelectionCodeActionsProvider(),
+    new StyluaFormatter2(),
+    new ShfmtFormatter(),
     // new CssSelectorCompleteProvider(),
     commands.registerCommand('mvext.renameWithCase', renameWithCase),
     commands.registerTextEditorCommand(
@@ -35,18 +37,6 @@ export function activate(context: ExtensionContext) {
     ),
     commands.registerCommand('mvext.applyShellEdit', applyShellEdit),
     commands.registerCommand('mvext.quicklySwitchFile', quicklySwitchFile),
-    languages.registerDocumentFormattingEditProvider(
-      ['shellscript'],
-      new ShfmtFormatter(),
-    ),
-    languages.registerDocumentRangeFormattingEditProvider(
-      ['lua'],
-      new StyluaFormatter2(),
-    ),
-    languages.registerDocumentFormattingEditProvider(
-      ['lua'],
-      new StyluaFormatter2(),
-    ),
   )
   if (__DEV__) {
     context.subscriptions.push(

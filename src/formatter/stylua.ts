@@ -1,10 +1,12 @@
 import stylua from '@johnnymorganz/stylua'
 import {
+  languages,
   Position,
   Range,
   TextEdit,
   workspace,
   type CancellationToken,
+  type Disposable,
   type DocumentFormattingEditProvider,
   type DocumentRangeFormattingEditProvider,
   type FormattingOptions,
@@ -14,7 +16,8 @@ import {
 export class StyluaFormatter2
   implements
     DocumentRangeFormattingEditProvider,
-    DocumentFormattingEditProvider
+    DocumentFormattingEditProvider,
+    Disposable
 {
   static makeConfig(options: FormattingOptions) {
     const config = stylua.Config.new()
@@ -28,6 +31,20 @@ export class StyluaFormatter2
     config.line_endings = stylua.LineEndings.Unix
     config.quote_style = stylua.QuoteStyle.AutoPreferSingle
     return config
+  }
+  private _disposables: Disposable[]
+
+  constructor() {
+    this._disposables = [
+      languages.registerDocumentFormattingEditProvider(['lua'], this),
+      languages.registerDocumentRangeFormattingEditProvider(['lua'], this),
+    ]
+  }
+
+  dispose() {
+    for (const d of this._disposables) {
+      d.dispose()
+    }
   }
 
   provideDocumentFormattingEdits(

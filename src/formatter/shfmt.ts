@@ -2,17 +2,35 @@ import { getExtConfig } from '@/config'
 import { findExeInPathSync, tokenToSignal } from '@/util'
 import { execFile } from 'child_process'
 import {
+  languages,
   Position,
   Range,
   TextEdit,
   type CancellationToken,
+  type Disposable,
   type DocumentFormattingEditProvider,
   type FormattingOptions,
   type TextDocument,
 } from 'vscode'
 
-export class ShfmtFormatter implements DocumentFormattingEditProvider {
+export class ShfmtFormatter
+  implements DocumentFormattingEditProvider, Disposable
+{
   static readonly exePath = findExeInPathSync('shfmt')
+
+  private _disposables: Disposable[]
+
+  constructor() {
+    this._disposables = [
+      languages.registerDocumentFormattingEditProvider(['shellscript'], this),
+    ]
+  }
+
+  dispose() {
+    for (const d of this._disposables) {
+      d.dispose()
+    }
+  }
 
   async provideDocumentFormattingEdits(
     document: TextDocument,

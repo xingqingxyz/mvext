@@ -1,7 +1,7 @@
 {
   "name": "mvext",
   "description": "An extension ships some useful tools.",
-  "version": "0.12.0",
+  "version": "0.12.1",
   "author": "Ming Chen",
   "displayName": "mvext",
   "publisher": "xingqingxyz",
@@ -9,7 +9,7 @@
   "preview": true,
   "license": "MIT",
   "engines": {
-    "vscode": "^1.93.0"
+    "vscode": "^1.94.0"
   },
   "categories": [
     "Other",
@@ -258,16 +258,15 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.8.0",
-    "@rollup/plugin-commonjs": "^26.0.1",
+    "@rollup/plugin-commonjs": "^28.0.0",
     "@rollup/plugin-node-resolve": "^15.2.3",
-    "@rollup/plugin-replace": "^5.0.7",
+    "@rollup/plugin-replace": "^6.0.1",
     "@rollup/plugin-terser": "^0.4.4",
-    "@rollup/plugin-typescript": "^11.1.6",
-    "@rollup/plugin-wasm": "^6.2.2",
+    "@rollup/plugin-typescript": "^12.1.0",
     "@types/eslint__js": "^8.42.3",
     "@types/mocha": "^10.0.7",
-    "@types/node": "20.15.x",
-    "@types/vscode": "^1.92.0",
+    "@types/node": "20.16.x",
+    "@types/vscode": "^1.94.0",
     "@vscode/dts": "^0.4.0",
     "eslint": "^9.8.0",
     "glob": "^11.0.0",
@@ -275,7 +274,7 @@
     "lint-staged": "^15.2.0",
     "mocha": "^10.7.0",
     "prettier": "^3.1.1",
-    "rollup": "^4.9.1",
+    "rollup": "^4.24.0",
     "tslib": "^2.6.3",
     "typescript": "^5.5.4",
     "typescript-eslint": "^8.0.1"

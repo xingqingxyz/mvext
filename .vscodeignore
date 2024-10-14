@@ -1,6 +1,6 @@
 **
 !resources
 !out/extension.js
+!out/*.wasm
 !CHANGELOG.md
 !LICENSE
-!node_modules/@johnnymorganz/stylua
