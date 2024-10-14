@@ -4,7 +4,7 @@ import type { CancellationToken } from 'vscode'
 
 export const isWin32 = process.platform === 'win32'
 
-export function noop() {}
+export function noop(): undefined {}
 
 export const execFilePm = util.promisify(execFile)
 

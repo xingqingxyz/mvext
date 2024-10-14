@@ -1,6 +1,6 @@
 import { homedir } from 'os'
 import { join as pathJoin } from 'path'
-import { setTimeout as setTimeoutPromise } from 'timers/promises'
+import { setTimeout } from 'timers/promises'
 import {
   CompletionItemKind,
   CompletionTriggerKind,
@@ -16,15 +16,17 @@ import {
   type TextDocument,
 } from 'vscode'
 import { getExtConfig } from './config'
-import { isWin32 } from './util'
+import { isWin32, noop } from './util'
 
 export class PathCompleteProvider
   implements CompletionItemProvider, Disposable
 {
   // reference to the Vim editor's 'isfname'
   static readonly reFilePath = isWin32
-    ? /(?:[-\w\\/.+,#$%{}[\]@!~=:]|[^\x30-\x39])*$/
-    : /(?:[-\w/.+,#$%~=:]|[^\x30-\x39])*$/
+    ? // eslint-disable-next-line no-control-regex
+      /(?:[-\w\\/.+,#$%{}[\]@!~=:]|[^\x00-\xff])*$/
+    : // eslint-disable-next-line no-control-regex
+      /(?:[-\w/.+,#$%~=:]|[^\x00-\xff])*$/
   // resolve powershell env var and bash like env var
   static readonly reEnvVar = isWin32 ? /\${Env:(\w+)}/gi : /\$(\w+)/g
   static readonly triggerCharacters = isWin32 ? ['\\', '/'] : ['/']
@@ -34,25 +36,8 @@ export class PathCompleteProvider
     [FileType.File]: CompletionItemKind.File,
     [FileType.Unknown]: CompletionItemKind.Value,
   }
-  private _disposables: Disposable[]
 
-  constructor() {
-    this._disposables = [
-      languages.registerCompletionItemProvider(
-        { pattern: '**' },
-        this,
-        ...PathCompleteProvider.triggerCharacters,
-      ),
-    ]
-  }
-
-  dispose() {
-    for (const d of this._disposables) {
-      d.dispose()
-    }
-  }
-
-  private _expandPrefixPath(
+  static expandPrefixPath(
     prefix: string,
     path: string,
     document: TextDocument,
@@ -75,16 +60,30 @@ export class PathCompleteProvider
       )
     }
     path = path.replace(
-      PathCompleteProvider.reEnvVar,
+      this.reEnvVar,
       (keep, name) => process.env[name] ?? keep,
     )
-    for (const sep of PathCompleteProvider.triggerCharacters) {
+    for (const sep of this.triggerCharacters) {
       path = path.replace('~' + sep, homedir() + sep)
     }
-    if (!PathCompleteProvider.triggerCharacters.includes(path[0])) {
+    if (!this.triggerCharacters.includes(path[0])) {
       path = pathJoin(document.fileName, '..', path)
     }
     return path
+  }
+
+  private _disposables: Disposable[] = [
+    languages.registerCompletionItemProvider(
+      { pattern: '**' },
+      this,
+      ...PathCompleteProvider.triggerCharacters,
+    ),
+  ]
+
+  dispose() {
+    for (const d of this._disposables) {
+      d.dispose()
+    }
   }
 
   async provideCompletionItems(
@@ -100,15 +99,15 @@ export class PathCompleteProvider
     const half = document
       .lineAt(position.line)
       .text.slice(0, position.character)
-    const uri = Uri.parse(
-      half.match(PathCompleteProvider.reFilePath)![0],
-      false,
-    )
-    if (uri.scheme !== 'file') {
+    let path = half.match(PathCompleteProvider.reFilePath)![0]
+    if (path.startsWith('file://')) {
+      path = path.slice(7)
+    }
+    if (path.split('/', 1)[0].includes(':')) {
+      // invalid scheme
       return
     }
-    const path = uri.fsPath
-    const baseDir = this._expandPrefixPath(
+    const baseDir = PathCompleteProvider.expandPrefixPath(
       half.slice(0, -path.length),
       path,
       document,
@@ -124,10 +123,10 @@ export class PathCompleteProvider
         detail: baseDir + name,
         commitCharacters,
       }))
-      return setTimeoutPromise(
+      return setTimeout(
         getExtConfig('pathComplete.debounceTimeMs', document),
         items,
       )
-    })
+    }, noop)
   }
 }

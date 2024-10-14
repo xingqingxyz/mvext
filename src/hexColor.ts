@@ -62,6 +62,7 @@ export class HexColorProvider implements DocumentColorProvider, Disposable {
     delete this.getOnce
     return this
   }
+
   private _disposables: Disposable[]
   constructor(private languageId: string) {
     this._disposables = [languages.registerColorProvider([languageId], this)]
