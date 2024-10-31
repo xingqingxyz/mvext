@@ -1,10 +1,12 @@
 import type { ExecFileOptions } from 'child_process'
+import { execFile } from 'child_process'
 import path from 'path'
-import util from 'util'
+import { format, promisify } from 'util'
 import { window, type Range, type TextDocument } from 'vscode'
 import { getExtConfig } from './config'
-import { execFilePm, isWin32, noop } from './util'
+import { isWin32, noop } from './util'
 
+const execFilePm = promisify(execFile)
 const nodeLangIds = [
   'javascript',
   'typescript',
@@ -145,7 +147,7 @@ export async function applyTerminalFilter() {
     shellType = isWin32 ? 'pwsh' : 'bash'
   }
 
-  text = util.format(
+  text = format(
     {
       pwsh: "@'\n%s\n'@ | ",
       bash: "(cat << 'EOF'\n%s\nEOF\n) | ",

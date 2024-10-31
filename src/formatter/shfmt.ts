@@ -1,5 +1,5 @@
 import { getExtConfig } from '@/config'
-import { findExeInPathSync, tokenToSignal } from '@/util'
+import { tokenToSignal } from '@/util'
 import { execFile } from 'child_process'
 import {
   languages,
@@ -16,8 +16,6 @@ import {
 export class ShfmtFormatter
   implements DocumentFormattingEditProvider, Disposable
 {
-  static readonly exePath = findExeInPathSync('shfmt')
-
   private _disposables: Disposable[]
 
   constructor() {
@@ -39,7 +37,7 @@ export class ShfmtFormatter
   ): Promise<TextEdit[]> {
     const output = await new Promise<string>((resolve, reject) => {
       const p = execFile(
-        ShfmtFormatter.exePath,
+        'shfmt',
         [
           ...getExtConfig('shfmt.extraArgs'),
           '--filename',

@@ -1,4 +1,4 @@
-import { ExtensionContext, commands } from 'vscode'
+import { type ExtensionContext, commands } from 'vscode'
 import {
   applyShellEdit,
   applyTerminalEdit,

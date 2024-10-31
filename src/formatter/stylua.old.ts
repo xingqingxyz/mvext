@@ -1,5 +1,5 @@
 import { getExtConfig } from '@/config'
-import { findExeInPathSync, tokenToSignal } from '@/util'
+import { tokenToSignal } from '@/util'
 import { execFile } from 'child_process'
 import {
   Position,
@@ -17,8 +17,6 @@ export class StyluaFormatter
     DocumentRangeFormattingEditProvider,
     DocumentFormattingEditProvider
 {
-  static readonly exePath = findExeInPathSync('stylua')
-
   async provideDocumentFormattingEdits(
     document: TextDocument,
     options: FormattingOptions,
@@ -26,7 +24,7 @@ export class StyluaFormatter
   ): Promise<TextEdit[]> {
     const output = await new Promise<string>((resolve, reject) => {
       const p = execFile(
-        StyluaFormatter.exePath,
+        'stylua',
         [
           ...getExtConfig('stylua.extraArgs'),
           '--stdin-filepath',
@@ -68,7 +66,7 @@ export class StyluaFormatter
   ): Promise<TextEdit[] | null | undefined> {
     const output = await new Promise<string>((resolve, reject) => {
       const p = execFile(
-        StyluaFormatter.exePath,
+        'stylua',
         [
           ...getExtConfig('stylua.extraArgs'),
           '--stdin-filepath',

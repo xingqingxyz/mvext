@@ -1,7 +1,7 @@
 {
   "name": "mvext",
   "description": "An extension ships some useful tools.",
-  "version": "0.12.1",
+  "version": "0.12.2",
   "author": "Ming Chen",
   "displayName": "mvext",
   "publisher": "xingqingxyz",
@@ -9,7 +9,7 @@
   "preview": true,
   "license": "MIT",
   "engines": {
-    "vscode": "^1.94.0"
+    "vscode": "^1.95.0"
   },
   "categories": [
     "Other",
@@ -249,6 +249,7 @@
   ],
   "scripts": {
     "watch": "rollup -c -w",
+    "lint": "eslint --fix src",
     "prepare": "husky",
     "extension": "vsce package -o out/mvext.vsix && code --install-extension out/mvext.vsix",
     "vscode:prepublish": "rollup -c --environment NODE_ENV:production"
@@ -265,7 +266,7 @@
     "@rollup/plugin-typescript": "^12.1.0",
     "@types/eslint__js": "^8.42.3",
     "@types/mocha": "^10.0.7",
-    "@types/node": "20.16.x",
+    "@types/node": "^20",
     "@types/vscode": "^1.94.0",
     "@vscode/dts": "^0.4.0",
     "eslint": "^9.8.0",
