@@ -32,11 +32,9 @@ export const joinCaseActions: Record<
   normal: (words) => words.join(' '),
   pascal: (words) => words.map((w) => w[0].toUpperCase() + w.slice(1)).join(''),
   path: (words) => words.join('/'),
-  sentence: (words) => {
-    const first = words[0]
-    words[0] = first[0].toUpperCase() + first.slice(1)
-    return words.join(' ')
-  },
+  sentence: (words) => (
+    (words[0] = words[0][0].toUpperCase() + words[0].slice(1)), words.join(' ')
+  ),
   snake: (words) => words.join('_'),
   title: (words) => words.map((w) => w[0].toUpperCase() + w.slice(1)).join(' '),
 }
@@ -65,11 +63,9 @@ export function transformCaseHelper(word: string, targetWc: WordCase) {
       let lastIdx = 0
       for (const { index, 0: spiltChar } of word.matchAll(reSpiltChar)) {
         const piece = word.slice(lastIdx, index)
-        if (piece.length) {
-          const words = getWords(piece)
-          if (words) {
-            targetSegments.push(joinCaseActions[targetWc](words))
-          }
+        const words = getWords(piece)
+        if (words) {
+          targetSegments.push(joinCaseActions[targetWc](words))
         }
         lastIdx = index! + spiltChar.length
         targetSegments.push(spiltChar)
@@ -82,16 +78,15 @@ export function transformCaseHelper(word: string, targetWc: WordCase) {
 
 const reGetWords = /([A-Z]+)([A-Z][a-z]+)|[A-Z][a-z]+|[a-z]+|[A-Z]+/g
 export function getWords(text: string) {
-  const words = text.split(/[-/_.\s]+/)
-  const res: string[] = []
-  for (const word of words) {
+  const words: string[] = []
+  for (const word of text.split(/[-/_.\s]+/)) {
     for (const matches of word.matchAll(reGetWords)) {
       if (matches[1]) {
-        res.push(matches[1].toLowerCase(), matches[2].toLowerCase())
+        words.push(matches[1].toLowerCase(), matches[2].toLowerCase())
       } else {
-        res.push(matches[0].toLowerCase())
+        words.push(matches[0].toLowerCase())
       }
     }
   }
-  return res.length ? res : null
+  return words.length ? words : null
 }

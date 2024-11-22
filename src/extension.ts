@@ -20,7 +20,7 @@ import { SelectionCodeActionsProvider } from './tsCodeActions/selection'
 export function activate(context: ExtensionContext) {
   setExtContext(context)
   context.subscriptions.push(
-    HexColorProvider.getOnce!(),
+    HexColorProvider.finallyInit!(),
     new PathCompleteProvider(),
     new SelectionCodeActionsProvider(),
     new StyluaFormatter2(),
@@ -35,16 +35,9 @@ export function activate(context: ExtensionContext) {
       'mvext.transformCaseWithPicker',
       transformCaseWithPicker,
     ),
-    commands.registerCommand('mvext.applyShellEdit', applyShellEdit),
     commands.registerCommand('mvext.quicklySwitchFile', quicklySwitchFile),
+    commands.registerCommand('mvext.applyShellEdit', applyShellEdit),
+    commands.registerCommand('mvext.applyTerminalEdit', applyTerminalEdit),
+    commands.registerCommand('mvext.applyTerminalFilter', applyTerminalFilter),
   )
-  if (__DEV__) {
-    context.subscriptions.push(
-      commands.registerCommand('mvext.applyTerminalEdit', applyTerminalEdit),
-      commands.registerCommand(
-        'mvext.applyTerminalFilter',
-        applyTerminalFilter,
-      ),
-    )
-  }
 }
