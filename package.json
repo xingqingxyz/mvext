@@ -204,6 +204,11 @@
         "title": "Toggle Hex Color Language",
         "category": "mvext",
         "command": "mvext.hexColor.toggleLanguage"
+      },
+      {
+        "title": "Toggle Line Complete",
+        "category": "vim",
+        "command": "_vim.toggleLineComplete"
       }
     ],
     "keybindings": [
@@ -269,6 +274,7 @@
     "@types/node": "^20",
     "@types/vscode": "^1.94.0",
     "@vscode/dts": "^0.4.0",
+    "cheerio": "^1.0.0",
     "eslint": "^9.8.0",
     "glob": "^11.0.0",
     "husky": "^9.0.10",

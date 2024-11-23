@@ -32,14 +32,10 @@ export class StyluaFormatter2
     config.quote_style = stylua.QuoteStyle.AutoPreferSingle
     return config
   }
-  private _disposables: Disposable[]
-
-  constructor() {
-    this._disposables = [
-      languages.registerDocumentFormattingEditProvider(['lua'], this),
-      languages.registerDocumentRangeFormattingEditProvider(['lua'], this),
-    ]
-  }
+  private _disposables = [
+    languages.registerDocumentFormattingEditProvider(['lua'], this),
+    languages.registerDocumentRangeFormattingEditProvider(['lua'], this),
+  ]
 
   dispose() {
     for (const d of this._disposables) {
