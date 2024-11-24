@@ -204,6 +204,11 @@
         "title": "Toggle Hex Color Language",
         "category": "mvext",
         "command": "mvext.hexColor.toggleLanguage"
+      },
+      {
+        "title": "Toggle Line Complete",
+        "category": "vim",
+        "command": "_vim.toggleLineComplete"
       }
     ],
     "keybindings": [
@@ -250,7 +255,6 @@
   "scripts": {
     "watch": "rollup -c -w",
     "lint": "eslint --fix src",
-    "prepare": "husky",
     "vscode:prepublish": "rollup -c --environment NODE_ENV:production"
   },
   "dependencies": {
@@ -270,7 +274,6 @@
     "@vscode/dts": "^0.4.1",
     "eslint": "^9.14.0",
     "glob": "^11.0.0",
-    "husky": "^9.1.6",
     "lint-staged": "^15.2.10",
     "mocha": "^10.8.2",
     "prettier": "^3.3.3",
@@ -285,7 +288,7 @@
     "bracketSameLine": true
   },
   "lint-staged": {
-    "*.{js,ts}": "eslint --cache --fix",
+    "*.{js,ts}": "eslint --fix",
     "*.{js,ts,json,md}": "prettier -w"
   }
 }

@@ -3,21 +3,30 @@ import { window } from 'vscode'
 
 export async function quicklySwitchFile() {
   const uri = window.activeTextEditor?.document.uri
-  if (uri) {
-    const uriPath = uri.path
-    const ext = path.extname(uriPath)
-    const map = {
-      html: 'css',
-      css: 'html',
-      js: 'html',
-      ts: 'js',
-    }
-    if (ext in map) {
-      try {
-        await window.showTextDocument(
-          uri.with({ path: uriPath.slice(0, -ext.length) + (map as any)[ext] }),
-        )
-      } catch {}
-    }
+  if (!uri) {
+    return
   }
+  const uriPath = uri.path
+  let ext = path.extname(uriPath)
+  switch (ext) {
+    case '.html':
+      ext = '.css'
+      break
+    case '.css':
+      ext = '.html'
+      break
+    case '.js':
+      ext = '.html'
+      break
+    case '.ts':
+      ext = '.js'
+      break
+    default:
+      return
+  }
+  try {
+    await window.showTextDocument(
+      uri.with({ path: uriPath.slice(0, -ext.length) + ext }),
+    )
+  } catch {}
 }

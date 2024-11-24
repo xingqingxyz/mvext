@@ -1,5 +1,5 @@
 import { homedir } from 'os'
-import { join as pathJoin } from 'path'
+import { isAbsolute, join as pathJoin } from 'path'
 import { setTimeout } from 'timers/promises'
 import {
   CompletionItemKind,
@@ -27,8 +27,8 @@ export class PathCompleteProvider
       /(?:[-\w\\/.+,#$%{}[\]@!~=:]|[^\x00-\xff])*$/
     : // eslint-disable-next-line no-control-regex
       /(?:[-\w/.+,#$%~=:]|[^\x00-\xff])*$/
-  // resolve powershell env var and bash like env var
-  static readonly reEnvVar = isWin32 ? /\${Env:(\w+)}/gi : /\$(\w+)/g
+  // resolve bash like env var
+  static readonly reEnvVar = /\${(\w+)}|\$(\w+)/g
   static readonly triggerCharacters = isWin32 ? ['\\', '/'] : ['/']
   static readonly kindMap = {
     [FileType.Directory]: CompletionItemKind.Folder,
@@ -66,7 +66,7 @@ export class PathCompleteProvider
     for (const sep of this.triggerCharacters) {
       path = path.replace('~' + sep, homedir() + sep)
     }
-    if (!this.triggerCharacters.includes(path[0])) {
+    if (!isAbsolute(path)) {
       path = pathJoin(document.fileName, '..', path)
     }
     return path

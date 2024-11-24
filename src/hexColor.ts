@@ -55,11 +55,11 @@ export class HexColorProvider implements DocumentColorProvider, Disposable {
       provider.dispose()
     }
   }
-  static getOnce?() {
+  static finallyInit?() {
     getExtContext()
       .workspaceState.get<string[]>(WspStatKey[WspStatKey.hexColorEnabled])
       ?.forEach((languageId) => this.toggleHexColorLanguage(languageId))
-    delete this.getOnce
+    delete this.finallyInit
     return this
   }
 

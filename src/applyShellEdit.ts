@@ -1,10 +1,10 @@
 import type { ExecFileOptions } from 'child_process'
 import { execFile } from 'child_process'
 import path from 'path'
-import { format, promisify } from 'util'
+import { promisify } from 'util'
 import { window, type Range, type TextDocument } from 'vscode'
 import { getExtConfig } from './config'
-import { isWin32, noop } from './util'
+import { isWin32 } from './util'
 
 const execFilePm = promisify(execFile)
 const nodeLangIds = [
@@ -77,8 +77,8 @@ export async function applyShellEdit() {
 
 export async function applyTerminalEdit() {
   const editor = window.activeTextEditor
-  const terminal = window.activeTerminal
-  if (!(editor && terminal)) {
+  const shellIntegration = window.activeTerminal?.shellIntegration
+  if (!(editor && shellIntegration)) {
     return
   }
 
@@ -95,20 +95,12 @@ export async function applyTerminalEdit() {
       text = document.getText(selectionRange)
     }
 
-    await new Promise<void>((resolve, reject) => {
-      const event = window.onDidExecuteTerminalCommand((e) => {
-        if (e.terminal === terminal) {
-          event.dispose()
-          if (e.exitCode === 0 && e.output) {
-            selectMap.set(selectionRange, e.output)
-            resolve()
-          } else {
-            reject('command failed or no outputs')
-          }
-        }
-      })
-      terminal.sendText(text, true)
-    }).catch(noop)
+    const execution = shellIntegration.executeCommand(text)
+    text = ''
+    for await (const data of execution.read()) {
+      text += data
+    }
+    selectMap.set(selectionRange, text)
   }
 
   await editor.edit((edit) => {
@@ -121,10 +113,9 @@ export async function applyTerminalEdit() {
 export async function applyTerminalFilter() {
   const editor = window.activeTextEditor
   const terminal = window.activeTerminal
-  if (!(editor && terminal)) {
+  if (!(editor && terminal?.shellIntegration)) {
     return
   }
-  terminal.show()
 
   const { document, selections } = editor
   const lines = []
@@ -136,39 +127,25 @@ export async function applyTerminalFilter() {
     }
   }
 
-  let text = lines.join('\n')
-  let shellType: 'pwsh' | 'bash'
+  const nameLower = terminal.creationOptions.name!.toLowerCase()
   if (
-    terminal.creationOptions.name &&
-    /pwsh|powershell/i.test(terminal.creationOptions.name)
+    nameLower.includes('powershell') ||
+    nameLower.includes('pwsh') ||
+    (isWin32 && !nameLower.includes('bash'))
   ) {
-    shellType = 'pwsh'
+    terminal.sendText(`@'\n${lines.join('\n')}\n'@ | `)
   } else {
-    shellType = isWin32 ? 'pwsh' : 'bash'
+    terminal.sendText(`(cat << 'EOF'\n${lines.join('\n')}\nEOF\n) | `)
   }
 
-  text = format(
-    {
-      pwsh: "@'\n%s\n'@ | ",
-      bash: "(cat << 'EOF'\n%s\nEOF\n) | ",
-    }[shellType],
-    text,
-  )
-
-  return new Promise<string>((resolve, reject) => {
-    const event = window.onDidExecuteTerminalCommand((e) => {
-      if (e.terminal === terminal) {
-        event.dispose()
-        if (e.exitCode === 0 && e.output) {
-          resolve(e.output)
-        } else {
-          reject('command failed or no outputs')
-        }
+  terminal.show()
+  window.onDidStartTerminalShellExecution(async (e) => {
+    if (e.shellIntegration === terminal.shellIntegration) {
+      let text = ''
+      for await (const data of e.execution.read()) {
+        text += data
       }
-    })
-    terminal.sendText(text)
-  }).then(
-    (result) => editor.edit((edit) => edit.replace(selections[0], result)),
-    noop,
-  )
+      await editor.edit((edit) => edit.replace(selections[0], text))
+    }
+  })
 }

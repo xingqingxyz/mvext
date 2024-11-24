@@ -8,6 +8,7 @@ import { setExtContext } from './context'
 import { ShfmtFormatter } from './formatter/shfmt'
 import { StyluaFormatter2 } from './formatter/stylua'
 import { HexColorProvider } from './hexColor'
+import { LineCompleteProvider } from './lineComplete'
 import { PathCompleteProvider } from './pathComplete'
 import { quicklySwitchFile } from './quicklySwitchFile'
 import {
@@ -20,8 +21,9 @@ import { SelectionCodeActionsProvider } from './tsCodeActions/selection'
 export function activate(context: ExtensionContext) {
   setExtContext(context)
   context.subscriptions.push(
-    HexColorProvider.getOnce!(),
+    HexColorProvider.finallyInit!(),
     new PathCompleteProvider(),
+    new LineCompleteProvider(),
     new SelectionCodeActionsProvider(),
     new StyluaFormatter2(),
     new ShfmtFormatter(),
@@ -35,16 +37,9 @@ export function activate(context: ExtensionContext) {
       'mvext.transformCaseWithPicker',
       transformCaseWithPicker,
     ),
-    commands.registerCommand('mvext.applyShellEdit', applyShellEdit),
     commands.registerCommand('mvext.quicklySwitchFile', quicklySwitchFile),
+    commands.registerCommand('mvext.applyShellEdit', applyShellEdit),
+    commands.registerCommand('mvext.applyTerminalEdit', applyTerminalEdit),
+    commands.registerCommand('mvext.applyTerminalFilter', applyTerminalFilter),
   )
-  if (__DEV__) {
-    context.subscriptions.push(
-      commands.registerCommand('mvext.applyTerminalEdit', applyTerminalEdit),
-      commands.registerCommand(
-        'mvext.applyTerminalFilter',
-        applyTerminalFilter,
-      ),
-    )
-  }
 }
