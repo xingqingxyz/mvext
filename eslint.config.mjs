@@ -10,6 +10,7 @@ export default tseslint.config(
     rules: {
       'no-empty': 'off',
       'no-extra-semi': 'off',
+      'no-control-regex': 'off',
       '@typescript-eslint/no-unused-vars': 'off',
       '@typescript-eslint/no-non-null-assertion': 'off',
       '@typescript-eslint/no-explicit-any': 'off',

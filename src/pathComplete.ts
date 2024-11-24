@@ -23,12 +23,10 @@ export class PathCompleteProvider
 {
   // reference to the Vim editor's 'isfname'
   static readonly reFilePath = isWin32
-    ? // eslint-disable-next-line no-control-regex
-      /(?:[-\w\\/.+,#$%{}[\]@!~=:]|[^\x00-\xff])*$/
-    : // eslint-disable-next-line no-control-regex
-      /(?:[-\w/.+,#$%~=:]|[^\x00-\xff])*$/
+    ? /(?:[-\w\\/.+,#$%{}[\]@!~=:]|[^\x00-\xff])*$/
+    : /(?:[-\w/.+,#$%~=:]|[^\x00-\xff])*$/
   // resolve bash like env var
-  static readonly reEnvVar = /\${(\w+)}|\$(\w+)/g
+  static readonly reEnvVar = /\$\{(\w+)\}|\$(\w+)/g
   static readonly triggerCharacters = isWin32 ? ['\\', '/'] : ['/']
   static readonly kindMap = {
     [FileType.Directory]: CompletionItemKind.Folder,
@@ -61,7 +59,7 @@ export class PathCompleteProvider
     }
     path = path.replace(
       this.reEnvVar,
-      (keep, name) => process.env[name] ?? keep,
+      (keep, name1 = '', name2 = '') => process.env[name1 + name2] ?? keep,
     )
     for (const sep of this.triggerCharacters) {
       path = path.replace('~' + sep, homedir() + sep)
@@ -113,9 +111,6 @@ export class PathCompleteProvider
       document,
     )
     return workspace.fs.readDirectory(Uri.file(baseDir)).then((x) => {
-      if (token.isCancellationRequested) {
-        return
-      }
       const commitCharacters = [context.triggerCharacter!]
       const items = x.map(([name, type]) => ({
         label: name,

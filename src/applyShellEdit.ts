@@ -110,6 +110,14 @@ export async function applyTerminalEdit() {
   })
 }
 
+/**
+ * escape OSC 633 E commands
+ */
+function escapeCommandLine(cmdline: string) {
+  // return cmdline.replace(/(\/\/)|(\x0a)|(\x3b)/g, (_, a, b, c) => {})
+}
+const reTerminalEscape = /\x1b\[\d+[\d;]m/g
+
 export async function applyTerminalFilter() {
   const editor = window.activeTextEditor
   const terminal = window.activeTerminal
@@ -127,25 +135,22 @@ export async function applyTerminalFilter() {
     }
   }
 
-  const nameLower = terminal.creationOptions.name!.toLowerCase()
-  if (
-    nameLower.includes('powershell') ||
-    nameLower.includes('pwsh') ||
-    (isWin32 && !nameLower.includes('bash'))
-  ) {
+  const nameMatches = terminal.name.match(/(powershell|pwsh)|(bash|wsl)|.*/i)!
+  if (nameMatches[1]) {
     terminal.sendText(`@'\n${lines.join('\n')}\n'@ | `)
-  } else {
+  } else if (nameMatches[2]) {
     terminal.sendText(`(cat << 'EOF'\n${lines.join('\n')}\nEOF\n) | `)
   }
 
   terminal.show()
-  window.onDidStartTerminalShellExecution(async (e) => {
-    if (e.shellIntegration === terminal.shellIntegration) {
-      let text = ''
-      for await (const data of e.execution.read()) {
-        text += data
+  await new Promise<void>((resolve) => {
+    const event = window.onDidEndTerminalShellExecution(async (e) => {
+      if (e.shellIntegration === terminal.shellIntegration) {
+        event.dispose()
+        resolve()
       }
-      await editor.edit((edit) => edit.replace(selections[0], text))
-    }
+    })
   })
+
+  await editor.edit((edit) => edit.replace(selections[0], 'output'))
 }

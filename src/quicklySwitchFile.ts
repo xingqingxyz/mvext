@@ -6,27 +6,26 @@ export async function quicklySwitchFile() {
   if (!uri) {
     return
   }
-  const uriPath = uri.path
-  let ext = path.extname(uriPath)
+  let uriPath = uri.path
+  const ext = path.extname(uriPath)
+  uriPath = uriPath.slice(0, -ext.length)
   switch (ext) {
     case '.html':
-      ext = '.css'
+      uriPath += '.css'
       break
     case '.css':
-      ext = '.html'
+      uriPath += '.html'
       break
     case '.js':
-      ext = '.html'
+      uriPath += '.html'
       break
     case '.ts':
-      ext = '.js'
+      uriPath += '.js'
       break
     default:
       return
   }
   try {
-    await window.showTextDocument(
-      uri.with({ path: uriPath.slice(0, -ext.length) + ext }),
-    )
+    await window.showTextDocument(uri.with({ path: uriPath }))
   } catch {}
 }
