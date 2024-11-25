@@ -15,24 +15,20 @@ import {
 } from 'vscode'
 import { getExtConfig } from './config'
 
-export class LineCompleteProvider
+export class DictionaryCompleteProvider
   implements CompletionItemProvider, Disposable
 {
   static *filterActiveDocumentsLines(
     document: TextDocument,
     position: Position,
     needle: string,
-    forIncomplete = false,
   ) {
-    if (!forIncomplete) {
-      const lines = document.getText().split('\n')
-      delete lines[position.line]
-      for (const text of lines) {
-        if (text.startsWith(needle)) {
-          yield text
-        }
+    const lines = document.getText().split('\n')
+    delete lines[position.line]
+    for (const text of lines) {
+      if (text.startsWith(needle)) {
+        yield text
       }
-      return
     }
     for (const doc of workspace.textDocuments) {
       if (doc === document) {
@@ -49,9 +45,9 @@ export class LineCompleteProvider
   private _enabled = getExtConfig('vim.lineCompleteEnabled')
 
   private _disposables: Disposable[] = [
-    languages.registerCompletionItemProvider({ pattern: '**' }, this),
+    languages.registerCompletionItemProvider({ pattern: '**' }, this, '#'),
     workspace.onDidChangeConfiguration((e) => {
-      if (e.affectsConfiguration('mvext.vim.lineCompleteEnabled')) {
+      if (e.affectsConfiguration('vim.lineCompleteEnabled')) {
         this._enabled = getExtConfig('vim.lineCompleteEnabled')
       }
     }),
@@ -69,16 +65,21 @@ export class LineCompleteProvider
     token: CancellationToken,
     context: CompletionContext,
   ): ProviderResult<CompletionItem[] | CompletionList<CompletionItem>> {
-    if (!this._enabled) {
+    if (
+      !this._enabled ||
+      context.triggerKind !== CompletionTriggerKind.TriggerCharacter
+    ) {
       return
     }
     return Array.from(
-      LineCompleteProvider.filterActiveDocumentsLines(
+      DictionaryCompleteProvider.filterActiveDocumentsLines(
         document,
         position,
-        document.getText(document.getWordRangeAtPosition(position)),
-        context.triggerKind ===
-          CompletionTriggerKind.TriggerForIncompleteCompletions,
+        document.getText(
+          document.getWordRangeAtPosition(
+            position.with(position.line, position.character - 1),
+          ),
+        ),
       ),
       (text) => ({
         label: text,

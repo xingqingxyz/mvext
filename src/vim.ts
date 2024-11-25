@@ -1,4 +1,4 @@
-import { commands, type TextEditor } from 'vscode'
+import { commands, window, type TextEditor } from 'vscode'
 const { executeCommand } = commands
 
 interface NormalKeyActionParams {
@@ -31,7 +31,7 @@ export function cursorMoveHelper(
   value = 1,
   select = false,
 ) {
-  return commands.executeCommand('cursorMove', {
+  return executeCommand('cursorMove', {
     to,
     by,
     value,
@@ -39,8 +39,33 @@ export function cursorMoveHelper(
   })
 }
 
+type VimMode = 'i' | 'n' | 'o' | 'v' | 'V'
+
+let vimMode: VimMode = 'n'
+
+function validateMode(mode: string) {
+  if (!mode.includes(vimMode)) {
+    window.showWarningMessage(
+      'these keys are only available in mode(s) ' + mode,
+    )
+    throw 'invalid mode'
+  }
+}
+
+function setVimMode(mode: VimMode) {
+  vimMode = mode
+}
+
+const itnEffects = []
+
 export const VimNormalKeysPartial: Record<string, NormalKeyAction> = {
-  a: (e, editor) => {},
+  a: (e, editor) => {
+    switch (vimMode) {
+      case 'n':
+        setVimMode('i')
+        return cursorMoveHelper('right', 'character')
+    }
+  },
   b: (e, editor) => {},
   c: (e, editor) => {},
   d: (e, editor) => {},

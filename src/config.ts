@@ -10,6 +10,7 @@ export type MvextConfig = {
   'transformCase.defaultCase': WordCase
   'shfmt.extraArgs': string[]
   'stylua.extraArgs': string[]
+  'vim.lineCompleteEnabled': boolean
 } & Record<
   // shell edit
   `shellEdit.${'node' | 'python' | 'shellscript' | 'powershell'}.cmd`,

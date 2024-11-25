@@ -161,6 +161,12 @@
           },
           "default": [],
           "markdownDescription": "Formatter stylua's extra command line args"
+        },
+        "mvext.vim.lineCompleteEnabled": {
+          "type": "boolean",
+          "scope": "resource",
+          "default": true,
+          "markdownDescription": "Enable vim line completion"
         }
       }
     },
@@ -204,11 +210,6 @@
         "title": "Toggle Hex Color Language",
         "category": "mvext",
         "command": "mvext.hexColor.toggleLanguage"
-      },
-      {
-        "title": "Toggle Line Complete",
-        "category": "vim",
-        "command": "_vim.toggleLineComplete"
       }
     ],
     "keybindings": [
