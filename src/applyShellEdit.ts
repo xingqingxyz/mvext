@@ -1,6 +1,7 @@
 import type { ExecFileOptions } from 'child_process'
 import { execFile } from 'child_process'
 import path from 'path'
+import stripAnsi from 'strip-ansi'
 import { promisify } from 'util'
 import { window, type Range, type TextDocument } from 'vscode'
 import { getExtConfig } from './config'
@@ -17,6 +18,55 @@ const nodeLangIds = [
   'html',
   'svelte',
 ]
+
+/**
+ * unescape OSC 633 E commands
+ */
+function unescapeCommandLine(cmdline: string) {
+  return cmdline.replace(/\\\\|\\x0a|\\x3b/g, (c) => {
+    switch (c) {
+      case '\\\\':
+        return '\\'
+      case '\\x0a':
+        return '\n'
+      case '\\x3b':
+        return ';'
+      default:
+        return c
+    }
+  })
+}
+
+/**
+ * OSC 633 ; A ST - Mark prompt start.
+ *
+ * OSC 633 ; B ST - Mark prompt end.
+ *
+ * OSC 633 ; C ST - Mark pre-execution.
+ *
+ * OSC 633 ; D [; <exitcode>] ST - Mark execution finished with an optional exit code.
+ *
+ * OSC 633 ; E ; <commandline> [; <nonce] ST - Explicitly set the command line with an optional nonce.
+ * @param cmdline
+ * @returns
+ */
+function parseCmdineOutput(cmdline: string) {
+  // const command = cmdline.slice(
+  //   cmdline.indexOf('\x1b]633;A\x07') + 8,
+  //   cmdline.indexOf('\x1b]633;B\x07'),
+  // )
+  // if (!command.length) {
+  //   void window.showWarningMessage('No command found')
+  // }
+  const output = cmdline.slice(
+    cmdline.indexOf('\x1b]633;C\x07') + 8,
+    cmdline.indexOf('\x1b]633;D'),
+  )
+  if (!output.length) {
+    void window.showWarningMessage('No output found')
+  }
+  return output
+}
 
 export async function execByLangId(text: string, document: TextDocument) {
   const { languageId } = document
@@ -100,6 +150,12 @@ export async function applyTerminalEdit() {
     for await (const data of execution.read()) {
       text += data
     }
+
+    // first two lines are OSC 633 E record, last line is new prompt
+    text = parseCmdineOutput(text).trimEnd()
+    if (text.includes('\x1b[')) {
+      text = stripAnsi(text)
+    }
     selectMap.set(selectionRange, text)
   }
 
@@ -109,14 +165,6 @@ export async function applyTerminalEdit() {
     }
   })
 }
-
-/**
- * escape OSC 633 E commands
- */
-function escapeCommandLine(cmdline: string) {
-  // return cmdline.replace(/(\/\/)|(\x0a)|(\x3b)/g, (_, a, b, c) => {})
-}
-const reTerminalEscape = /\x1b\[\d+[\d;]m/g
 
 export async function applyTerminalFilter() {
   const editor = window.activeTextEditor
@@ -137,20 +185,27 @@ export async function applyTerminalFilter() {
 
   const nameMatches = terminal.name.match(/(powershell|pwsh)|(bash|wsl)|.*/i)!
   if (nameMatches[1]) {
-    terminal.sendText(`@'\n${lines.join('\n')}\n'@ | `)
+    terminal.sendText(`@'\n${lines.join('\n')}\n'@ -split "\`n" | `)
   } else if (nameMatches[2]) {
     terminal.sendText(`(cat << 'EOF'\n${lines.join('\n')}\nEOF\n) | `)
   }
 
   terminal.show()
-  await new Promise<void>((resolve) => {
-    const event = window.onDidEndTerminalShellExecution(async (e) => {
+  return new Promise<void>((resolve) => {
+    const event = window.onDidStartTerminalShellExecution(async (e) => {
       if (e.shellIntegration === terminal.shellIntegration) {
         event.dispose()
+        let text = ''
+        for await (const data of e.execution.read()) {
+          text += data
+        }
+        text = parseCmdineOutput(text).trimEnd()
+        if (text.includes('\x1b[')) {
+          text = stripAnsi(text)
+        }
+        await editor.edit((edit) => edit.replace(selections[0], text))
         resolve()
       }
     })
   })
-
-  await editor.edit((edit) => edit.replace(selections[0], 'output'))
 }

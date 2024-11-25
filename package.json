@@ -258,7 +258,8 @@
     "vscode:prepublish": "rollup -c --environment NODE_ENV:production"
   },
   "dependencies": {
-    "@johnnymorganz/stylua": "^0.20.0"
+    "@johnnymorganz/stylua": "^0.20.0",
+    "strip-ansi": "^7.1.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.14.0",

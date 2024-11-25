@@ -7,3 +7,4 @@ testdir
 
 /.eslintcache
 /*.vsix
+/test.*
