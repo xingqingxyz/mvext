@@ -2,6 +2,7 @@ import { getExtConfig } from '@/config'
 import { tokenToSignal } from '@/util'
 import { execFile } from 'child_process'
 import {
+  languages,
   Position,
   Range,
   TextEdit,
@@ -17,6 +18,17 @@ export class StyluaFormatter
     DocumentRangeFormattingEditProvider,
     DocumentFormattingEditProvider
 {
+  private _disposables = [
+    languages.registerDocumentFormattingEditProvider(['lua'], this),
+    languages.registerDocumentRangeFormattingEditProvider(['lua'], this),
+  ]
+
+  dispose() {
+    for (const d of this._disposables) {
+      d.dispose()
+    }
+  }
+
   async provideDocumentFormattingEdits(
     document: TextDocument,
     options: FormattingOptions,

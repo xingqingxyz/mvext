@@ -162,11 +162,17 @@
           "default": [],
           "markdownDescription": "Formatter stylua's extra command line args"
         },
-        "mvext.vim.lineCompleteEnabled": {
+        "mvext.lineCompleteEnabled": {
           "type": "boolean",
           "scope": "resource",
           "default": true,
-          "markdownDescription": "Enable vim line completion"
+          "markdownDescription": "Enable line completion"
+        },
+        "mvext.dictionaryCompleteEnabled": {
+          "type": "boolean",
+          "scope": "resource",
+          "default": true,
+          "markdownDescription": "Enable dictionary completion"
         }
       }
     },

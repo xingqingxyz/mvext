@@ -32,6 +32,7 @@ export class StyluaFormatter2
     config.quote_style = stylua.QuoteStyle.AutoPreferSingle
     return config
   }
+
   private _disposables = [
     languages.registerDocumentFormattingEditProvider(['lua'], this),
     languages.registerDocumentRangeFormattingEditProvider(['lua'], this),

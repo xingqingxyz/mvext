@@ -46,13 +46,13 @@ export class LineCompleteProvider
     }
   }
 
-  private _enabled = getExtConfig('vim.lineCompleteEnabled')
+  private _enabled = getExtConfig('lineCompleteEnabled')
 
   private _disposables: Disposable[] = [
     languages.registerCompletionItemProvider({ pattern: '**' }, this),
     workspace.onDidChangeConfiguration((e) => {
-      if (e.affectsConfiguration('mvext.vim.lineCompleteEnabled')) {
-        this._enabled = getExtConfig('vim.lineCompleteEnabled')
+      if (e.affectsConfiguration('mvext.lineCompleteEnabled')) {
+        this._enabled = getExtConfig('lineCompleteEnabled')
       }
     }),
   ]
