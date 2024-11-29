@@ -1,0 +1,52 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "type": "npm",
+      "script": "watch",
+      "group": "build",
+      "isBackground": true,
+      "problemMatcher": [
+        {
+          "applyTo": "allDocuments",
+          "fileLocation": ["relative", "${workspaceFolder}"],
+          "owner": "rollup",
+          "source": "rollup-watch",
+          "severity": "error",
+          "pattern": {
+            "regexp": "^\\[!\\](?: \\(plugin [^)]+\\))? RollupError: (\\S+) \\((\\d+):(\\d+)\\): (.*)$",
+            "file": 1,
+            "line": 2,
+            "column": 3,
+            "message": 4
+          },
+          "background": {
+            "activeOnStart": true,
+            "beginsPattern": {
+              "regexp": "^bundles (.*) → (.*)\\.{3}$",
+              "file": 0
+            },
+            "endsPattern": {
+              "regexp": "^\\[\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}\\] waiting for changes\\.{3}"
+            }
+          }
+        },
+        {
+          "applyTo": "allDocuments",
+          "fileLocation": ["relative", "${workspaceFolder}"],
+          "owner": "rollup",
+          "source": "rollup-watch",
+          "severity": "warning",
+          "pattern": {
+            "regexp": "^\\(!\\) \\[plugin [^\\]]+\\] (\\S+) \\((\\d+):(\\d+)\\): (.*)$",
+            "file": 1,
+            "line": 2,
+            "column": 3,
+            "message": 4
+          }
+        }
+      ],
+      "label": "npm: watch"
+    }
+  ]
+}

@@ -1,7 +1,7 @@
 {
   "name": "mvext",
   "description": "An extension ships some useful tools.",
-  "version": "0.12.2",
+  "version": "0.13.0",
   "author": "Ming Chen",
   "displayName": "mvext",
   "publisher": "xingqingxyz",
@@ -253,6 +253,55 @@
         "key": "alt+o",
         "when": "editorTextFocus && editorLangId =~ /^(js|ts|css|html)$/",
         "command": "mvext.quicklySwitchFile"
+      }
+    ],
+    "problemMatchers": [
+      {
+        "name": "rollup-watch",
+        "label": "Rollup watch problem matcher",
+        "applyTo": "allDocuments",
+        "fileLocation": [
+          "relative",
+          "${workspaceFolder}"
+        ],
+        "owner": "rollup",
+        "source": "rollup-watch",
+        "severity": "error",
+        "pattern": {
+          "regexp": "^\\[!\\](?: \\(plugin [^)]+\\))? RollupError: (\\S+) \\((\\d+):(\\d+)\\): (.*)$",
+          "file": 1,
+          "line": 2,
+          "column": 3,
+          "message": 4
+        },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": {
+            "regexp": "^bundles (.*) → (.*)\\.{3}$",
+            "file": 0
+          },
+          "endsPattern": {
+            "regexp": "^\\[\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}\\] waiting for changes\\.{3}"
+          }
+        }
+      },
+      {
+        "base": "rollup-watch",
+        "applyTo": "allDocuments",
+        "fileLocation": [
+          "relative",
+          "${workspaceFolder}"
+        ],
+        "owner": "rollup",
+        "source": "rollup-watch",
+        "severity": "warning",
+        "pattern": {
+          "regexp": "^\\(!\\) \\[plugin [^\\]]+\\] (\\S+) \\((\\d+):(\\d+)\\): (.*)$",
+          "file": 1,
+          "line": 2,
+          "column": 3,
+          "message": 4
+        }
       }
     ]
   },

@@ -26,7 +26,8 @@ export class LineCompleteProvider
   ) {
     if (!forIncomplete) {
       const lines = document.getText().split('\n')
-      delete lines[position.line]
+      // completion triggers when needle !== ''
+      lines[position.line] = ''
       for (const text of lines) {
         if (text.startsWith(needle)) {
           yield text
@@ -72,7 +73,7 @@ export class LineCompleteProvider
     if (!this._enabled) {
       return
     }
-    return Array.from(
+    const items = Array.from(
       LineCompleteProvider.filterActiveDocumentsLines(
         document,
         position,
@@ -86,5 +87,6 @@ export class LineCompleteProvider
         kind: CompletionItemKind.Text,
       }),
     )
+    return items
   }
 }

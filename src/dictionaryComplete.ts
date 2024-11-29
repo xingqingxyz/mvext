@@ -19,29 +19,20 @@ export class DictionaryCompleteProvider
   implements CompletionItemProvider, Disposable
 {
   static readonly oxfordWordsPath = 'assets/Oxford_5000_words.txt'
+  private _enabled = getExtConfig('dictionaryCompleteEnabled')
+  words?: string[];
 
-  static words?: string[]
-
-  static async lookupWords(word: string) {
-    if (!this.words) {
-      this.words = (
-        await readFile(
-          getExtContext().asAbsolutePath(this.oxfordWordsPath),
-          'utf-8',
-        )
-      ).split('\r\n')
-    }
-    const { words } = this
+  *lookupWords(word: string, words: string[]) {
     // binary search
     let start = 0,
-      end = words.length,
+      end = words.length - 1,
       mid = (start + end) >> 1
-    while (start < end) {
+    while (start <= end) {
       if (words[mid].startsWith(word)) {
         const findWords = [words[mid]]
         // find words that start with word from mid up
         for (let i = mid - 1; i > 0 && words[i].startsWith(word); i--) {
-          findWords.unshift(words[i])
+          yield words[i]
         }
         // find words that start with word from mid down
         for (
@@ -49,7 +40,7 @@ export class DictionaryCompleteProvider
           i < words.length && words[i].startsWith(word);
           i++
         ) {
-          findWords.push(words[i])
+          yield words[i]
         }
         return findWords
       } else if (words[mid] < word) {
@@ -59,10 +50,7 @@ export class DictionaryCompleteProvider
       }
       mid = (start + end) >> 1
     }
-    return []
   }
-
-  private _enabled = getExtConfig('dictionaryCompleteEnabled')
 
   private _disposables: Disposable[] = [
     languages.registerCompletionItemProvider({ pattern: '**' }, this),
@@ -94,13 +82,20 @@ export class DictionaryCompleteProvider
     if (word.length < 3 || !/^[\w-]+$/.test(word)) {
       return
     }
-    return Array.from(
-      await DictionaryCompleteProvider.lookupWords(word),
-      (word) => ({
-        label: word,
-        detail: word,
-        kind: CompletionItemKind.Text,
-      }),
-    )
+    if (!this.words) {
+      this.words = (
+        await readFile(
+          getExtContext().asAbsolutePath(
+            DictionaryCompleteProvider.oxfordWordsPath,
+          ),
+          'utf-8',
+        )
+      ).split('\n')
+    }
+    return Array.from(this.lookupWords(word, this.words), (word) => ({
+      label: word,
+      detail: word,
+      kind: CompletionItemKind.Text,
+    }))
   }
 }

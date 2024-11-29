@@ -62,9 +62,17 @@ export class HexColorProvider implements DocumentColorProvider, Disposable {
     delete this.finallyInit
     return this
   }
+  static toggleHexColorLanguage(languageId: string) {
+    if (this.providers.has(languageId)) {
+      this.providers.get(languageId)!.dispose()
+      this.providers.delete(languageId)
+    } else {
+      this.providers.set(languageId, new this(languageId))
+    }
+  }
 
   private _disposables: Disposable[]
-  constructor(private languageId: string) {
+  constructor(languageId: string) {
     this._disposables = [languages.registerColorProvider([languageId], this)]
   }
   dispose() {
@@ -92,13 +100,5 @@ export class HexColorProvider implements DocumentColorProvider, Disposable {
     token: CancellationToken,
   ): ProviderResult<ColorPresentation[]> {
     return [new ColorPresentation(colorToHex(color))]
-  }
-  static toggleHexColorLanguage(languageId: string) {
-    if (this.providers.has(languageId)) {
-      this.providers.get(languageId)!.dispose()
-      this.providers.delete(languageId)
-    } else {
-      this.providers.set(languageId, new this(languageId))
-    }
   }
 }
