@@ -1,9 +1,7 @@
-.vscode/*
-!.vscode/launch.json
-!.vscode/tasks.json
 node_modules
 out
 testdir
 
 /.eslintcache
 /*.vsix
+/test.*

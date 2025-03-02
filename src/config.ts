@@ -10,6 +10,8 @@ export type MvextConfig = {
   'transformCase.defaultCase': WordCase
   'shfmt.extraArgs': string[]
   'stylua.extraArgs': string[]
+  lineCompleteEnabled: boolean
+  dictionaryCompleteEnabled: boolean
 } & Record<
   // shell edit
   `shellEdit.${'node' | 'python' | 'shellscript' | 'powershell'}.cmd`,

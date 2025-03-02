@@ -5,6 +5,7 @@ import {
   applyTerminalFilter,
 } from './applyShellEdit'
 import { setExtContext } from './context'
+import { DictionaryCompleteProvider } from './dictionaryComplete'
 import { ShfmtFormatter } from './formatter/shfmt'
 import { StyluaFormatter } from './formatter/stylua.old'
 import { HexColorProvider } from './hexColor'
@@ -24,6 +25,7 @@ export function activate(context: ExtensionContext) {
     HexColorProvider.finallyInit!(),
     new PathCompleteProvider(),
     new LineCompleteProvider(),
+    new DictionaryCompleteProvider(),
     new SelectionCodeActionsProvider(),
     new StyluaFormatter(),
     new ShfmtFormatter(),

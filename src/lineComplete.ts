@@ -1,6 +1,5 @@
 import {
   type CancellationToken,
-  commands,
   type CompletionContext,
   type CompletionItem,
   CompletionItemKind,
@@ -14,21 +13,27 @@ import {
   type TextDocument,
   workspace,
 } from 'vscode'
-import { getExtContext } from './context'
+import { getExtConfig } from './config'
 
 export class LineCompleteProvider
   implements CompletionItemProvider, Disposable
 {
   static *filterActiveDocumentsLines(
     document: TextDocument,
-    linr: number,
+    position: Position,
     needle: string,
+    forIncomplete = false,
   ) {
-    for (let i = 0; i < document.lineCount && i !== linr; i++) {
-      const { text } = document.lineAt(i)
-      if (text.startsWith(needle)) {
-        yield text
+    if (!forIncomplete) {
+      const lines = document.getText().split('\n')
+      // completion triggers when needle !== ''
+      lines[position.line] = ''
+      for (const text of lines) {
+        if (text.startsWith(needle)) {
+          yield text
+        }
       }
+      return
     }
     for (const doc of workspace.textDocuments) {
       if (doc === document) {
@@ -42,16 +47,15 @@ export class LineCompleteProvider
     }
   }
 
-  private _enabled = getExtContext().globalState.get('enableLineComplete', true)
+  private _enabled = getExtConfig('lineCompleteEnabled')
 
   private _disposables: Disposable[] = [
     languages.registerCompletionItemProvider({ pattern: '**' }, this),
-    commands.registerCommand('_vim.toggleLineComplete', () =>
-      getExtContext().globalState.update(
-        'enableLineComplete',
-        (this._enabled = !this._enabled),
-      ),
-    ),
+    workspace.onDidChangeConfiguration((e) => {
+      if (e.affectsConfiguration('mvext.lineCompleteEnabled')) {
+        this._enabled = getExtConfig('lineCompleteEnabled')
+      }
+    }),
   ]
 
   dispose() {
@@ -66,17 +70,16 @@ export class LineCompleteProvider
     token: CancellationToken,
     context: CompletionContext,
   ): ProviderResult<CompletionItem[] | CompletionList<CompletionItem>> {
-    if (
-      !this._enabled ||
-      context.triggerKind !== CompletionTriggerKind.Invoke
-    ) {
+    if (!this._enabled) {
       return
     }
-    return Array.from(
+    const items = Array.from(
       LineCompleteProvider.filterActiveDocumentsLines(
         document,
-        position.line,
+        position,
         document.getText(document.getWordRangeAtPosition(position)),
+        context.triggerKind ===
+          CompletionTriggerKind.TriggerForIncompleteCompletions,
       ),
       (text) => ({
         label: text,
@@ -84,5 +87,6 @@ export class LineCompleteProvider
         kind: CompletionItemKind.Text,
       }),
     )
+    return items
   }
 }

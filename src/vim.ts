@@ -1,14 +1,11 @@
-import { commands, type TextEditor } from 'vscode'
+import { commands, window, type TextEditor } from 'vscode'
 const { executeCommand } = commands
 
 interface NormalKeyActionParams {
   number: number
 }
 
-type NormalKeyAction = (
-  event: NormalKeyActionParams,
-  editor: TextEditor,
-) => void
+type NormalKeyAction = (this: KeysHandler, editor: TextEditor) => void
 
 export function cursorMoveHelper(
   to:
@@ -31,7 +28,7 @@ export function cursorMoveHelper(
   value = 1,
   select = false,
 ) {
-  return commands.executeCommand('cursorMove', {
+  return executeCommand('cursorMove', {
     to,
     by,
     value,
@@ -39,105 +36,227 @@ export function cursorMoveHelper(
   })
 }
 
+type VimMode = 'i' | 'n' | 'o' | 'v' | 'V'
+
+let vimMode: VimMode = 'n'
+
+function validateMode(mode: string) {
+  if (!mode.includes(vimMode)) {
+    window.showWarningMessage(
+      'these keys are only available in mode(s) ' + mode,
+    )
+    throw 'invalid mode'
+  }
+}
+
+function setVimMode(mode: VimMode) {
+  vimMode = mode
+  console.log('vimMode', vimMode)
+  executeCommand('setContext', 'vim.mode', vimMode)
+}
+
+const itnEffects = []
+
 export const VimNormalKeysPartial: Record<string, NormalKeyAction> = {
-  a: (e, editor) => {},
-  b: (e, editor) => {},
-  c: (e, editor) => {},
-  d: (e, editor) => {},
-  e: (e, editor) => {},
-  f: (e, editor) => {},
-  g: (e, editor) => {},
-  h: (e, editor) => cursorMoveHelper('left', 'character', e.number),
-  i: (e, editor) => {},
-  j: (e, editor) => cursorMoveHelper('down', 'line', e.number),
-  k: (e, editor) => cursorMoveHelper('up', 'line', e.number),
-  l: (e, editor) => cursorMoveHelper('right', 'character', e.number),
-  '<C-u>': (e, { visibleRanges }) =>
-    cursorMoveHelper('up', 'line', (e.number * visibleRanges[0].end.line) >> 1),
-  '<C-d>': (e, { document: { lineCount } }) =>
-    cursorMoveHelper('down', 'line', (e.number * lineCount) >> 1),
-  '<C-b>': (e, { document: { lineCount } }) =>
-    cursorMoveHelper('up', 'line', e.number * lineCount),
-  '<C-f>': (e, { document: { lineCount } }) =>
-    cursorMoveHelper('down', 'line', e.number * lineCount),
-  '<C-e>': (e, { document: { lineCount } }) => executeCommand('cursorPageDown'),
-  m: (e, editor) => {},
-  n: (e, editor) => {},
-  o: (e, editor) => {},
-  p: (e, editor) => {},
-  q: (e, editor) => {},
-  r: (e, editor) => {},
-  s: (e, editor) => {},
-  t: (e, editor) => {},
-  u: (e, editor) => {},
-  v: (e, editor) => {},
-  w: (e, editor) => {},
-  x: (e, editor) => {},
-  y: (e, editor) => {},
-  z: (e, editor) => {},
-  A: (e, editor) => {},
-  B: (e, editor) => {},
-  C: (e, editor) => {},
-  D: (e, editor) => {},
-  E: (e, editor) => {},
-  F: (e, editor) => {},
-  G: (e, editor) => {},
-  H: (e, editor) => cursorMoveHelper('viewPortTop', 'line'),
-  I: (e, editor) => {},
-  J: (e, editor) => {},
-  K: (e, editor) => {},
-  L: (e, editor) => cursorMoveHelper('viewPortBottom', 'line'),
-  M: (e, editor) => cursorMoveHelper('viewPortCenter', 'line'),
-  N: (e, editor) => {},
-  O: (e, editor) => {},
-  P: (e, editor) => {},
-  Q: (e, editor) => {},
-  R: (e, editor) => {},
-  S: (e, editor) => {},
-  T: (e, editor) => {},
-  U: (e, editor) => {},
-  V: (e, editor) => {},
-  W: (e, editor) => {},
-  X: (e, editor) => {},
-  Y: (e, editor) => {},
-  Z: (e, editor) => {},
-  gg: (e, editor) => {},
-  ge: (e, editor) => {},
-  gE: (e, editor) => {},
-  '~': (e, editor) => {},
-  '`': (e, editor) => {},
-  '!': (e, editor) => {},
-  '!!': (e, editor) => {},
-  '@': (e, editor) => {},
-  '@@': (e, editor) => {},
-  '@:': (e, editor) => {},
-  '@q': (e, editor) => {},
-  '#': (e, editor) => {},
-  $: (e, editor) => {},
-  '%': (e, editor) => {},
-  '^': (e, editor) => {},
-  '&': (e, editor) => {},
-  '*': (e, editor) => {},
-  '(': (e, editor) => {},
-  ')': (e, editor) => {},
-  '-': (e, editor) => {},
-  '+': (e, editor) => {},
-  '=': (e, editor) => {},
-  '==': (e, editor) => {},
-  '[': (e, editor) => {},
-  ']': (e, editor) => {},
-  '{': (e, editor) => {},
-  '}': (e, editor) => {},
-  "'": (e, editor) => {},
-  '"': (e, editor) => {},
-  '|': (e, editor) => {},
-  '<': (e, editor) => {},
-  '>': (e, editor) => {},
-  ',': (e, editor) => {},
-  '.': (e, editor) => {},
-  '?': (e, editor) => {},
-  '/': (e, editor) => {},
-  ':': (e, editor) => {},
-  ';': (e, editor) => {},
+  a(editor) {
+    switch (vimMode) {
+      case 'n':
+        setVimMode('i')
+        return cursorMoveHelper('right', 'character')
+    }
+  },
+  b(editor) {},
+  c(editor) {},
+  d(editor) {},
+  e(editor) {},
+  f(editor) {},
+  g(editor) {},
+  h(editor) {
+    cursorMoveHelper('left', 'character', this.number)
+  },
+  i(editor) {
+    {
+    }
+  },
+  j(editor) {
+    cursorMoveHelper('down', 'line', this.number)
+  },
+  k(editor) {
+    cursorMoveHelper('up', 'line', this.number)
+  },
+  l(editor) {
+    cursorMoveHelper('right', 'character', this.number)
+  },
+  '<C-u>'({ visibleRanges }) {
+    return cursorMoveHelper(
+      'up',
+      'line',
+      (this.number * visibleRanges[0].end.line) >> 1,
+    )
+  },
+  '<C-d>'({ document: { lineCount } }) {
+    return cursorMoveHelper('down', 'line', (this.number * lineCount) >> 1)
+  },
+  '<C-b>'({ document: { lineCount } }) {
+    return cursorMoveHelper('up', 'line', this.number * lineCount)
+  },
+  '<C-f>'({ document: { lineCount } }) {
+    return cursorMoveHelper('down', 'line', this.number * lineCount)
+  },
+  '<C-e>': ({ document: { lineCount } }) => executeCommand('cursorPageDown'),
+  m(editor) {},
+  n(editor) {},
+  o(editor) {},
+  p(editor) {},
+  q(editor) {},
+  r(editor) {},
+  s(editor) {},
+  t(editor) {},
+  u(editor) {},
+  v(editor) {},
+  w(editor) {},
+  x(editor) {},
+  y(editor) {},
+  z(editor) {},
+  A(editor) {},
+  B(editor) {},
+  C(editor) {},
+  D(editor) {},
+  E(editor) {},
+  F(editor) {},
+  G(editor) {},
+  H: (editor) => cursorMoveHelper('viewPortTop', 'line'),
+  I(editor) {},
+  J(editor) {},
+  K(editor) {},
+  L: (editor) => cursorMoveHelper('viewPortBottom', 'line'),
+  M: (editor) => cursorMoveHelper('viewPortCenter', 'line'),
+  N(editor) {},
+  O(editor) {},
+  P(editor) {},
+  Q(editor) {},
+  R(editor) {},
+  S(editor) {},
+  T(editor) {},
+  U(editor) {},
+  V(editor) {},
+  W(editor) {},
+  X(editor) {},
+  Y(editor) {},
+  Z(editor) {},
+  gg(editor) {},
+  ge(editor) {},
+  gE(editor) {},
+  '~'(editor) {},
+  '`'(editor) {},
+  '!'(editor) {},
+  '!!'(editor) {},
+  '@'(editor) {},
+  '@@'(editor) {},
+  '@:'(editor) {},
+  '@q'(editor) {},
+  '#'(editor) {},
+  $(editor) {},
+  '%'(editor) {},
+  '^'(editor) {},
+  '&'(editor) {},
+  '*'(editor) {},
+  '('(editor) {},
+  ')'(editor) {},
+  '-'(editor) {},
+  '+'(editor) {},
+  '='(editor) {},
+  '=='(editor) {},
+  '['(editor) {},
+  ']'(editor) {},
+  '{'(editor) {},
+  '}'(editor) {},
+  "'"(editor) {},
+  '"'(editor) {},
+  '|'(editor) {},
+  '<'(editor) {},
+  '>'(editor) {},
+  ','(editor) {},
+  '.'(editor) {},
+  '?'(editor) {},
+  '/'(editor) {},
+  ':'(editor) {},
+  ';'(editor) {},
 }
 export default VimNormalKeysPartial
+
+class KeysHandler {
+  private _mode: VimMode = 'n'
+  private _isNumberPending = false
+  get isNumberPending() {
+    return this._isNumberPending
+  }
+  set isNumberPending(isNumberPending: boolean) {
+    this._isNumberPending = isNumberPending
+    this._number = 0
+  }
+  private set mode(mode: VimMode) {
+    switch (mode) {
+      case 'n':
+        break
+      case 'i':
+        break
+      case 'o':
+        break
+      case 'v':
+        break
+      case 'V':
+        break
+      default:
+        break
+    }
+    this._mode = mode
+    this._isNumberPending = false
+  }
+  private get mode() {
+    return this._mode
+  }
+  private _number = 0
+  private set number(number: number) {
+    this._number = number
+    this._isNumberPending = true
+  }
+  get number() {
+    return this._number
+  }
+  private _isPending = false
+  private set isPending(isPending: boolean) {
+    this._isPending = isPending
+  }
+  private get isPending() {
+    return this._isPending
+  }
+  private _isRepeat = false
+  private set isRepeat(isRepeat: boolean) {
+    this._isRepeat = isRepeat
+  }
+  private get isRepeat() {
+    return this._isRepeat
+  }
+}
+
+type CmdlineAction = (e: any, editor: TextEditor) => void
+const CmdlineActions: Record<string, CmdlineAction> = {
+  q(editor) {},
+}
+
+const commandsToHandle = [
+  'ls',
+  '',
+  's',
+  'g',
+  'm',
+  'put',
+  'q',
+  'r',
+  'w',
+  'wa',
+  'wq',
+  'wq!',
+  'wqa!',
+]
