@@ -93,18 +93,20 @@ export class PathCompleteProvider
     if (context.triggerKind !== CompletionTriggerKind.TriggerCharacter) {
       return
     }
+
     // half always endswith `triggerCharacters`
     const half = document
       .lineAt(position.line)
       .text.slice(0, position.character)
     let path = half.match(PathCompleteProvider.reFilePath)![0]
+
     if (path.startsWith('file://')) {
       path = path.slice(7)
-    }
-    if (path.split('/', 1)[0].includes(':')) {
+    } else if (path.split('/', 1)[0].includes(':')) {
       // invalid scheme
       return
     }
+
     const baseDir = PathCompleteProvider.expandPrefixPath(
       half.slice(0, -path.length),
       path,

@@ -6,6 +6,7 @@ import {
   Range,
   TextEdit,
   type CancellationToken,
+  type Disposable,
   type DocumentFormattingEditProvider,
   type DocumentRangeFormattingEditProvider,
   type FormattingOptions,
@@ -15,8 +16,11 @@ import {
 export class StyluaFormatter
   implements
     DocumentRangeFormattingEditProvider,
-    DocumentFormattingEditProvider
+    DocumentFormattingEditProvider,
+    Disposable
 {
+  dispose() {}
+
   async provideDocumentFormattingEdits(
     document: TextDocument,
     options: FormattingOptions,

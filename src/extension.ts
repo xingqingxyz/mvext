@@ -6,7 +6,7 @@ import {
 } from './applyShellEdit'
 import { setExtContext } from './context'
 import { ShfmtFormatter } from './formatter/shfmt'
-import { StyluaFormatter2 } from './formatter/stylua'
+import { StyluaFormatter } from './formatter/stylua.old'
 import { HexColorProvider } from './hexColor'
 import { LineCompleteProvider } from './lineComplete'
 import { PathCompleteProvider } from './pathComplete'
@@ -25,7 +25,7 @@ export function activate(context: ExtensionContext) {
     new PathCompleteProvider(),
     new LineCompleteProvider(),
     new SelectionCodeActionsProvider(),
-    new StyluaFormatter2(),
+    new StyluaFormatter(),
     new ShfmtFormatter(),
     // new CssSelectorCompleteProvider(),
     commands.registerCommand('mvext.renameWithCase', renameWithCase),
