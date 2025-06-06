@@ -12,7 +12,7 @@ export default defineConfig({
   input: 'src/extension.ts',
   output: {
     file: 'out/extension.js',
-    format: 'cjs',
+    format: 'esm',
     sourcemap: isDev,
   },
   external: ['vscode'],

@@ -24,7 +24,7 @@ const casedMap: Record<WordCase, string> = {
 
 const words = ['it', 'is', 'a', 'good', 'weather']
 
-const casesReMap: Record<ComplexWordCase, RegExp> = {
+const complexCasesReMap: Record<ComplexWordCase, RegExp> = {
   camel: /^([a-z]+)(?:[A-Z][a-z]*)*$/,
   constant: /^(?:(?<!^)_[A-Z]+|[A-Z]+)+$/,
   dot: /^(?:(?<!^)\.[a-z]+|[a-z]+)+$/,
@@ -38,12 +38,12 @@ const casesReMap: Record<ComplexWordCase, RegExp> = {
   title: /^(?:(?<!^) [A-Z][a-z]*|[A-Z][a-z]*)+$/,
 }
 
-const complexCasesList = Object.keys(casesReMap) as ComplexWordCase[]
+const complexCasesList = Object.keys(complexCasesReMap) as ComplexWordCase[]
 
-describe('casesReMap', function () {
+describe('complexCasesReMap', function () {
   it('should match casedMap', function () {
     complexCasesList.forEach((wc) => {
-      strict.ok(casesReMap[wc].test(casedMap[wc]))
+      strict.ok(complexCasesReMap[wc].test(casedMap[wc]))
     })
   })
 })
@@ -51,7 +51,7 @@ describe('casesReMap', function () {
 describe('joinCaseActions', function () {
   it('should match casedMap', function () {
     complexCasesList.forEach((wc) => {
-      strict.equal(casedMap[wc], joinCaseActions[wc](words))
+      strict.equal(joinCaseActions[wc](words), casedMap[wc])
     })
   })
 })
@@ -63,5 +63,15 @@ describe(`#${transformCaseHelper.name}()`, function () {
         strict.equal(transformCaseHelper(casedMap[wc], wc2), casedMap[wc2])
       })
     })
+  })
+
+  it('should dedup word contained `-` or `_`', function () {
+    strict.equal(transformCaseHelper('a__b___c', 'kebab'), 'a-b-c')
+  })
+
+  it('should keep word prefix and suffix', function () {
+    strict.equal(transformCaseHelper('__init__', 'camel'), '__init__')
+    strict.equal(transformCaseHelper('_addWord_', 'kebab'), '_add-word_')
+    strict.equal(transformCaseHelper('_addWord_', 'header'), '_Add-Word_')
   })
 })

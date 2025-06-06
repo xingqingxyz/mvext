@@ -43,5 +43,11 @@ export function activate(context: ExtensionContext) {
     commands.registerCommand('mvext.applyShellEdit', applyShellEdit),
     commands.registerCommand('mvext.applyTerminalEdit', applyTerminalEdit),
     commands.registerCommand('mvext.applyTerminalFilter', applyTerminalFilter),
+    commands.registerCommand('mvext.applyTerminalRun', (...args) =>
+      commands.executeCommand(
+        'workbench.action.terminal.runSelectedText',
+        ...args,
+      ),
+    ),
   )
 }

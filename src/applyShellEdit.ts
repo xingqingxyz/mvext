@@ -7,6 +7,18 @@ import { window, type Range, type TextDocument } from 'vscode'
 import { getExtConfig } from './config'
 import { isWin32 } from './util'
 
+/**
+ * OSC 633 ; A ST - Mark prompt start.
+ *
+ * OSC 633 ; B ST - Mark prompt end.
+ *
+ * OSC 633 ; C ST - Mark pre-execution.
+ *
+ * OSC 633 ; D [; <exitcode>] ST - Mark execution finished with an optional exit code.
+ *
+ * OSC 633 ; E ; <commandline> [; <nonce] ST - Explicitly set the command line with an optional nonce.
+ */
+
 const execFilePm = promisify(execFile)
 const nodeLangIds = [
   'javascript',
@@ -18,55 +30,6 @@ const nodeLangIds = [
   'html',
   'svelte',
 ]
-
-/**
- * unescape OSC 633 E commands
- */
-function unescapeCommandLine(cmdline: string) {
-  return cmdline.replace(/\\\\|\\x0a|\\x3b/g, (c) => {
-    switch (c) {
-      case '\\\\':
-        return '\\'
-      case '\\x0a':
-        return '\n'
-      case '\\x3b':
-        return ';'
-      default:
-        return c
-    }
-  })
-}
-
-/**
- * OSC 633 ; A ST - Mark prompt start.
- *
- * OSC 633 ; B ST - Mark prompt end.
- *
- * OSC 633 ; C ST - Mark pre-execution.
- *
- * OSC 633 ; D [; <exitcode>] ST - Mark execution finished with an optional exit code.
- *
- * OSC 633 ; E ; <commandline> [; <nonce] ST - Explicitly set the command line with an optional nonce.
- * @param cmdline
- * @returns
- */
-function parseCmdineOutput(cmdline: string) {
-  // const command = cmdline.slice(
-  //   cmdline.indexOf('\x1b]633;A\x07') + 8,
-  //   cmdline.indexOf('\x1b]633;B\x07'),
-  // )
-  // if (!command.length) {
-  //   void window.showWarningMessage('No command found')
-  // }
-  const output = cmdline.slice(
-    cmdline.indexOf('\x1b]633;C\x07') + 8,
-    cmdline.indexOf('\x1b]633;D'),
-  )
-  if (!output.length) {
-    void window.showWarningMessage('No output found')
-  }
-  return output
-}
 
 export async function execByLangId(text: string, document: TextDocument) {
   const { languageId } = document
@@ -152,9 +115,16 @@ export async function applyTerminalEdit() {
     }
 
     // first two lines are OSC 633 E record, last line is new prompt
-    text = parseCmdineOutput(text).trimEnd()
+    text = text
+      .slice(text.indexOf('\x1b]633;C\x07') + 8, text.indexOf('\x1b]633;D'))
+      .trimEnd()
     if (text.includes('\x1b[')) {
       text = stripAnsi(text)
+    }
+    if (!text.length) {
+      void window.showWarningMessage(
+        'No output found for command: ' + execution.commandLine,
+      )
     }
     selectMap.set(selectionRange, text)
   }
@@ -191,21 +161,30 @@ export async function applyTerminalFilter() {
   }
 
   terminal.show()
-  return new Promise<void>((resolve) => {
-    const event = window.onDidStartTerminalShellExecution(async (e) => {
-      if (e.shellIntegration === terminal.shellIntegration) {
-        event.dispose()
-        let text = ''
-        for await (const data of e.execution.read()) {
-          text += data
-        }
-        text = parseCmdineOutput(text).trimEnd()
-        if (text.includes('\x1b[')) {
-          text = stripAnsi(text)
-        }
-        await editor.edit((edit) => edit.replace(selections[0], text))
-        resolve()
+  const event = window.onDidStartTerminalShellExecution(async (e) => {
+    if (e.shellIntegration === terminal.shellIntegration) {
+      event.dispose()
+      let text = ''
+      for await (const data of e.execution.read()) {
+        text += data
       }
-    })
+      text = text
+        .slice(text.indexOf('\x1b]633;C\x07') + 8, text.indexOf('\x1b]633;D'))
+        .trimEnd()
+      if (text.includes('\x1b[')) {
+        text = stripAnsi(text)
+      }
+      if (!text.length) {
+        return window.showWarningMessage('No output found')
+      }
+      await editor.edit((edit) =>
+        edit.replace(
+          selections[0].isEmpty
+            ? document.lineAt(selections[0].start).range
+            : selections[0],
+          text,
+        ),
+      )
+    }
   })
 }

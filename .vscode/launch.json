@@ -32,7 +32,7 @@
       ],
       "outFiles": ["${workspaceFolder}/out/**/*.js"],
       "skipFiles": ["<node_internals>/**", "**/node_modules/**"],
-      "preLaunchTask": "npm: pretest"
+      "preLaunchTask": "npm: test"
     }
   ]
 }

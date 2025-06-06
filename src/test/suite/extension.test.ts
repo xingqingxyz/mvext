@@ -14,7 +14,7 @@ describe('vscode', function () {
     const { document } = await window.showTextDocument(Uri.file(filename))
     await executeCommand('editor.action.selectAll')
 
-    await executeCommand('mvext.transformTolower')
+    await executeCommand('mvext.transformDefaultCase')
     strict.equal(document.getText(), 'hello-world')
     await executeCommand('mvext.transformTotitle')
     strict.equal(document.getText(), 'Hello World')
