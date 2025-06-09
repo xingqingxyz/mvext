@@ -1,0 +1,70 @@
+{
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "author": "Ming Chen",
+  "bugs": {
+    "url": "https://github.com/xingqingxyz/mvext/issues"
+  },
+  "categories": [
+    "Keymaps"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "vincode.helloWorld",
+        "title": "Hello World"
+      }
+    ]
+  },
+  "description": "Bring benefits from Vim to VSCode.",
+  "devDependencies": {
+    "@types/mocha": "^10.0.10",
+    "@types/node": "20.x",
+    "@types/vscode": "^1.100.0",
+    "@vscode/test-cli": "^0.0.10",
+    "@vscode/test-electron": "^2.5.2",
+    "esbuild": "^0.25.3",
+    "eslint": "^9.25.1",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.1.0",
+    "prettier": "^3.5.3",
+    "typescript": "^5.8.3",
+    "typescript-eslint": "^8.33.1"
+  },
+  "displayName": "Morden Vim in VSCode",
+  "engines": {
+    "vscode": "^1.100.0"
+  },
+  "license": "MIT",
+  "lint-staged": {
+    "*.{js,ts,json,md}": "prettier -w",
+    "*.{js,ts}": "eslint --fix"
+  },
+  "main": "./dist/extension.js",
+  "name": "vincode",
+  "prettier": {
+    "bracketSameLine": true,
+    "semi": false,
+    "singleQuote": true
+  },
+  "preview": true,
+  "private": true,
+  "publisher": "xingqingxyz",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/xingqingxyz/mvext"
+  },
+  "scripts": {
+    "watch": "pnpm _esbuild --sourcemap",
+    "lint": "eslint src",
+    "test": "vscode-test",
+    "pretest": "pnpm _esbuild --format=cjs --outfile=out/extension.js && pnpm build:test && node -e \"var obj = require('./package.json'); delete obj.type; obj.main = 'extension.js'; fs.writeFileSync('out/package.json', JSON.stringify(obj), 'utf8')\"",
+    "vscode:prepublish": "pnpm _esbuild --minify",
+    "build:test": "esbuild --format=cjs --outdir=out/test --platform=node --target=node20 src/test/**/*.ts",
+    "_esbuild": "esbuild --bundle --external:vscode --format=esm --outfile=dist/extension.js --platform=node --target=node20 src/extension.ts",
+    "prepare": "husky"
+  },
+  "version": "0.0.1",
+  "type": "module"
+}
