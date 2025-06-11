@@ -16,7 +16,7 @@ export type WordCase =
 export type ComplexWordCase = Exclude<WordCase, 'lower' | 'upper'>
 
 function capitalize(word: string) {
-  const index = /[a-zA-Z]/.exec(word)?.index
+  const index = word.match(/[a-z]/)?.index
   return index !== undefined
     ? word.slice(0, index) + word[index].toUpperCase() + word.slice(index + 1)
     : word

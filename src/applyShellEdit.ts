@@ -162,29 +162,30 @@ export async function applyTerminalFilter() {
 
   terminal.show()
   const event = window.onDidStartTerminalShellExecution(async (e) => {
-    if (e.shellIntegration === terminal.shellIntegration) {
-      event.dispose()
-      let text = ''
-      for await (const data of e.execution.read()) {
-        text += data
-      }
-      text = text
-        .slice(text.indexOf('\x1b]633;C\x07') + 8, text.indexOf('\x1b]633;D'))
-        .trimEnd()
-      if (text.includes('\x1b[')) {
-        text = stripAnsi(text)
-      }
-      if (!text.length) {
-        return window.showWarningMessage('No output found')
-      }
-      await editor.edit((edit) =>
-        edit.replace(
-          selections[0].isEmpty
-            ? document.lineAt(selections[0].start).range
-            : selections[0],
-          text,
-        ),
-      )
+    if (e.shellIntegration !== terminal.shellIntegration) {
+      return
     }
+    event.dispose()
+    let text = ''
+    for await (const data of e.execution.read()) {
+      text += data
+    }
+    text = text
+      .slice(text.indexOf('\x1b]633;C\x07') + 8, text.indexOf('\x1b]633;D'))
+      .trimEnd()
+    if (text.includes('\x1b[')) {
+      text = stripAnsi(text)
+    }
+    if (!text.length) {
+      return void window.showWarningMessage('No output found')
+    }
+    return void editor.edit((edit) =>
+      edit.replace(
+        selections[0].isEmpty
+          ? document.lineAt(selections[0].start).range
+          : selections[0],
+        text,
+      ),
+    )
   })
 }

@@ -50,6 +50,7 @@ export class DictionaryCompleteProvider
       }
       mid = (start + end) >> 1
     }
+    return null
   }
 
   private _disposables: Disposable[] = [

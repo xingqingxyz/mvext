@@ -16,8 +16,7 @@
         "xingqingxyz.mvext"
       ],
       "outFiles": ["${workspaceFolder}/out/**/*.js"],
-      "skipFiles": ["<node_internals>/**", "**/node_modules/**"],
-      "preLaunchTask": "npm: watch"
+      "preLaunchTask": "${defaultBuildTask}"
     },
     {
       "name": "Extension Tests",
@@ -30,9 +29,7 @@
         "--enable-proposed-api",
         "xingqingxyz.mvext"
       ],
-      "outFiles": ["${workspaceFolder}/out/**/*.js"],
-      "skipFiles": ["<node_internals>/**", "**/node_modules/**"],
-      "preLaunchTask": "npm: test"
+      "outFiles": ["${workspaceFolder}/out/**/*.js"]
     }
   ]
 }

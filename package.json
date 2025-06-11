@@ -1,39 +1,97 @@
 {
-  "name": "mvext",
-  "description": "An extension ships some useful tools.",
-  "version": "0.13.1",
+  "activationEvents": [
+    "onStartupFinished"
+  ],
   "author": "Ming Chen",
-  "displayName": "mvext",
-  "publisher": "xingqingxyz",
-  "type": "module",
-  "private": true,
-  "preview": true,
-  "license": "MIT",
-  "engines": {
-    "vscode": "^1.100.0"
+  "bugs": {
+    "url": "https://github.com/xingqingxyz/mvext/issues"
   },
   "categories": [
     "Other",
     "Programming Languages"
   ],
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/xingqingxyz/mvext"
-  },
-  "bugs": {
-    "url": "https://github.com/xingqingxyz/mvext/issues"
-  },
-  "main": "./out/extension.js",
   "contributes": {
+    "commands": [
+      {
+        "category": "mvext",
+        "command": "mvext.transformCaseDefault",
+        "title": "Transform Case (default)"
+      },
+      {
+        "category": "mvext",
+        "command": "mvext.transformCaseWithPicker",
+        "title": "Transform Case with Picker"
+      },
+      {
+        "category": "mvext",
+        "command": "mvext.renameWithCase",
+        "title": "Rename with Case"
+      },
+      {
+        "category": "mvext",
+        "command": "mvext.applyShellEdit",
+        "title": "Apply Shell Edit"
+      },
+      {
+        "category": "mvext",
+        "command": "mvext.applyTerminalEdit",
+        "icon": "$(edit)",
+        "title": "Apply Terminal Edit"
+      },
+      {
+        "category": "mvext",
+        "command": "mvext.applyTerminalFilter",
+        "title": "Apply Terminal Filter"
+      },
+      {
+        "category": "mvext",
+        "command": "mvext.applyTerminalRun",
+        "icon": "$(play)",
+        "title": "Apply Terminal Run"
+      },
+      {
+        "category": "mvext",
+        "command": "mvext.hexColor.toggleLanguage",
+        "title": "Toggle Hex Color Language"
+      },
+      {
+        "category": "mvext",
+        "command": "mvext.runCodeBlock",
+        "title": "Run Markdown Code Block"
+      },
+      {
+        "category": "mvext",
+        "command": "mvext._copyCodeBlock",
+        "title": "Copy Markdown Code Block"
+      }
+    ],
     "configuration": {
-      "title": "mvext",
       "properties": {
-        "mvext.shellEdit.node.cmd": {
-          "type": "array",
+        "mvext.dictionaryCompleteEnabled": {
+          "default": true,
+          "markdownDescription": "Enable dictionary completion",
           "scope": "resource",
-          "items": {
+          "type": "boolean"
+        },
+        "mvext.pathComplete.debounceTimeMs": {
+          "default": 200,
+          "markdownDescription": "Path completion debounceTimeMs",
+          "scope": "resource",
+          "type": "integer"
+        },
+        "mvext.pathComplete.prefixMap": {
+          "additionalProperties": {
             "type": "string"
           },
+          "default": {},
+          "examples": {
+            "@": "${workspaceFolder}/src"
+          },
+          "markdownDescription": "Path mappings for path completion:\n- `${workspaceFolder}` means workspace folder\n- `~` means `os.homedir()`\n- use $VAR to substitute to environment variables",
+          "scope": "resource",
+          "type": "object"
+        },
+        "mvext.shellEdit.node.cmd": {
           "default": [
             "node",
             "-e"
@@ -44,14 +102,34 @@
               "-e"
             ]
           ],
-          "markdownDescription": "Child process command and args when eval javascript/typescript files"
-        },
-        "mvext.shellEdit.python.cmd": {
-          "type": "array",
-          "scope": "resource",
           "items": {
             "type": "string"
           },
+          "markdownDescription": "Child process command and args when eval javascript/typescript files",
+          "scope": "resource",
+          "type": "array"
+        },
+        "mvext.shellEdit.powershell.cmd": {
+          "default": [
+            "pwsh",
+            "-NoProfile",
+            "-Command"
+          ],
+          "examples": [
+            [
+              "powershell",
+              "-NoProfile",
+              "-Command"
+            ]
+          ],
+          "items": {
+            "type": "string"
+          },
+          "markdownDescription": "Child process command and args when eval powershell files",
+          "scope": "resource",
+          "type": "array"
+        },
+        "mvext.shellEdit.python.cmd": {
           "default": [
             "python",
             "-c"
@@ -64,14 +142,14 @@
               "-c"
             ]
           ],
-          "markdownDescription": "Child process command and args when eval python files"
-        },
-        "mvext.shellEdit.shellscript.cmd": {
-          "type": "array",
-          "scope": "resource",
           "items": {
             "type": "string"
           },
+          "markdownDescription": "Child process command and args when eval python files",
+          "scope": "resource",
+          "type": "array"
+        },
+        "mvext.shellEdit.shellscript.cmd": {
           "default": [
             "bash",
             "-c"
@@ -88,49 +166,35 @@
               "-c"
             ]
           ],
-          "markdownDescription": "Child process command and args when eval shellscript files"
-        },
-        "mvext.shellEdit.powershell.cmd": {
-          "type": "array",
-          "scope": "resource",
           "items": {
             "type": "string"
           },
-          "default": [
-            "pwsh",
-            "-NoProfile",
-            "-Command"
-          ],
-          "examples": [
-            [
-              "powershell",
-              "-NoProfile",
-              "-Command"
-            ]
-          ],
-          "markdownDescription": "Child process command and args when eval powershell files"
-        },
-        "mvext.pathComplete.prefixMap": {
-          "type": "object",
+          "markdownDescription": "Child process command and args when eval shellscript files",
           "scope": "resource",
-          "additionalProperties": {
+          "type": "array"
+        },
+        "mvext.shfmt.extraArgs": {
+          "default": [
+            "-bn",
+            "-ci",
+            "-sr"
+          ],
+          "items": {
             "type": "string"
           },
-          "default": {},
-          "examples": {
-            "@": "${workspaceFolder}/src"
-          },
-          "markdownDescription": "Path mappings for path completion:\n- `${workspaceFolder}` means workspace folder\n- `~` means `os.homedir()`\n- use $VAR to substitute to environment variables"
+          "markdownDescription": "Formatter shfmt's extra command line args",
+          "type": "array"
         },
-        "mvext.pathComplete.debounceTimeMs": {
-          "type": "integer",
-          "scope": "resource",
-          "default": 200,
-          "markdownDescription": "Path completion debounceTimeMs"
+        "mvext.stylua.extraArgs": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "markdownDescription": "Formatter stylua's extra command line args",
+          "type": "array"
         },
         "mvext.transformCase.defaultCase": {
-          "type": "string",
-          "scope": "language-overridable",
+          "default": "camel",
           "enum": [
             "camel",
             "constant",
@@ -146,155 +210,67 @@
             "title",
             "upper"
           ],
-          "default": "camel",
-          "markdownDescription": "Command `mvext.transformCaseDefault` use this as transform to target case"
+          "markdownDescription": "Command `mvext.transformCaseDefault` use this as transform to target case",
+          "scope": "language-overridable",
+          "type": "string"
         },
-        "mvext.shfmt.extraArgs": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "default": [
-            "-bn",
-            "-ci",
-            "-sr"
-          ],
-          "markdownDescription": "Formatter shfmt's extra command line args"
-        },
-        "mvext.stylua.extraArgs": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "default": [],
-          "markdownDescription": "Formatter stylua's extra command line args"
-        },
-        "mvext.lineCompleteEnabled": {
-          "type": "boolean",
-          "scope": "resource",
-          "default": true,
-          "markdownDescription": "Enable line completion"
-        },
-        "mvext.dictionaryCompleteEnabled": {
-          "type": "boolean",
-          "scope": "resource",
-          "default": true,
-          "markdownDescription": "Enable dictionary completion"
+        "mvext.runCodeBlock.timeoutMs": {
+          "type": "integer",
+          "default": 30000,
+          "markdownDescription": "Command `mvext.runCodeBlock` use this when command timeout."
         }
-      }
+      },
+      "title": "mvext"
     },
-    "commands": [
-      {
-        "title": "Transform Case (default)",
-        "category": "mvext",
-        "command": "mvext.transformCaseDefault"
-      },
-      {
-        "title": "Transform Case with Picker",
-        "category": "mvext",
-        "command": "mvext.transformCaseWithPicker"
-      },
-      {
-        "title": "Rename with Case",
-        "category": "mvext",
-        "command": "mvext.renameWithCase"
-      },
-      {
-        "title": "Apply Shell Edit",
-        "category": "mvext",
-        "command": "mvext.applyShellEdit"
-      },
-      {
-        "title": "Apply Terminal Edit",
-        "category": "mvext",
-        "command": "mvext.applyTerminalEdit",
-        "icon": "$(edit)"
-      },
-      {
-        "title": "Apply Terminal Filter",
-        "category": "mvext",
-        "command": "mvext.applyTerminalFilter"
-      },
-      {
-        "title": "Apply Terminal Run",
-        "category": "mvext",
-        "command": "mvext.applyTerminalRun",
-        "icon": "$(play)"
-      },
-      {
-        "title": "Quickly Switch File",
-        "category": "mvext",
-        "command": "mvext.quicklySwitchFile"
-      },
-      {
-        "title": "Toggle Hex Color Language",
-        "category": "mvext",
-        "command": "mvext.hexColor.toggleLanguage"
-      }
-    ],
     "keybindings": [
       {
-        "when": "editorTextFocus && !editorReadonly",
+        "command": "mvext.transformCaseDefault",
         "key": "alt+x alt+x",
-        "command": "mvext.transformCaseDefault"
+        "when": "editorTextFocus && !editorReadonly"
       },
       {
-        "when": "editorTextFocus && !editorReadonly",
+        "command": "mvext.transformCaseWithPicker",
         "key": "alt+x t",
-        "command": "mvext.transformCaseWithPicker"
+        "when": "editorTextFocus && !editorReadonly"
       },
       {
+        "command": "mvext.renameWithCase",
         "key": "alt+x r",
-        "when": "editorTextFocus && !editorReadonly",
-        "command": "mvext.renameWithCase"
+        "when": "editorTextFocus && !editorReadonly"
       },
       {
+        "command": "mvext.applyShellEdit",
         "key": "ctrl+alt+e",
-        "when": "editorTextFocus && !editorReadonly",
-        "command": "mvext.applyShellEdit"
+        "when": "editorTextFocus && !editorReadonly"
       },
       {
+        "command": "mvext.applyTerminalEdit",
         "key": "alt+e",
-        "when": "editorTextFocus && !editorReadonly",
-        "command": "mvext.applyTerminalEdit"
+        "when": "editorTextFocus && !editorReadonly"
       },
       {
+        "command": "mvext.applyTerminalFilter",
         "key": "alt+t",
-        "when": "editorTextFocus && !editorReadonly",
-        "command": "mvext.applyTerminalFilter"
+        "when": "editorTextFocus && !editorReadonly"
       },
       {
+        "command": "mvext.applyTerminalRun",
         "key": "f8",
-        "when": "editorTextFocus && editorLangId != 'powershell'",
-        "command": "mvext.applyTerminalRun"
-      },
-      {
-        "key": "alt+o",
-        "when": "editorTextFocus && editorLangId =~ /^(js|ts|css|html)$/",
-        "command": "mvext.quicklySwitchFile"
+        "when": "editorTextFocus && editorLangId != 'powershell'"
       }
     ],
     "menus": {
       "editor/title": [
         {
-          "command": "mvext.applyTerminalRun",
           "alt": "mvext.applyTerminalEdit",
-          "when": "editorTextFocus && editorLangId != 'powershell'",
-          "group": "navigation"
+          "command": "mvext.applyTerminalRun",
+          "group": "navigation",
+          "when": "editorTextFocus && editorLangId != 'powershell'"
         }
       ]
     }
   },
-  "activationEvents": [
-    "onStartupFinished"
-  ],
-  "scripts": {
-    "watch": "rollup -c -w",
-    "test": "mocha -r @swc-node/register --extension ts src/test/**/*.ts",
-    "lint": "eslint --fix src",
-    "vscode:prepublish": "rollup -c --environment NODE_ENV:production",
-    "prepare": "husky"
-  },
+  "description": "An extension ships some useful tools.",
   "devDependencies": {
     "@eslint/js": "^9.14.0",
     "@rollup/plugin-commonjs": "^28.0.1",
@@ -303,29 +279,60 @@
     "@rollup/plugin-terser": "^0.4.4",
     "@rollup/plugin-typescript": "^12.1.1",
     "@swc-node/register": "^1.10.10",
-    "@types/eslint__js": "^8.42.3",
     "@types/mocha": "^10.0.9",
     "@types/node": "^20.17.6",
     "@types/vscode": "^1.100.0",
+    "@types/which": "^3.0.4",
     "@vscode/dts": "^0.4.1",
+    "@vscode/vsce": "^3.5.0",
     "eslint": "^9.14.0",
     "glob": "^11.0.0",
-    "husky": "^9.1.7",
     "lint-staged": "^16.0.0",
     "mocha": "^11",
     "prettier": "^3.3.3",
     "rollup": "^4.26.0",
+    "simple-git-hooks": "^2.13.0",
     "tslib": "^2.8.1",
     "typescript": "^5.8.2",
     "typescript-eslint": "^8.14.0"
   },
-  "prettier": {
-    "semi": false,
-    "singleQuote": true,
-    "bracketSameLine": true
+  "displayName": "My VSCode Extension",
+  "engines": {
+    "vscode": "^1.100.0"
   },
+  "license": "MIT",
   "lint-staged": {
-    "*.{js,ts}": "eslint --fix",
-    "*.{js,ts,json,md}": "prettier -w"
+    "*.{js,ts,json,md}": "prettier -w",
+    "*.{js,ts}": "eslint --fix"
+  },
+  "main": "./out/extension.js",
+  "name": "mvext",
+  "prettier": {
+    "bracketSameLine": true,
+    "semi": false,
+    "singleQuote": true
+  },
+  "preview": true,
+  "private": true,
+  "publisher": "xingqingxyz",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/xingqingxyz/mvext"
+  },
+  "scripts": {
+    "lint": "eslint --fix src",
+    "test": "mocha -r @swc-node/register --extension ts src/test/**/*.ts",
+    "vscode:prepublish": "rollup -c --environment NODE_ENV:production",
+    "prepare": "npx simple-git-hooks",
+    "watch": "rollup -c -w"
+  },
+  "simple-git-hooks": {
+    "pre-commit": "npx lint-staged"
+  },
+  "type": "module",
+  "version": "0.14.0",
+  "dependencies": {
+    "strip-ansi": "^7.1.0",
+    "which": "^5.0.0"
   }
 }

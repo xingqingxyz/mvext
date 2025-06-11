@@ -4,7 +4,10 @@
     {
       "type": "npm",
       "script": "watch",
-      "group": "build",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
       "isBackground": true,
       "problemMatcher": [
         {
@@ -22,31 +25,13 @@
           },
           "background": {
             "activeOnStart": true,
-            "beginsPattern": {
-              "regexp": "^bundles (.*) → (.*)\\.{3}$",
-              "file": 0
-            },
-            "endsPattern": {
-              "regexp": "^\\[\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}\\] waiting for changes\\.{3}"
-            }
-          }
-        },
-        {
-          "applyTo": "allDocuments",
-          "fileLocation": ["relative", "${workspaceFolder}"],
-          "owner": "rollup",
-          "source": "rollup-watch",
-          "severity": "warning",
-          "pattern": {
-            "regexp": "^\\(!\\) \\[plugin [^\\]]+\\] (\\S+) \\((\\d+):(\\d+)\\): (.*)$",
-            "file": 1,
-            "line": 2,
-            "column": 3,
-            "message": 4
+            "beginsPattern": "^bundles (.*) → (.*)\\.{3}$",
+            "endsPattern": "^\\[\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}\\] waiting for changes\\.{3}"
           }
         }
       ],
-      "label": "npm: watch"
+      "label": "npm: watch",
+      "detail": "rollup -c -w"
     }
   ]
 }

@@ -1,4 +1,4 @@
-import { type ExtensionContext, commands } from 'vscode'
+import { type ExtensionContext, commands, env, languages } from 'vscode'
 import {
   applyShellEdit,
   applyTerminalEdit,
@@ -7,11 +7,10 @@ import {
 import { setExtContext } from './context'
 import { DictionaryCompleteProvider } from './dictionaryComplete'
 import { ShfmtFormatter } from './formatter/shfmt'
-import { StyluaFormatter } from './formatter/stylua.old'
+import { StyluaFormatter } from './formatter/stylua'
 import { HexColorProvider } from './hexColor'
-import { LineCompleteProvider } from './lineComplete'
+import { MarkdownBlockRunProvider, runCodeBlock } from './markdownBlockRun'
 import { PathCompleteProvider } from './pathComplete'
-import { quicklySwitchFile } from './quicklySwitchFile'
 import {
   renameWithCase,
   transformCaseDefault,
@@ -24,12 +23,18 @@ export function activate(context: ExtensionContext) {
   context.subscriptions.push(
     HexColorProvider.finallyInit!(),
     new PathCompleteProvider(),
-    new LineCompleteProvider(),
     new DictionaryCompleteProvider(),
     new SelectionCodeActionsProvider(),
     new StyluaFormatter(),
     new ShfmtFormatter(),
-    // new CssSelectorCompleteProvider(),
+    languages.registerCodeLensProvider(
+      'markdown',
+      new MarkdownBlockRunProvider(),
+    ),
+    commands.registerCommand('mvext.runCodeBlock', runCodeBlock),
+    commands.registerCommand('mvext._copyCodeBlock', (text: string) =>
+      env.clipboard.writeText(text),
+    ),
     commands.registerCommand('mvext.renameWithCase', renameWithCase),
     commands.registerTextEditorCommand(
       'mvext.transformCaseDefault',
@@ -39,7 +44,6 @@ export function activate(context: ExtensionContext) {
       'mvext.transformCaseWithPicker',
       transformCaseWithPicker,
     ),
-    commands.registerCommand('mvext.quicklySwitchFile', quicklySwitchFile),
     commands.registerCommand('mvext.applyShellEdit', applyShellEdit),
     commands.registerCommand('mvext.applyTerminalEdit', applyTerminalEdit),
     commands.registerCommand('mvext.applyTerminalFilter', applyTerminalFilter),

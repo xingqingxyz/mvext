@@ -2,6 +2,14 @@
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## [0.14.0]
+
+- Feature: [`markdownBlockRun`](src/markdownBlockRun.ts) run (`shellscript|powershell|python|javascript|typescript`) code blocks in markdown.
+
+## [0.13.1]
+
+- Fix: [`transformCase`] fix(transformCase): correct the impl more able to use.
+
 ## [0.12.0]
 
 - Fix: [`pathComplete`] add `debounceTimeMs` opts for quickly typing double '\\' or '/'.

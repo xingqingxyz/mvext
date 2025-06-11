@@ -11,7 +11,7 @@ import {
   type ProviderResult,
   type TextDocument,
 } from 'vscode'
-import { getExtContext, WspStatKey } from './context'
+import { getExtContext, WStateKey } from './context'
 
 function hexToColor(hex: string): Color {
   const step = hex.length > 5 ? 2 : 1
@@ -39,46 +39,42 @@ function colorToHex(color: Color): string {
 
 export class HexColorProvider implements DocumentColorProvider, Disposable {
   static readonly reColor = /#(?:[\da-f]{8}|[\da-f]{6}|[\da-f]{3,4})/gi
-  static readonly providers = new Map<string, HexColorProvider>()
+  static readonly providersMap = new Map<string, HexColorProvider>()
   static _disposables: Disposable[] = [
     commands.registerTextEditorCommand('mvext.hexColor.toggleLanguage', (e) =>
-      HexColorProvider.toggleHexColorLanguage(e.document.languageId),
+      this.toggleHexColorLanguage(e.document.languageId),
     ),
-    this,
   ]
   static dispose() {
     getExtContext().workspaceState.update(
-      WspStatKey[WspStatKey.hexColorEnabled],
-      this.providers.keys,
+      WStateKey.hexColorEnabledLanguages,
+      this.providersMap.keys,
     )
-    for (const provider of this.providers.values()) {
+    for (const provider of this.providersMap.values()) {
       provider.dispose()
     }
+    this._disposables.forEach((d) => d.dispose())
   }
   static finallyInit?() {
     getExtContext()
-      .workspaceState.get<string[]>(WspStatKey[WspStatKey.hexColorEnabled])
+      .workspaceState.get<string[]>(WStateKey.hexColorEnabledLanguages)
       ?.forEach((languageId) => this.toggleHexColorLanguage(languageId))
     delete this.finallyInit
     return this
   }
   static toggleHexColorLanguage(languageId: string) {
-    if (this.providers.has(languageId)) {
-      this.providers.get(languageId)!.dispose()
-      this.providers.delete(languageId)
+    if (this.providersMap.has(languageId)) {
+      this.providersMap.get(languageId)!.dispose()
+      this.providersMap.delete(languageId)
     } else {
-      this.providers.set(languageId, new this(languageId))
+      this.providersMap.set(languageId, new this(languageId))
     }
   }
 
-  private _disposables: Disposable[]
+  dispose: any
   constructor(languageId: string) {
-    this._disposables = [languages.registerColorProvider([languageId], this)]
-  }
-  dispose() {
-    for (const d of this._disposables) {
-      d.dispose()
-    }
+    const provider = languages.registerColorProvider([languageId], this)
+    this.dispose = provider.dispose.bind(provider)
   }
   provideDocumentColors(
     document: TextDocument,
@@ -87,6 +83,9 @@ export class HexColorProvider implements DocumentColorProvider, Disposable {
     const text = document.getText()
     const colors: ColorInformation[] = []
     for (const matches of text.matchAll(HexColorProvider.reColor)) {
+      if (token.isCancellationRequested) {
+        return
+      }
       const s = matches.index
       const e = s + matches[0].length
       const range = new Range(document.positionAt(s), document.positionAt(e))

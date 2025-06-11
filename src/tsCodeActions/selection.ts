@@ -53,20 +53,20 @@ export class SelectionCodeActionsProvider
     context: CodeActionContext,
     token: CancellationToken,
   ): ProviderResult<(CodeAction | Command)[]> {
-    if (context.triggerKind !== CodeActionTriggerKind.Invoke) {
+    if (context.triggerKind !== CodeActionTriggerKind.Invoke || range.isEmpty) {
       return
     }
-
-    if (!range.isEmpty) {
-      const text = document.getText(range)
-      if (SelectionCodeActionsProvider.reDelFc.test(text)) {
+    const text = document.getText(range)
+    switch (true) {
+      case SelectionCodeActionsProvider.reDelFc.test(text):
         return SelectionCodeActionsProvider.delFc(document, range as Selection)
-      } else if (text.includes(',')) {
+      case text.includes(','):
         return SelectionCodeActionsProvider.swapVar(
           document,
           range as Selection,
         )
-      }
+      default:
+        return
     }
   }
 

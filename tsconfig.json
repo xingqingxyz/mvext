@@ -14,8 +14,8 @@
     "strict": true,
     "noImplicitAny": true,
     "noImplicitOverride": true,
-    "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
     "skipLibCheck": true
   }
 }

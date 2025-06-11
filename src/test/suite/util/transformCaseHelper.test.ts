@@ -58,20 +58,26 @@ describe('joinCaseActions', function () {
 
 describe(`#${transformCaseHelper.name}()`, function () {
   it('should return expected cased word', function () {
-    complexCasesList.forEach((wc) => {
-      complexCasesList.forEach((wc2) => {
-        strict.equal(transformCaseHelper(casedMap[wc], wc2), casedMap[wc2])
-      })
-    })
+    strict.equal(
+      transformCaseHelper('it_is.a.good_weather', 'camel'),
+      'itIs.a.GoodWeather',
+    )
+    strict.equal(
+      transformCaseHelper('itIs a_good-weather.', 'dot'),
+      'itIs a_good-weather.',
+    )
   })
 
   it('should dedup word contained `-` or `_`', function () {
-    strict.equal(transformCaseHelper('a__b___c', 'kebab'), 'a-b-c')
+    strict.equal(transformCaseHelper('a__b___c', 'snake'), 'a_b_c')
+    strict.equal(transformCaseHelper('a--b---c', 'kebab'), 'a-b-c')
+    strict.equal(transformCaseHelper('it--is---great', 'header'), 'It-Is-Great')
   })
 
   it('should keep word prefix and suffix', function () {
     strict.equal(transformCaseHelper('__init__', 'camel'), '__init__')
     strict.equal(transformCaseHelper('_addWord_', 'kebab'), '_add-word_')
     strict.equal(transformCaseHelper('_addWord_', 'header'), '_Add-Word_')
+    strict.equal(transformCaseHelper('a_-b-_c', 'snake'), 'a_-b-_c')
   })
 })

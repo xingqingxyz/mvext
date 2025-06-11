@@ -6,6 +6,7 @@ export type MvextConfig = {
   'pathComplete.prefixMap': Record<string, string>
   // path complete debounceTimeMs
   'pathComplete.debounceTimeMs': number
+  'runCodeBlock.timeoutMs': number
   // case transform
   'transformCase.defaultCase': WordCase
   'shfmt.extraArgs': string[]

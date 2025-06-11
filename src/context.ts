@@ -1,7 +1,10 @@
 import type { ExtensionContext } from 'vscode'
 
-export enum WspStatKey {
-  hexColorEnabled,
+/**
+ * Workspace state Memento keys
+ */
+export enum WStateKey {
+  hexColorEnabledLanguages = 'hexColorEnabledLanguages',
 }
 
 let context: ExtensionContext
