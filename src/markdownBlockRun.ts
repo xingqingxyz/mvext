@@ -63,7 +63,7 @@ export class MarkdownBlockRunProvider implements CodeLensProvider {
         codelens.push(
           new CodeLens(range, {
             command: 'mvext.runCodeBlock',
-            title: '$(play)Run Code',
+            title: '$(run)Run Code',
             tooltip: `Run ${langId} block interactively`,
             arguments: [code, langId],
           }),
@@ -137,8 +137,6 @@ async function createTerminal(
         shellArgs: ['tsx'],
         isTransient: false,
       })
-    default:
-      throw 'not supported terminal: ' + langId
   }
 }
 

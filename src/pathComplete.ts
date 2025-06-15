@@ -59,7 +59,8 @@ export class PathCompleteProvider
     }
     path = path.replace(
       this.reEnvVar,
-      (keep, name1 = '', name2 = '') => process.env[name1 + name2] ?? keep,
+      (keep, name1: string = '', name2: string = '') =>
+        process.env[name1 + name2] ?? keep,
     )
     for (const sep of this.triggerCharacters) {
       path = path.replace('~' + sep, homedir() + sep)

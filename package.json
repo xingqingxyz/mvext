@@ -15,7 +15,7 @@
       {
         "category": "mvext",
         "command": "mvext.transformCaseDefault",
-        "title": "Transform Case (default)"
+        "title": "Transform Case Default"
       },
       {
         "category": "mvext",
@@ -29,25 +29,37 @@
       },
       {
         "category": "mvext",
-        "command": "mvext.applyShellEdit",
-        "title": "Apply Shell Edit"
+        "command": "mvext.evalSelection",
+        "title": "Eval Selection"
       },
       {
         "category": "mvext",
-        "command": "mvext.applyTerminalEdit",
-        "icon": "$(edit)",
-        "title": "Apply Terminal Edit"
+        "command": "mvext.terminalEvalSelection",
+        "icon": "$(debug-line-by-line)",
+        "title": "Terminal Eval Selection"
       },
       {
         "category": "mvext",
-        "command": "mvext.applyTerminalFilter",
-        "title": "Apply Terminal Filter"
+        "command": "mvext.terminalFilterSelection",
+        "icon": "$(filter)",
+        "title": "Terminal Filter Selection"
       },
       {
         "category": "mvext",
-        "command": "mvext.applyTerminalRun",
-        "icon": "$(play)",
-        "title": "Apply Terminal Run"
+        "command": "mvext.terminalRunSelection",
+        "title": "Terminal Run Selection"
+      },
+      {
+        "category": "mvext",
+        "command": "mvext.terminalLaunch",
+        "icon": "$(run)",
+        "title": "Terminal Launch File"
+      },
+      {
+        "category": "mvext",
+        "command": "mvext.terminalLaunchArgs",
+        "icon": "$(debug-alt)",
+        "title": "Terminal Launch File with Arguments"
       },
       {
         "category": "mvext",
@@ -67,7 +79,7 @@
     ],
     "configuration": {
       "properties": {
-        "mvext.dictionaryCompleteEnabled": {
+        "mvext.dictionaryComplete.enabled": {
           "default": true,
           "markdownDescription": "Enable dictionary completion",
           "scope": "resource",
@@ -91,7 +103,12 @@
           "scope": "resource",
           "type": "object"
         },
-        "mvext.shellEdit.node.cmd": {
+        "mvext.runCodeBlock.timeoutMs": {
+          "default": 30000,
+          "markdownDescription": "Command `mvext.runCodeBlock` use this when command timeout.",
+          "type": "integer"
+        },
+        "mvext.evalSelection.node.cmd": {
           "default": [
             "node",
             "-e"
@@ -109,7 +126,7 @@
           "scope": "resource",
           "type": "array"
         },
-        "mvext.shellEdit.powershell.cmd": {
+        "mvext.evalSelection.powershell.cmd": {
           "default": [
             "pwsh",
             "-NoProfile",
@@ -129,7 +146,7 @@
           "scope": "resource",
           "type": "array"
         },
-        "mvext.shellEdit.python.cmd": {
+        "mvext.evalSelection.python.cmd": {
           "default": [
             "python",
             "-c"
@@ -149,7 +166,7 @@
           "scope": "resource",
           "type": "array"
         },
-        "mvext.shellEdit.shellscript.cmd": {
+        "mvext.evalSelection.shellscript.cmd": {
           "default": [
             "bash",
             "-c"
@@ -193,6 +210,28 @@
           "markdownDescription": "Formatter stylua's extra command line args",
           "type": "array"
         },
+        "mvext.terminalLaunch.languages": {
+          "additionalProperties": {
+            "description": "Language Id : Launch Config",
+            "type": "string"
+          },
+          "default": {
+            "bat": "cmd /d",
+            "csharp": "dotnet run",
+            "dart": "dart run",
+            "fsharp": "dotnet run",
+            "go": "go run",
+            "javascript": "node",
+            "javascriptreact": "npx tsx",
+            "python": "uv run",
+            "powershell": "&",
+            "shellscript": "bash --norc",
+            "typescript": "npx tsx",
+            "typescriptreact": "npx tsx"
+          },
+          "markdownDescription": "Languages launch config definitions",
+          "type": "object"
+        },
         "mvext.transformCase.defaultCase": {
           "default": "camel",
           "enum": [
@@ -213,11 +252,6 @@
           "markdownDescription": "Command `mvext.transformCaseDefault` use this as transform to target case",
           "scope": "language-overridable",
           "type": "string"
-        },
-        "mvext.runCodeBlock.timeoutMs": {
-          "type": "integer",
-          "default": 30000,
-          "markdownDescription": "Command `mvext.runCodeBlock` use this when command timeout."
         }
       },
       "title": "mvext"
@@ -225,7 +259,7 @@
     "keybindings": [
       {
         "command": "mvext.transformCaseDefault",
-        "key": "alt+x alt+x",
+        "key": "alt+x d",
         "when": "editorTextFocus && !editorReadonly"
       },
       {
@@ -239,22 +273,22 @@
         "when": "editorTextFocus && !editorReadonly"
       },
       {
-        "command": "mvext.applyShellEdit",
+        "command": "mvext.evalSelection",
         "key": "ctrl+alt+e",
-        "when": "editorTextFocus && !editorReadonly"
+        "when": "editorTextFocus && !editorReadonly && !inDebugMode"
       },
       {
-        "command": "mvext.applyTerminalEdit",
+        "command": "mvext.terminalEvalSelection",
         "key": "alt+e",
         "when": "editorTextFocus && !editorReadonly"
       },
       {
-        "command": "mvext.applyTerminalFilter",
+        "command": "mvext.terminalFilterSelection",
         "key": "alt+t",
         "when": "editorTextFocus && !editorReadonly"
       },
       {
-        "command": "mvext.applyTerminalRun",
+        "command": "mvext.terminalRunSelection",
         "key": "f8",
         "when": "editorTextFocus && editorLangId != 'powershell'"
       }
@@ -262,13 +296,104 @@
     "menus": {
       "editor/title": [
         {
-          "alt": "mvext.applyTerminalEdit",
-          "command": "mvext.applyTerminalRun",
+          "alt": "mvext.terminalEvalSelection",
+          "command": "mvext.terminalFilterSelection",
           "group": "navigation",
-          "when": "editorTextFocus && editorLangId != 'powershell'"
+          "when": "editorTextFocus && editorLangId"
+        }
+      ],
+      "editor/title/run": [
+        {
+          "alt": "mvext.terminalLaunchArgs",
+          "command": "mvext.terminalLaunch",
+          "when": "editorFocus && editorLangId in mvext.terminalLaunch.languages"
+        }
+      ],
+      "explorer/context": [
+        {
+          "command": "mvext.terminalLaunch",
+          "when": "!listMultiSelection && resourceLangId in mvext.terminalLaunch.languages"
+        },
+        {
+          "command": "mvext.terminalLaunchArgs",
+          "when": "!listMultiSelection && resourceLangId in mvext.terminalLaunch.languages"
         }
       ]
-    }
+    },
+    "problemMatchers": [
+      {
+        "applyTo": "closedDocuments",
+        "fileLocation": "relative",
+        "label": "esbuild problem matcher",
+        "name": "esbuild",
+        "pattern": [
+          {
+            "message": 2,
+            "regexp": "^[✘▲] \\[([A-Z]+)\\] (.+)",
+            "severity": 1
+          },
+          {
+            "column": 3,
+            "file": 1,
+            "line": 2,
+            "regexp": "^ {4}(?!\\s)([^:]+):([0-9]+):([0-9]+):$"
+          }
+        ],
+        "source": "esbuild"
+      },
+      {
+        "applyTo": "closedDocuments",
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": {
+            "regexp": "^\\[watch\\] build started"
+          },
+          "endsPattern": {
+            "regexp": "^\\[watch\\] build finished"
+          }
+        },
+        "base": "$esbuild",
+        "fileLocation": "relative",
+        "label": "esbuild --watch problem matcher",
+        "name": "esbuild-watch",
+        "source": "esbuild"
+      },
+      {
+        "applyTo": "allDocuments",
+        "fileLocation": "relative",
+        "label": "Rollup problem matcher",
+        "name": "rollup",
+        "pattern": {
+          "column": 3,
+          "file": 1,
+          "line": 2,
+          "message": 4,
+          "regexp": "^\\[!\\](?: \\(plugin [^)]+\\))? RollupError: (\\S+) \\((\\d+):(\\d+)\\): (.*)$"
+        },
+        "source": "rollup"
+      },
+      {
+        "applyTo": "allDocuments",
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": {
+            "regexp": "^bundles (.*) → (.*)\\.{3}$"
+          },
+          "endsPattern": {
+            "regexp": "^\\[\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}\\] waiting for changes\\.{3}"
+          }
+        },
+        "base": "$rollup",
+        "fileLocation": "relative",
+        "label": "Rollup watch problem matcher",
+        "name": "rollup-watch",
+        "source": "rollup"
+      }
+    ]
+  },
+  "dependencies": {
+    "strip-ansi": "^7.1.0",
+    "which": "^5.0.0"
   },
   "description": "An extension ships some useful tools.",
   "devDependencies": {
@@ -298,12 +423,12 @@
   },
   "displayName": "My VSCode Extension",
   "engines": {
-    "vscode": "^1.100.0"
+    "vscode": "^1.101.0"
   },
   "license": "MIT",
   "lint-staged": {
     "*.{js,ts,json,md}": "prettier -w",
-    "*.{js,ts}": "eslint --fix"
+    "*.{js,ts}": "eslint --fix --cache"
   },
   "main": "./out/extension.js",
   "name": "mvext",
@@ -320,19 +445,14 @@
     "url": "https://github.com/xingqingxyz/mvext"
   },
   "scripts": {
-    "lint": "eslint --fix src",
+    "lint": "eslint --fix --cache src",
     "test": "mocha -r @swc-node/register --extension ts src/test/**/*.ts",
     "vscode:prepublish": "rollup -c --environment NODE_ENV:production",
-    "prepare": "npx simple-git-hooks",
     "watch": "rollup -c -w"
   },
   "simple-git-hooks": {
     "pre-commit": "npx lint-staged"
   },
   "type": "module",
-  "version": "0.14.0",
-  "dependencies": {
-    "strip-ansi": "^7.1.0",
-    "which": "^5.0.0"
-  }
+  "version": "0.15.0"
 }

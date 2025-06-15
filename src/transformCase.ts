@@ -34,8 +34,11 @@ function transformCase(editor: TextEditor, edit: TextEditorEdit, wc: WordCase) {
 }
 
 export function transformCaseDefault(editor: TextEditor, edit: TextEditorEdit) {
-  const wc = getExtConfig('transformCase.defaultCase', editor.document)
-  transformCase(editor, edit, wc)
+  transformCase(
+    editor,
+    edit,
+    getExtConfig('transformCase.defaultCase', editor.document),
+  )
 }
 
 export async function transformCaseWithPicker() {
@@ -44,13 +47,15 @@ export async function transformCaseWithPicker() {
     return
   }
   const { document, selection } = editor
+  const range = selection.isEmpty
+    ? document.getWordRangeAtPosition(selection.start)
+    : selection
+  if (!range) {
+    return
+  }
+  const word = document.getText(range)
   const defaultWc = getExtConfig('transformCase.defaultCase', document)
-  const word = document.getText(
-    selection.isEmpty
-      ? document.getWordRangeAtPosition(selection.start)
-      : selection,
-  )
-  await window
+  return window
     .showQuickPick(
       casesList.map(
         (wc) =>
@@ -78,28 +83,25 @@ export async function renameWithCase(wc?: WordCase) {
   if (!editor) {
     return
   }
-  const { document, selections } = editor
-
+  const { document, selection } = editor
   try {
-    for (const selectionRange of selections) {
-      const { placeholder, range } = await commands.executeCommand<{
-        range: Range
-        placeholder: string
-      }>('vscode.prepareRename', document.uri, selectionRange.start)
-      const newName = wc
-        ? transformCaseHelper(placeholder, wc)
-        : await showRenameUI(
-            placeholder,
-            getExtConfig('transformCase.defaultCase', document),
-          )
-      const wspEdit = await commands.executeCommand<WorkspaceEdit>(
-        'vscode.executeDocumentRenameProvider',
-        document.uri,
-        range.start,
-        newName,
-      )
-      await workspace.applyEdit(wspEdit)
-    }
+    const { placeholder, range } = await commands.executeCommand<{
+      range: Range
+      placeholder: string
+    }>('vscode.prepareRename', document.uri, selection.start)
+    const newName = wc
+      ? transformCaseHelper(placeholder, wc)
+      : await showRenameUI(
+          placeholder,
+          getExtConfig('transformCase.defaultCase', document),
+        )
+    const wspEdit = await commands.executeCommand<WorkspaceEdit>(
+      'vscode.executeDocumentRenameProvider',
+      document.uri,
+      range.start,
+      newName,
+    )
+    await workspace.applyEdit(wspEdit)
   } catch {}
 }
 

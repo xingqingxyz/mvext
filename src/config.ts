@@ -2,20 +2,16 @@ import { workspace, type ConfigurationScope } from 'vscode'
 import type { WordCase } from './util/transformCaseHelper'
 
 export type MvextConfig = {
-  // path complete
+  'terminalLaunch.languages': Record<string, string>
   'pathComplete.prefixMap': Record<string, string>
-  // path complete debounceTimeMs
   'pathComplete.debounceTimeMs': number
   'runCodeBlock.timeoutMs': number
-  // case transform
   'transformCase.defaultCase': WordCase
   'shfmt.extraArgs': string[]
   'stylua.extraArgs': string[]
-  lineCompleteEnabled: boolean
-  dictionaryCompleteEnabled: boolean
+  'dictionaryComplete.enabled': boolean
 } & Record<
-  // shell edit
-  `shellEdit.${'node' | 'python' | 'shellscript' | 'powershell'}.cmd`,
+  `evalSelection.${'node' | 'python' | 'shellscript' | 'powershell'}.cmd`,
   string[]
 >
 

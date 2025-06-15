@@ -4,15 +4,18 @@ import type { ExtensionContext } from 'vscode'
  * Workspace state Memento keys
  */
 export enum WStateKey {
-  hexColorEnabledLanguages = 'hexColorEnabledLanguages',
+  hexColorLanguages = 'hexColor.languages',
+  terminalLaunchLastArgs = 'terminalLaunch.lastArgs',
 }
 
-let context: ExtensionContext
-
-export function getExtContext(): ExtensionContext {
-  return context
+/**
+ * All extension setContext call keys
+ */
+export enum ContextKey {
+  terminalLaunchLanguages = 'mvext.terminalLaunch.languages',
 }
 
-export function setExtContext(ctx: ExtensionContext) {
-  context = ctx
+export let extContext: ExtensionContext
+export function setExtContext(context: ExtensionContext) {
+  extContext = context
 }

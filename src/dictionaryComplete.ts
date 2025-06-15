@@ -13,13 +13,13 @@ import {
   workspace,
 } from 'vscode'
 import { getExtConfig } from './config'
-import { getExtContext } from './context'
+import { extContext } from './context'
 
 export class DictionaryCompleteProvider
   implements CompletionItemProvider, Disposable
 {
   static readonly oxfordWordsPath = 'assets/Oxford_5000_words.txt'
-  private _enabled = getExtConfig('dictionaryCompleteEnabled')
+  private _enabled = getExtConfig('dictionaryComplete.enabled')
   words?: string[];
 
   *lookupWords(word: string, words: string[]) {
@@ -56,8 +56,8 @@ export class DictionaryCompleteProvider
   private _disposables: Disposable[] = [
     languages.registerCompletionItemProvider({ pattern: '**' }, this),
     workspace.onDidChangeConfiguration((e) => {
-      if (e.affectsConfiguration('mvext.dictionaryCompleteEnabled')) {
-        this._enabled = getExtConfig('dictionaryCompleteEnabled')
+      if (e.affectsConfiguration('mvext.dictionaryComplete.enabled')) {
+        this._enabled = getExtConfig('dictionaryComplete.enabled')
       }
     }),
   ]
@@ -73,9 +73,7 @@ export class DictionaryCompleteProvider
     position: Position,
     token: CancellationToken,
     context: CompletionContext,
-  ): Promise<
-    CompletionItem[] | CompletionList<CompletionItem> | null | undefined
-  > {
+  ): Promise<CompletionItem[] | CompletionList | null | undefined> {
     if (!this._enabled) {
       return
     }
@@ -86,9 +84,7 @@ export class DictionaryCompleteProvider
     if (!this.words) {
       this.words = (
         await readFile(
-          getExtContext().asAbsolutePath(
-            DictionaryCompleteProvider.oxfordWordsPath,
-          ),
+          extContext.asAbsolutePath(DictionaryCompleteProvider.oxfordWordsPath),
           'utf-8',
         )
       ).split('\n')

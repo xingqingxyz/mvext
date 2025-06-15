@@ -11,7 +11,7 @@ import {
   type ProviderResult,
   type TextDocument,
 } from 'vscode'
-import { getExtContext, WStateKey } from './context'
+import { extContext, WStateKey } from './context'
 
 function hexToColor(hex: string): Color {
   const step = hex.length > 5 ? 2 : 1
@@ -46,18 +46,20 @@ export class HexColorProvider implements DocumentColorProvider, Disposable {
     ),
   ]
   static dispose() {
-    getExtContext().workspaceState.update(
-      WStateKey.hexColorEnabledLanguages,
+    extContext.workspaceState.update(
+      WStateKey.hexColorLanguages,
       this.providersMap.keys,
     )
     for (const provider of this.providersMap.values()) {
       provider.dispose()
     }
-    this._disposables.forEach((d) => d.dispose())
+    for (const disposable of this._disposables) {
+      disposable.dispose()
+    }
   }
   static finallyInit?() {
-    getExtContext()
-      .workspaceState.get<string[]>(WStateKey.hexColorEnabledLanguages)
+    extContext.workspaceState
+      .get<string[]>(WStateKey.hexColorLanguages)
       ?.forEach((languageId) => this.toggleHexColorLanguage(languageId))
     delete this.finallyInit
     return this
@@ -71,7 +73,7 @@ export class HexColorProvider implements DocumentColorProvider, Disposable {
     }
   }
 
-  dispose: any
+  dispose: () => void
   constructor(languageId: string) {
     const provider = languages.registerColorProvider([languageId], this)
     this.dispose = provider.dispose.bind(provider)

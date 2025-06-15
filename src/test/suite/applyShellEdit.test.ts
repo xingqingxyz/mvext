@@ -1,4 +1,4 @@
-import { execByLangId } from '@/applyShellEdit'
+import { execByLangId } from '@/evalSelection'
 import strict from 'assert/strict'
 import { EOL, homedir, tmpdir } from 'os'
 import path from 'path'
@@ -10,7 +10,7 @@ before(async function () {
   ).document
 })
 
-describe(`#${execByLangId.name}()`, async function () {
+describe(`#${execByLangId.name}()`, function () {
   const pwshCode = '(gi ~).FullName;$?'
 
   describe('should should not rejects', function () {

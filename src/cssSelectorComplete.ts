@@ -95,7 +95,7 @@ export class CssSelectorCompleteProvider
     }
   }
 
-  static async mergeResults(iterable: Iterable<string>) {
+  static mergeResults(iterable: Iterable<string>) {
     const classSet = new Set<string>()
     for (const className of iterable) {
       classSet.add(className)

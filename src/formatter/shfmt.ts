@@ -43,14 +43,14 @@ export class ShfmtFormatter
           '--filename',
           document.fileName,
           '-i',
-          options.insertSpaces ? options.tabSize + '' : '0',
+          options.insertSpaces ? options.tabSize.toString() : '0',
         ],
         {
           encoding: 'utf-8',
           signal: tokenToSignal(token),
         },
         (err, stdout, stderr) => {
-          if (err) reject(err)
+          if (err) reject(new Error('shfmt executing error: ' + err.message))
           else resolve(stdout)
         },
       )

@@ -70,7 +70,7 @@ export function transformCaseHelper(word: string, wc: WordCase) {
         /[^a-zA-Z-\\/_.\s]+|$/g,
       )) {
         words.push(getWord(word.slice(lastIdx, index), wc), spiltChar)
-        lastIdx = index! + spiltChar.length
+        lastIdx = index + spiltChar.length
       }
       return words.join('')
     }
@@ -94,14 +94,14 @@ export function getWord(text: string, wc: ComplexWordCase) {
   for (const { index, 0: spiltChar } of text.matchAll(/[-\\/_.\s]+|$/g)) {
     const words: string[] = []
     for (const matches of text.slice(lastIdx, index).matchAll(reGetWords)) {
-      if (matches[1] !== undefined) {
+      if (matches[1]) {
         words.push(matches[1].toLowerCase(), matches[2].toLowerCase())
       } else {
         words.push(matches[0].toLowerCase())
       }
     }
     newText += joinCaseActions[wc](words) + spiltChar
-    lastIdx = index! + spiltChar.length
+    lastIdx = index + spiltChar.length
   }
   return newText
 }
