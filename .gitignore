@@ -1,6 +1,5 @@
 node_modules
 out
-testdir
 
 /.eslintcache
 /*.vsix

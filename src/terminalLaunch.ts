@@ -1,4 +1,4 @@
-import { Uri, window, workspace } from 'vscode'
+import { type Uri, window, workspace } from 'vscode'
 import { getExtConfig } from './config'
 import { extContext, WStateKey } from './context'
 
@@ -65,7 +65,7 @@ export async function terminalLaunch(
     ? getLangIdByExt(uri.path.split('.').at(-1)!)
     : window.activeTextEditor!.document.languageId
   const config = getExtConfig('terminalLaunch.languages')
-  if (!(languageId in config)) {
+  if (!Object.hasOwn(config, languageId)) {
     languageId = await window.showQuickPick(Object.keys(config), {
       placeHolder: 'Select Language Id',
     })

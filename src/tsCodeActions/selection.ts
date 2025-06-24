@@ -1,9 +1,7 @@
+import { extContext } from '@/context'
 import {
   CodeAction,
-  CodeActionKind,
   CodeActionTriggerKind,
-  SnippetString,
-  SnippetTextEdit,
   TextEdit,
   WorkspaceEdit,
   languages,
@@ -11,12 +9,12 @@ import {
   type CodeActionContext,
   type CodeActionProvider,
   type Command,
-  type Disposable,
   type ProviderResult,
   type Range,
   type Selection,
   type TextDocument,
 } from 'vscode'
+import { kindFunction, kindTransform } from '.'
 
 function swapVarHelper(text: string) {
   text = text.trim().replace(/^\[|\]$/g, '')
@@ -24,29 +22,19 @@ function swapVarHelper(text: string) {
   return `[${text}] = [${rev}]`
 }
 
-export class SelectionCodeActionsProvider
-  implements CodeActionProvider, Disposable
-{
-  static readonly reDelFc = /^\s*[\w$[\]'"]+\s*\(.*\)\s*$/
-  static readonly allKinds = {
-    function: CodeActionKind.RefactorRewrite.append('function'),
-    transform: CodeActionKind.Refactor.append('transform'),
-  }
-
-  dispose: () => void
-
+export class SelectionCodeActionsProvider implements CodeActionProvider {
+  static readonly reDelFunc = /^\s*[\w$[\]'"]+\s*\(.*\)\s*$/
   constructor() {
-    this.dispose = languages.registerCodeActionsProvider(
-      ['javascript', 'typescript', 'javascriptreact', 'typescriptreact'],
-      this,
-      {
-        providedCodeActionKinds: Object.values(
-          SelectionCodeActionsProvider.allKinds,
-        ),
-      },
-    ).dispose
+    extContext.subscriptions.push(
+      languages.registerCodeActionsProvider(
+        ['javascript', 'typescript', 'javascriptreact', 'typescriptreact'],
+        this,
+        {
+          providedCodeActionKinds: [kindFunction, kindTransform],
+        },
+      ),
+    )
   }
-
   provideCodeActions(
     document: TextDocument,
     range: Selection | Range,
@@ -58,47 +46,21 @@ export class SelectionCodeActionsProvider
     }
     const text = document.getText(range)
     switch (true) {
-      case SelectionCodeActionsProvider.reDelFc.test(text):
-        return SelectionCodeActionsProvider.delFc(document, range as Selection)
       case text.includes(','):
-        return SelectionCodeActionsProvider.swapVar(
-          document,
-          range as Selection,
-        )
+        return SelectionCodeActionsProvider.swapVar(document, range)
       default:
         return
     }
   }
 
   //#region static
-  static delFc(document: TextDocument, range: Selection) {
-    const delFcSnippet = new SnippetString(
-      '${TM_SELECTED_TEXT/^\\s*.+?\\((.*)\\)\\s*$/$1/s}',
-    )
-    const wspEdit = new WorkspaceEdit()
-    wspEdit.set(document.uri, [new SnippetTextEdit(range, delFcSnippet)])
-
-    const codeAction = new CodeAction(
-      'Delete Function Call',
-      SelectionCodeActionsProvider.allKinds.function,
-    )
-    codeAction.edit = wspEdit
-
-    return [codeAction]
-  }
-
-  static swapVar(document: TextDocument, range: Selection) {
+  static swapVar(document: TextDocument, range: Range) {
     const wspEdit = new WorkspaceEdit()
     wspEdit.set(document.uri, [
       new TextEdit(range, swapVarHelper(document.getText(range))),
     ])
-
-    const codeAction = new CodeAction(
-      'Swap Variable',
-      SelectionCodeActionsProvider.allKinds.transform,
-    )
+    const codeAction = new CodeAction('Swap Variable', kindTransform)
     codeAction.edit = wspEdit
-
     return [codeAction]
   }
   //#endregion

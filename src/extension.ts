@@ -1,13 +1,6 @@
-import {
-  type ExtensionContext,
-  commands,
-  env,
-  languages,
-  workspace,
-} from 'vscode'
+import { type ExtensionContext, commands, env, workspace } from 'vscode'
 import { getExtConfig } from './config'
 import { ContextKey, setExtContext } from './context'
-import { DictionaryCompleteProvider } from './dictionaryComplete'
 import {
   evalSelection,
   terminalEvalSelection,
@@ -28,17 +21,13 @@ import { SelectionCodeActionsProvider } from './tsCodeActions/selection'
 
 export function activate(context: ExtensionContext) {
   setExtContext(context)
+  HexColorProvider.init!()
+  new StyluaFormatter()
+  new ShfmtFormatter()
+  new PathCompleteProvider()
+  new MarkdownBlockRunProvider()
+  new SelectionCodeActionsProvider()
   context.subscriptions.push(
-    HexColorProvider.finallyInit!(),
-    new PathCompleteProvider(),
-    new DictionaryCompleteProvider(),
-    new SelectionCodeActionsProvider(),
-    new StyluaFormatter(),
-    new ShfmtFormatter(),
-    languages.registerCodeLensProvider(
-      'markdown',
-      new MarkdownBlockRunProvider(),
-    ),
     commands.registerCommand('mvext.runCodeBlock', runCodeBlock),
     commands.registerCommand('mvext._copyCodeBlock', (text: string) =>
       env.clipboard.writeText(text),

@@ -1,12 +1,13 @@
 import { getExtConfig } from '@/config'
+import { extContext } from '@/context'
 import { tokenToSignal } from '@/util'
 import { execFile } from 'child_process'
 import {
+  languages,
   Position,
   Range,
   TextEdit,
   type CancellationToken,
-  type Disposable,
   type DocumentFormattingEditProvider,
   type DocumentRangeFormattingEditProvider,
   type FormattingOptions,
@@ -14,13 +15,14 @@ import {
 } from 'vscode'
 
 export class StyluaFormatter
-  implements
-    DocumentRangeFormattingEditProvider,
-    DocumentFormattingEditProvider,
-    Disposable
+  implements DocumentRangeFormattingEditProvider, DocumentFormattingEditProvider
 {
-  dispose() {}
-
+  constructor() {
+    extContext.subscriptions.push(
+      languages.registerDocumentFormattingEditProvider('lua', this),
+      languages.registerDocumentRangeFormattingEditProvider('lua', this),
+    )
+  }
   async provideDocumentFormattingEdits(
     document: TextDocument,
     options: FormattingOptions,
@@ -61,7 +63,6 @@ export class StyluaFormatter
       ),
     ]
   }
-
   async provideDocumentRangeFormattingEdits(
     document: TextDocument,
     range: Range,

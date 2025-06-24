@@ -1,11 +1,14 @@
 import { EOL } from 'os'
+import { setTimeout as setTimeoutPm } from 'timers/promises'
 import {
   CodeLens,
   commands,
+  languages,
   Position,
   Range,
   ThemeIcon,
   window,
+  workspace,
   type CancellationToken,
   type CodeLensProvider,
   type Event,
@@ -17,10 +20,20 @@ import which from 'which'
 import { getExtConfig } from './config'
 import { isWin32 } from './util'
 
-export class MarkdownBlockRunProvider implements CodeLensProvider {
-  private static readonly reCodeBlockRange =
-    /(?<=^\s*|\n\s*)```([^\n]*)\n(.*?)\n\s*```\s*(?:\n|$)/gs
+type MarkdownBlockRunLanguageIds =
+  | 'bat'
+  | 'shellscript'
+  | 'powershell'
+  | 'python'
+  | 'javascript'
+  | 'typescript'
 
+export class MarkdownBlockRunProvider implements CodeLensProvider {
+  static readonly reCodeBlockRange =
+    /(?<=^\s*|\n\s*)```([^\n]*)\n(.*?)\n\s*```\s*(?:\n|$)/gs
+  constructor() {
+    languages.registerCodeLensProvider('markdown', this)
+  }
   onDidChangeCodeLenses?: Event<void> | undefined
   provideCodeLenses(
     document: TextDocument,
@@ -35,6 +48,10 @@ export class MarkdownBlockRunProvider implements CodeLensProvider {
       }
       let langId
       switch (lang.trim().split(/\s/)[0]) {
+        case 'bat':
+        case 'cmd':
+          langId = 'bat'
+          break
         case 'sh':
         case 'bash':
         case 'shell':
@@ -52,8 +69,12 @@ export class MarkdownBlockRunProvider implements CodeLensProvider {
         case 'javascript':
           langId = 'javascript'
           break
+        case 'jsx':
+        case 'javascriptreact':
         case 'ts':
+        case 'tsx':
         case 'typescript':
+        case 'typescriptreact':
           langId = 'typescript'
           break
       }
@@ -82,39 +103,58 @@ export class MarkdownBlockRunProvider implements CodeLensProvider {
   }
 }
 
-async function createTerminal(
-  langId: 'powershell' | 'shellscript' | 'python' | 'javascript' | 'typescript',
-) {
+async function createShellIntegratedTerminal(profileName: string) {
+  await commands.executeCommand(
+    profileName === 'python'
+      ? 'python.startREPL'
+      : 'workbench.action.terminal.newWithProfile',
+    {
+      profileName,
+    },
+  )
+  return new Promise<Terminal>((resolve, reject) => {
+    const timeout = setTimeout(() => {
+      event.dispose()
+      reject(new Error('create shell integrated terminal timeout'))
+    }, 30000)
+    const event = window.onDidChangeTerminalShellIntegration((e) => {
+      if (e.terminal.name === profileName) {
+        event.dispose()
+        clearTimeout(timeout)
+        resolve(e.terminal)
+      }
+    })
+  })
+}
+
+async function createTerminal(langId: MarkdownBlockRunLanguageIds) {
   switch (langId) {
-    case 'powershell': {
-      await commands.executeCommand<Terminal>(
-        'workbench.action.terminal.newWithProfile',
-        { profileName: 'PowerShell' },
-      )
-      return new Promise<Terminal>((resolve, reject) => {
-        const event = window.onDidChangeTerminalShellIntegration((e) => {
-          if (e.terminal.name === 'pwsh') {
-            event.dispose()
-            resolve(e.terminal)
-          }
-        })
+    case 'bat':
+      if (!isWin32) {
+        throw new Error('cannot create cmd terminal on non windows platform')
+      }
+      return window.createTerminal({
+        name: 'cmd',
+        iconPath: new ThemeIcon('terminal-cmd'),
+        shellPath: process.env.COMSPEC!,
+        shellArgs: ['/D'],
+        isTransient: false,
       })
-    }
-    case 'shellscript': {
-      await commands.executeCommand<Terminal>(
-        'workbench.action.terminal.newWithProfile',
-        { profileName: isWin32 ? 'Git Bash' : 'bash' },
-      )
-      return new Promise<Terminal>((resolve, reject) => {
-        const event = window.onDidChangeTerminalShellIntegration((e) => {
-          if (e.terminal.name === 'bash') {
-            event.dispose()
-            resolve(e.terminal)
-          }
-        })
-      })
-    }
-    case 'python':
+    case 'shellscript':
+      return createShellIntegratedTerminal(isWin32 ? 'Git Bash' : 'bash')
+    case 'powershell':
+      return createShellIntegratedTerminal(isWin32 ? 'PowerShell' : 'pwsh')
+    case 'python': {
+      if (
+        workspace
+          .getConfiguration('python')
+          .get<boolean>('terminal.shellIntegration.enabled')
+      ) {
+        // fix python repl on pwsh not run
+        return createShellIntegratedTerminal('python').then(
+          (t) => (t.sendText(''), t),
+        )
+      }
       return window.createTerminal({
         name: 'python',
         iconPath: new ThemeIcon('python'),
@@ -122,6 +162,7 @@ async function createTerminal(
         shellArgs: ['run', 'python'],
         isTransient: false,
       })
+    }
     case 'javascript':
       return window.createTerminal({
         name: 'node',
@@ -129,20 +170,38 @@ async function createTerminal(
         shellPath: await which('node'),
         isTransient: false,
       })
-    case 'typescript':
-      return window.createTerminal({
+    case 'typescript': {
+      const terminal = window.createTerminal({
         name: 'tsx',
         iconPath: new ThemeIcon('console'),
         shellPath: await which('npx'),
         shellArgs: ['tsx'],
         isTransient: false,
       })
+      // accept install
+      terminal.sendText('')
+      return setTimeoutPm(1000, terminal)
+    }
   }
 }
 
+/*
+ * 'bash', 'cmd', 'csh', 'fish', 'gitbash', 'julia', 'ksh', 'node', 'nu', 'pwsh',
+ * 'python','sh', 'wsl', 'zsh'.
+ */
+const shellToLangId = Object.freeze({
+  bash: 'shellscript',
+  cmd: 'bat',
+  gitbash: 'shellscript',
+  node: 'javascript',
+  pwsh: 'powershell',
+  python: 'python',
+  wsl: 'shellscript',
+})
+
 export async function runCodeBlock(
   code: string,
-  langId: 'powershell' | 'shellscript' | 'python' | 'javascript' | 'typescript',
+  langId: MarkdownBlockRunLanguageIds,
 ) {
   code = code.trim()
   switch (langId) {
@@ -160,20 +219,10 @@ export async function runCodeBlock(
       code = code.replaceAll('\r\n', '\n' + '\u0015') + EOL.repeat(2)
       break
   }
-  const reTerminalName =
-    /(powershell|pwsh)|(bash|wsl)|(python)|(node)|(deno|bun|tsx)|.*/i
-  const langIdMap = [
-    'powershell',
-    'shellscript',
-    'python',
-    'javascript',
-    'typescript',
-  ]
   const terminal =
     window.terminals.find(
-      (t) =>
-        langIdMap[t.name.match(reTerminalName)!.findLastIndex(Boolean) - 1] ===
-        langId,
+      // @ts-expect-error ignore undefined key
+      (t) => shellToLangId[t.state.shell] === langId,
     ) ?? (await createTerminal(langId))
   terminal.show()
   if (!terminal.shellIntegration) {

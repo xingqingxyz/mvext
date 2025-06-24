@@ -1,5 +1,5 @@
 import { homedir } from 'os'
-import { isAbsolute, join as pathJoin } from 'path'
+import path from 'path'
 import { setTimeout } from 'timers/promises'
 import {
   CompletionItemKind,
@@ -11,80 +11,61 @@ import {
   type CancellationToken,
   type CompletionContext,
   type CompletionItemProvider,
-  type Disposable,
   type Position,
   type TextDocument,
 } from 'vscode'
 import { getExtConfig } from './config'
-import { isWin32, noop } from './util'
+import { isWin32 } from './util'
 
-export class PathCompleteProvider
-  implements CompletionItemProvider, Disposable
-{
+export class PathCompleteProvider implements CompletionItemProvider {
   // reference to the Vim editor's 'isfname'
   static readonly reFilePath = isWin32
     ? /(?:[-\w\\/.+,#$%{}[\]@!~=:]|[^\x00-\xff])*$/
     : /(?:[-\w/.+,#$%~=:]|[^\x00-\xff])*$/
   // resolve bash like env var
-  static readonly reEnvVar = /\$\{(\w+)\}|\$(\w+)/g
+  static readonly reEnvVar = /(?=\$\{)\w+(?<=\})|(?=\$)\w+/g
   static readonly triggerCharacters = isWin32 ? ['\\', '/'] : ['/']
-  static readonly kindMap = {
+  static readonly kindMap = Object.freeze({
     [FileType.Directory]: CompletionItemKind.Folder,
     [FileType.SymbolicLink]: CompletionItemKind.Reference,
     [FileType.File]: CompletionItemKind.File,
     [FileType.Unknown]: CompletionItemKind.Value,
-  }
+  })
 
-  static expandPrefixPath(
-    prefix: string,
-    path: string,
-    document: TextDocument,
-  ) {
-    const prefixMap = getExtConfig('pathComplete.prefixMap', document)
+  static expandPrefixPath(prefix: string, suffix: string, baseUri: Uri) {
+    const prefixMap = getExtConfig('pathComplete.prefixMap', baseUri)
     for (const [lhs, rhs] of Object.entries(prefixMap)) {
-      if (path.startsWith(lhs)) {
-        path = rhs + path.slice(lhs.length)
+      if (suffix.startsWith(lhs)) {
+        suffix = rhs + suffix.slice(lhs.length)
         break
       }
       if (prefix.endsWith(lhs)) {
-        path = rhs + path
+        suffix = rhs + suffix
         break
       }
     }
-    if (path.startsWith('${workspaceFolder}')) {
-      path = pathJoin(
-        workspace.getWorkspaceFolder(document.uri)?.uri.fsPath ?? homedir(),
-        path.slice(19),
+    if (suffix.startsWith('${workspaceFolder}')) {
+      suffix = path.join(
+        workspace.getWorkspaceFolder(baseUri)?.uri.fsPath ?? homedir(),
+        suffix.slice(19),
       )
     }
-    path = path.replace(
-      this.reEnvVar,
-      (keep, name1: string = '', name2: string = '') =>
-        process.env[name1 + name2] ?? keep,
-    )
-    for (const sep of this.triggerCharacters) {
-      path = path.replace('~' + sep, homedir() + sep)
+    suffix = suffix.replace(this.reEnvVar, (name) => process.env[name] ?? '')
+    if (suffix[0] === '~' && this.triggerCharacters.includes(suffix[1])) {
+      suffix = homedir() + suffix.slice(1)
     }
-    if (!isAbsolute(path)) {
-      path = pathJoin(document.fileName, '..', path)
+    if (!path.isAbsolute(suffix)) {
+      return path.join(baseUri.fsPath, '..', suffix)
     }
-    return path
+    return path.normalize(suffix)
   }
-
-  private _disposables: Disposable[] = [
+  constructor() {
     languages.registerCompletionItemProvider(
       { pattern: '**' },
       this,
       ...PathCompleteProvider.triggerCharacters,
-    ),
-  ]
-
-  dispose() {
-    for (const d of this._disposables) {
-      d.dispose()
-    }
+    )
   }
-
   async provideCompletionItems(
     document: TextDocument,
     position: Position,
@@ -94,37 +75,34 @@ export class PathCompleteProvider
     if (context.triggerKind !== CompletionTriggerKind.TriggerCharacter) {
       return
     }
-
     // half always endswith `triggerCharacters`
     const half = document
       .lineAt(position.line)
       .text.slice(0, position.character)
-    let path = half.match(PathCompleteProvider.reFilePath)![0]
-
-    if (path.startsWith('file://')) {
-      path = path.slice(7)
-    } else if (path.split('/', 1)[0].includes(':')) {
+    let suffix = half.match(PathCompleteProvider.reFilePath)![0]
+    if (suffix.startsWith('file://')) {
+      suffix = suffix.slice(7)
+    } else if (suffix.split('/', 1)[0].includes(':')) {
       // invalid scheme
       return
     }
-
     const baseDir = PathCompleteProvider.expandPrefixPath(
-      half.slice(0, -path.length),
-      path,
-      document,
+      half.slice(0, -suffix.length),
+      suffix,
+      document.uri,
     )
-    return workspace.fs.readDirectory(Uri.file(baseDir)).then((x) => {
-      const commitCharacters = [context.triggerCharacter!]
-      const items = x.map(([name, type]) => ({
+    await setTimeout(getExtConfig('pathComplete.debounceTimeMs', document))
+    if (token.isCancellationRequested) {
+      return
+    }
+    const commitCharacters = [context.triggerCharacter!]
+    return (await workspace.fs.readDirectory(Uri.file(baseDir))).map(
+      ([name, type]) => ({
         label: name,
         kind: PathCompleteProvider.kindMap[type],
         detail: baseDir + name,
         commitCharacters,
-      }))
-      return setTimeout(
-        getExtConfig('pathComplete.debounceTimeMs', document),
-        items,
-      )
-    }, noop)
+      }),
+    )
   }
 }

@@ -30,8 +30,7 @@
           }
         }
       ],
-      "label": "npm: watch",
-      "detail": "rollup -c -w"
+      "label": "npm: watch"
     }
   ]
 }

@@ -1,44 +1,60 @@
-# mvext
+# Eval Launch Completion
 
 This extension ships a set of useful tools:
 
 - [Transform Case](#transform-case)
-- [Edit by Shell](#edit-by-shell)
+- [Edit By Shell](#edit-by-shell)
+- [Run Markdown Code Block](#run-markdown-code-block)
 - [Path Complete](#path-complete)
 - [Toggle Hex Color Language](#toggle-hex-color-language)
 - [TypeScript Code Actions](#typescript-code-actions)
-- [Quickly Switch File](#quickly-switch-file)
 
 ## Features
 
 ### Transform Case
 
-Transform editor selections (empty selection fallback to cursor line) to target
+Transform editor selections (empty selection resolves to cursor word) to target
 word case. All word cases: `title`, `camel`, `constant`, `pascal`, `kebab`,
 `snake`, `sentence`, `dot`, `path`, `header`, `normal`, `lower`, `upper`
 
-### Edit by Shell
+### Edit By Shell
 
-#### Apply Shell Edit
+#### Eval Selection
 
 Using current editor selections, according to `editorLangId`, for each eval the
 code and replace it (shortcut `ctrl+alt+s`) with process's stdout if success
 else stderr. Supported language ids are:
 
-- `/(java|type)script(react)?|vue|svelte|markdown|mdx/` (javascript)
-- `powershell` (pwsh)
-- `shellscript` (bash)
+- `shellscript`
+- `powershell`
+- `python`
+- `/(java|type)script(react)?|vue|svelte|markdown|mdx/` (node)
 
-#### Apply Terminal Filter
+#### Terminal Filter Selection
 
 Join editor selections by '\n' and send it to the active terminal, then wait for
 user edits and run, if command is not failed and has outputs, replace the first
-selection to command output.
+selection to command outputs.
 
-#### Apply Terminal Edit
+#### Terminal Eval Selection
 
 For each editor selections, eval it's text in active terminal and replace it to
 command output if command is not failed and has outputs.
+
+#### Terminal Run Selection
+
+Like's microsoft powershell extension (F8), run selections in active terminal.
+
+### Run Markdown Code Block
+
+Show `CodeLens` to run markdown code blocks in code block language terminal.
+Supported language ids are:
+
+- `bat`
+- `shellscript`
+- `powershell`
+- `python`
+- `/(java|type)script(react)?/` (node)
 
 ### Path Complete
 
@@ -57,18 +73,3 @@ Simply toggle hex color blocks for each language.
 - `Swap Vars`
 
   transform from `[a.b, c.d, e.f]` to `[a.b, c.d, e.f] = [e.f, c.d, a.b]`
-
-### Quickly Switch File
-
-Quickly switch you source file between `.js/.css/.html` or `.js/.ts` (shortcut `alt+o`).
-
-| from  | to    |
-| ----- | ----- |
-| .js   | .html |
-| .css  | .html |
-| .html | .css  |
-| .ts   | .js   |
-
-## For More Information
-
-[Read the source](https://github.com/xingqingxyz/mvext)

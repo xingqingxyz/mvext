@@ -28,7 +28,7 @@ function capitalize(word: string) {
 export const joinCaseActions: Record<
   ComplexWordCase,
   (words: string[]) => string
-> = {
+> = Object.freeze({
   camel: (words) =>
     words
       .map((w, i) => (i !== 0 ? w[0].toUpperCase() + w.slice(1) : w))
@@ -44,7 +44,7 @@ export const joinCaseActions: Record<
   sentence: (words) => capitalize(words.join(' ')),
   snake: (words) => words.join('_'),
   title: (words) => words.map(capitalize).join(' '),
-}
+})
 
 export const casesList = Object.keys(joinCaseActions).concat(
   'lower',
