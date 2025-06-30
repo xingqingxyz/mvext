@@ -86,6 +86,22 @@
           "scope": "resource",
           "type": "boolean"
         },
+        "mvext.evalSelection.languages": {
+          "additionalProperties": {
+            "description": "Language Id : Eval Config",
+            "type": "string"
+          },
+          "default": {
+            "bat": "cmd /d /c",
+            "javascript": "node -p",
+            "javascriptreact": "bun x tsx -p",
+            "powershell": "pwsh -nop -c",
+            "python": "uv run python -c",
+            "shellscript": "bash -c",
+            "typescript": "bun x tsx -p",
+            "typescriptreact": "bun x tsx -p"
+          }
+        },
         "mvext.pathComplete.debounceTimeMs": {
           "default": 200,
           "markdownDescription": "Path completion debounceTimeMs",
@@ -104,92 +120,18 @@
           "scope": "resource",
           "type": "object"
         },
-        "mvext.runCodeBlock.timeoutMs": {
-          "default": 30000,
-          "markdownDescription": "Command `mvext.runCodeBlock` use this when command timeout.",
-          "type": "integer"
-        },
-        "mvext.evalSelection.node.cmd": {
-          "default": [
-            "node",
-            "-e"
-          ],
-          "examples": [
-            [
-              "bun",
-              "-e"
-            ]
-          ],
-          "items": {
-            "type": "string"
-          },
-          "markdownDescription": "Child process command and args when eval javascript/typescript files",
-          "scope": "resource",
-          "type": "array"
-        },
-        "mvext.evalSelection.powershell.cmd": {
-          "default": [
-            "pwsh",
-            "-NoProfile",
-            "-Command"
-          ],
-          "examples": [
-            [
-              "powershell",
-              "-NoProfile",
-              "-Command"
-            ]
-          ],
-          "items": {
-            "type": "string"
-          },
-          "markdownDescription": "Child process command and args when eval powershell files",
-          "scope": "resource",
-          "type": "array"
-        },
-        "mvext.evalSelection.python.cmd": {
-          "default": [
+        "mvext.terminalRunCode.defaultLanguageId": {
+          "default": "powershell",
+          "markdownDescription": "Command `mvext.terminalRunCode` use this when command timeout.",
+          "type": "string",
+          "enum": [
+            "bat",
+            "shellscript",
+            "powershell",
             "python",
-            "-c"
-          ],
-          "examples": [
-            [
-              "uv",
-              "run",
-              "python",
-              "-c"
-            ]
-          ],
-          "items": {
-            "type": "string"
-          },
-          "markdownDescription": "Child process command and args when eval python files",
-          "scope": "resource",
-          "type": "array"
-        },
-        "mvext.evalSelection.shellscript.cmd": {
-          "default": [
-            "bash",
-            "-c"
-          ],
-          "examples": [
-            [
-              "wsl",
-              "-e",
-              "bash",
-              "-c"
-            ],
-            [
-              "C:\\Program Files\\Git\\usr\\bin\\bash.exe",
-              "-c"
-            ]
-          ],
-          "items": {
-            "type": "string"
-          },
-          "markdownDescription": "Child process command and args when eval shellscript files",
-          "scope": "resource",
-          "type": "array"
+            "javascript",
+            "typescript"
+          ]
         },
         "mvext.shfmt.extraArgs": {
           "default": [
@@ -223,12 +165,12 @@
             "fsharp": "dotnet run",
             "go": "go run",
             "javascript": "node",
-            "javascriptreact": "npx tsx",
-            "python": "uv run",
+            "javascriptreact": "bun x tsx",
             "powershell": "&",
-            "shellscript": "bash --norc",
-            "typescript": "npx tsx",
-            "typescriptreact": "npx tsx"
+            "python": "uv run python",
+            "shellscript": "bash",
+            "typescript": "bun x tsx",
+            "typescriptreact": "bun x tsx"
           },
           "markdownDescription": "Languages launch config definitions",
           "type": "object"
@@ -300,14 +242,14 @@
           "alt": "mvext.terminalEvalSelection",
           "command": "mvext.terminalFilterSelection",
           "group": "navigation",
-          "when": "editorTextFocus && editorLangId"
+          "when": "!editorReadonly"
         }
       ],
       "editor/title/run": [
         {
           "alt": "mvext.terminalLaunchArgs",
           "command": "mvext.terminalLaunch",
-          "when": "editorFocus && editorLangId in mvext.terminalLaunch.languages"
+          "when": "editorLangId in mvext.terminalLaunch.languages"
         }
       ],
       "explorer/context": [
@@ -369,7 +311,7 @@
           "file": 1,
           "line": 2,
           "message": 4,
-          "regexp": "^\\[!\\](?: \\(plugin [^)]+\\))? RollupError: (\\S+) \\((\\d+):(\\d+)\\): (.*)$"
+          "regexp": "^\\(!\\) (?:\\[plugin [^\\]]+\\]|RollupError:) (\\S+) \\((\\d+):(\\d+)\\): (.*)$"
         },
         "source": "rollup"
       },
@@ -392,31 +334,29 @@
     ]
   },
   "dependencies": {
-    "strip-ansi": "^7.1.0",
-    "which": "^5.0.0"
+    "strip-ansi": "^7.1.0"
   },
   "description": "Eval selections as code, launch file in terminal and auto complete path.",
   "devDependencies": {
-    "@eslint/js": "^9.14.0",
-    "@rollup/plugin-commonjs": "^28.0.1",
-    "@rollup/plugin-node-resolve": "^16",
-    "@rollup/plugin-replace": "^6.0.1",
+    "@eslint/js": "^9.30.0",
+    "@rollup/plugin-commonjs": "^28.0.6",
+    "@rollup/plugin-node-resolve": "^16.0.1",
+    "@rollup/plugin-replace": "^6.0.2",
     "@rollup/plugin-terser": "^0.4.4",
-    "@rollup/plugin-typescript": "^12.1.1",
+    "@rollup/plugin-typescript": "^12.1.4",
     "@swc-node/register": "^1.10.10",
-    "@types/mocha": "^10.0.9",
-    "@types/node": "^22.15.32",
-    "@types/vscode": "^1.100.0",
-    "@types/which": "^3.0.4",
-    "eslint": "^9.14.0",
-    "lint-staged": "^16.0.0",
-    "mocha": "^11",
-    "prettier": "^3.3.3",
-    "rollup": "^4.26.0",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "^22.15.34",
+    "@types/vscode": "^1.101.0",
+    "eslint": "^9.30.0",
+    "lint-staged": "^16.1.2",
+    "mocha": "^11.7.1",
+    "prettier": "^3.6.2",
+    "rollup": "^4.44.1",
     "simple-git-hooks": "^2.13.0",
     "tslib": "^2.8.1",
-    "typescript": "^5.8.2",
-    "typescript-eslint": "^8.14.0"
+    "typescript": "^5.8.3",
+    "typescript-eslint": "^8.35.0"
   },
   "displayName": "Eval Launch Completion",
   "engines": {
@@ -433,7 +373,6 @@
     "semi": false,
     "singleQuote": true
   },
-  "preview": true,
   "private": true,
   "publisher": "xingqingxyz",
   "repository": {
@@ -441,15 +380,15 @@
     "url": "https://github.com/xingqingxyz/mvext"
   },
   "scripts": {
-    "watch": "rollup -c -w",
+    "ext-install": "vsce pack -o out/mvext.vsix && code --install-extension out/mvext.vsix",
     "lint": "eslint --fix --cache src",
     "test": "mocha -r @swc-node/register --extension ts src/test/**/*.ts",
-    "ext-install": "vsce pack -o out/mvext.vsix && code --install-extension out/mvext.vsix",
-    "vscode:prepublish": "rollup -c --environment NODE_ENV:production"
+    "vscode:prepublish": "rollup -c --environment NODE_ENV:production",
+    "watch": "rollup -c -w"
   },
   "simple-git-hooks": {
     "pre-commit": "npx lint-staged"
   },
   "type": "module",
-  "version": "0.15.2"
+  "version": "0.15.3"
 }

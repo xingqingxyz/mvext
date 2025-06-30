@@ -5,7 +5,7 @@ export default tseslint.config(
   eslint.configs.recommended,
   tseslint.configs.strictTypeChecked,
   {
-    ignores: ['*.*', 'out/**'],
+    ignores: ['*.*', 'out/**', 'testdir/**'],
   },
   {
     files: ['src/**/*.ts'],
@@ -32,6 +32,7 @@ export default tseslint.config(
       '@typescript-eslint/prefer-promise-reject-errors': 'off',
       '@typescript-eslint/no-unsafe-argument': 'off',
       '@typescript-eslint/restrict-template-expressions': 'off',
+      '@typescript-eslint/only-throw-error': 'off',
     },
   },
 )

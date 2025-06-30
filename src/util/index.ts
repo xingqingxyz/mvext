@@ -1,6 +1,9 @@
+import { execFile } from 'child_process'
+import { promisify } from 'util'
 import type { CancellationToken } from 'vscode'
 
 export const isWin32 = process.platform === 'win32'
+export const execFilePm = promisify(execFile)
 
 export function noop(): undefined {}
 

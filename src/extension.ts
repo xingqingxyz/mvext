@@ -9,7 +9,7 @@ import {
 import { ShfmtFormatter } from './formatter/shfmt'
 import { StyluaFormatter } from './formatter/stylua'
 import { HexColorProvider } from './hexColor'
-import { MarkdownBlockRunProvider, runCodeBlock } from './markdownBlockRun'
+import { MarkdownBlockRunProvider } from './markdownBlockRun'
 import { PathCompleteProvider } from './pathComplete'
 import { terminalLaunch, terminalLaunchArgs } from './terminalLaunch'
 import {
@@ -18,6 +18,7 @@ import {
   transformCaseWithPicker,
 } from './transformCase'
 import { SelectionCodeActionsProvider } from './tsCodeActions/selection'
+import { terminalRunCode } from './util/terminalRunCode'
 
 export function activate(context: ExtensionContext) {
   setExtContext(context)
@@ -28,7 +29,7 @@ export function activate(context: ExtensionContext) {
   new MarkdownBlockRunProvider()
   new SelectionCodeActionsProvider()
   context.subscriptions.push(
-    commands.registerCommand('mvext.runCodeBlock', runCodeBlock),
+    commands.registerCommand('mvext.terminalRunCode', terminalRunCode),
     commands.registerCommand('mvext._copyCodeBlock', (text: string) =>
       env.clipboard.writeText(text),
     ),

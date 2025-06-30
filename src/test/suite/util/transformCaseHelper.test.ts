@@ -1,7 +1,7 @@
 import {
-  ComplexWordCase,
-  WordCase,
-  joinCaseActions,
+  type ComplexWordCase,
+  type WordCase,
+  joinWords,
   transformCaseHelper,
 } from '@/util/transformCaseHelper'
 import { strict } from 'assert'
@@ -51,7 +51,7 @@ describe('complexCasesReMap', function () {
 describe('joinCaseActions', function () {
   it('should match casedMap', function () {
     complexCasesList.forEach((wc) => {
-      strict.equal(joinCaseActions[wc](words), casedMap[wc])
+      strict.equal(joinWords(words, wc), casedMap[wc])
     })
   })
 })

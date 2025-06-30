@@ -10,9 +10,9 @@ import {
 } from 'vscode'
 import { getExtConfig } from './config'
 import {
-  WordCase,
   casesList,
   transformCaseHelper,
+  type WordCase,
 } from './util/transformCaseHelper'
 
 function transformCase(editor: TextEditor, edit: TextEditorEdit, wc: WordCase) {

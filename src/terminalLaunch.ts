@@ -78,7 +78,7 @@ export async function terminalLaunch(
 
 export async function terminalLaunchArgs(uri: Uri) {
   const argStr = await window.showInputBox({
-    title: 'Input Arguments String',
+    title: 'Launch with Arguments',
     ignoreFocusOut: true,
     value: extContext.workspaceState.get(WStateKey.terminalLaunchLastArgs),
   })
