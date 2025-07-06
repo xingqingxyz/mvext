@@ -1,26 +1,53 @@
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
-import * as vscode from 'vscode';
+import {
+  commands,
+  DecorationRangeBehavior,
+  TextEditorCursorStyle,
+  TextEditorLineNumbersStyle,
+  window,
+  workspace,
+  type ExtensionContext,
+} from 'vscode'
+import { setExtContext } from './config'
 
-// This method is called when your extension is activated
-// Your extension is activated the very first time the command is executed
-export function activate(context: vscode.ExtensionContext) {
-
-	// Use the console to output diagnostic information (console.log) and errors (console.error)
-	// This line of code will only be executed once when your extension is activated
-	console.log('Congratulations, your extension "vincode" is now active!');
-
-	// The command has been defined in the package.json file
-	// Now provide the implementation of the command with registerCommand
-	// The commandId parameter must match the command field in package.json
-	const disposable = vscode.commands.registerCommand('vincode.helloWorld', () => {
-		// The code you place here will be executed every time your command is executed
-		// Display a message box to the user
-		vscode.window.showInformationMessage('Hello World from Morden Vim in VSCode!');
-	});
-
-	context.subscriptions.push(disposable);
+let isVimMode = false
+export async function activate(context: ExtensionContext) {
+  setExtContext(context)
+  const defaultCommands = [
+    'type',
+    'cut',
+    'paste',
+    'undo',
+    'redo',
+    'replacePreviousChar',
+    'compositionStart',
+    'compositionType',
+    'compositionEnd',
+  ]
+  await workspace.openTextDocument({
+    language: 'plain',
+    encoding: 'utf8',
+    content: defaultCommands.join('\n'),
+  })
+  context.subscriptions.push(
+    commands.registerTextEditorCommand('vincode.toggleVimMode', (editor) => {
+      if ((isVimMode = !isVimMode)) {
+        const decoration = window.createTextEditorDecorationType({
+          rangeBehavior: DecorationRangeBehavior.OpenClosed,
+          color: 'red',
+        })
+        editor.setDecorations(decoration, editor.selections)
+        editor.options.cursorStyle = TextEditorCursorStyle.Block
+        editor.options.lineNumbers = TextEditorLineNumbersStyle.Relative
+      } else {
+        editor.options.cursorStyle = TextEditorCursorStyle.Line
+        editor.options.lineNumbers = TextEditorLineNumbersStyle.On
+      }
+    }),
+    ...defaultCommands.map((cmd) =>
+      commands.registerCommand(cmd, (...args) => {
+        console.log(...args)
+        return commands.executeCommand('default:' + cmd, ...args)
+      }),
+    ),
+  )
 }
-
-// This method is called when your extension is deactivated
-export function deactivate() {}

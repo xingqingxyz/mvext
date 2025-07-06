@@ -1,14 +1,16 @@
 {
   "compilerOptions": {
-    "module": "node18",
-    "target": "ES2023",
-    "lib": ["ES2023"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "target": "ES2024",
+    "lib": ["ES2024"],
     "noEmit": true,
     "sourceMap": true,
-    "strict": true /* enable all strict type-checking options */,
-    /* Additional Checks */
-    "noImplicitReturns": true /* Report error when not all code paths in function return a value. */,
-    "noFallthroughCasesInSwitch": true /* Report errors for fallthrough cases in switch statement. */,
+    "paths": { "@/*": ["./src/*"] },
+    "strict": true,
+    "verbatimModuleSyntax": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
     "noImplicitOverride": true,
     "noImplicitAny": true,
     "skipLibCheck": true

@@ -13,10 +13,26 @@
         "--extensionDevelopmentPath=${workspaceFolder}",
         "--disable-extensions",
         "--enable-proposed-api",
-        "xingqingxyz.vincode"
+        "xingqingxyz.vincode",
+        "${workspaceFolder}/testdir"
       ],
       "outFiles": ["${workspaceFolder}/dist/**/*.js"],
       "preLaunchTask": "${defaultBuildTask}"
+    },
+    {
+      "name": "Extension Tests",
+      "type": "extensionHost",
+      "request": "launch",
+      "args": [
+        "--extensionDevelopmentPath=${workspaceFolder}",
+        "--extensionTestsPath=${workspaceFolder}/src/test",
+        "--disable-extensions",
+        "--enable-proposed-api",
+        "xingqingxyz.vincode",
+        "${workspaceFolder}/testdir"
+      ],
+      "outFiles": ["${workspaceFolder}/dist/**/*.js"],
+      "preLaunchTask": "npm: build:test"
     }
   ]
 }

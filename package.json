@@ -4,7 +4,7 @@
   ],
   "author": "Ming Chen",
   "bugs": {
-    "url": "https://github.com/xingqingxyz/mvext/issues"
+    "url": "https://github.com/xingqingxyz/vincode/issues"
   },
   "categories": [
     "Keymaps"
@@ -12,29 +12,36 @@
   "contributes": {
     "commands": [
       {
-        "command": "vincode.helloWorld",
-        "title": "Hello World"
+        "command": "vincode.toggleVimMode",
+        "title": "Toggle Vim Mode"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "vincode.toggleVimMode",
+        "key": "ctrl+shift+space"
       }
     ]
   },
   "description": "Bring benefits from Vim to VSCode.",
   "devDependencies": {
+    "@eslint/js": "^9.30.1",
     "@types/mocha": "^10.0.10",
-    "@types/node": "20.x",
-    "@types/vscode": "^1.100.0",
-    "@vscode/test-cli": "^0.0.10",
+    "@types/node": "~22.15.32",
+    "@types/vscode": "^1.101.0",
+    "@vscode/test-cli": "^0.0.11",
     "@vscode/test-electron": "^2.5.2",
-    "esbuild": "^0.25.3",
-    "eslint": "^9.25.1",
-    "husky": "^9.1.7",
-    "lint-staged": "^16.1.0",
+    "esbuild": "^0.25.5",
+    "eslint": "^9.29.0",
+    "lint-staged": "^16.1.2",
     "prettier": "^3.5.3",
+    "simple-git-hooks": "^2.13.0",
     "typescript": "^5.8.3",
-    "typescript-eslint": "^8.33.1"
+    "typescript-eslint": "^8.34.1"
   },
   "displayName": "Morden Vim in VSCode",
   "engines": {
-    "vscode": "^1.100.0"
+    "vscode": "^1.101.0"
   },
   "license": "MIT",
   "lint-staged": {
@@ -53,18 +60,24 @@
   "publisher": "xingqingxyz",
   "repository": {
     "type": "git",
-    "url": "https://github.com/xingqingxyz/mvext"
+    "url": "https://github.com/xingqingxyz/vincode"
+  },
+  "simple-git-hooks": {
+    "pre-commit": "pnpx lint-staged"
   },
   "scripts": {
-    "watch": "pnpm _esbuild --sourcemap",
-    "lint": "eslint src",
+    "simple-mode": "esbuild --bundle --external:vscode --format=esm --outfile=dist/extension.js --platform=node --target=node22 src/simple-mode/index.ts --sourcemap --watch",
+    "watch": "pnpm _esbuild --sourcemap --watch",
+    "lint": "eslint --fix src",
     "test": "vscode-test",
     "pretest": "pnpm _esbuild --format=cjs --outfile=out/extension.js && pnpm build:test && node -e \"var obj = require('./package.json'); delete obj.type; obj.main = 'extension.js'; fs.writeFileSync('out/package.json', JSON.stringify(obj), 'utf8')\"",
     "vscode:prepublish": "pnpm _esbuild --minify",
-    "build:test": "esbuild --format=cjs --outdir=out/test --platform=node --target=node20 src/test/**/*.ts",
-    "_esbuild": "esbuild --bundle --external:vscode --format=esm --outfile=dist/extension.js --platform=node --target=node20 src/extension.ts",
-    "prepare": "husky"
+    "build:test": "esbuild --format=cjs --outdir=out/test --platform=node --target=node22 src/test/**/*.ts",
+    "_esbuild": "esbuild --bundle --external:vscode --format=esm --outfile=dist/extension.js --platform=node --target=node22 src/extension.ts"
   },
   "version": "0.0.1",
-  "type": "module"
+  "type": "module",
+  "dependencies": {
+    "rxjs": "^7.8.2"
+  }
 }
