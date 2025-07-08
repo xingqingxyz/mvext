@@ -117,13 +117,12 @@ async function createTerminal(languageId: TerminalRunLanguageIds) {
       return createShellIntegratedTerminal(isWin32 ? 'PowerShell' : 'pwsh')
     case 'python': {
       if (
+        extensions.getExtension('ms-python.python') &&
         workspace
           .getConfiguration('python')
           .get<boolean>('terminal.shellIntegration.enabled')
       ) {
-        if (extensions.getExtension('ms-python.python')) {
-          return createShellIntegratedTerminal('python')
-        }
+        return createShellIntegratedTerminal('python')
       }
       return window.createTerminal({
         name: languageId,
@@ -135,7 +134,7 @@ async function createTerminal(languageId: TerminalRunLanguageIds) {
     case 'javascript':
       return window.createTerminal({
         name: languageId,
-        iconPath: new ThemeIcon('json'),
+        iconPath: new ThemeIcon('console'),
         isTransient: false,
         ...getTerminalCommand('javascript'),
       })

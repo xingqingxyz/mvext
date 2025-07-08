@@ -24,7 +24,7 @@ export class PathCompleteProvider implements CompletionItemProvider {
     : /(?:[-\w/.+,#$%~=:]|[^\x00-\xff])*$/
   // resolve bash like env var
   static readonly reEnvVar = /(?=\$\{)\w+(?<=\})|(?=\$)\w+/g
-  static readonly triggerCharacters = isWin32 ? ['\\', '/'] : ['/']
+  static readonly triggerCharacters = isWin32 ? '\\/' : '/'
   static readonly kindMap = Object.freeze({
     [FileType.Directory]: CompletionItemKind.Folder,
     [FileType.SymbolicLink]: CompletionItemKind.Reference,
@@ -63,7 +63,7 @@ export class PathCompleteProvider implements CompletionItemProvider {
     languages.registerCompletionItemProvider(
       { pattern: '**' },
       this,
-      ...PathCompleteProvider.triggerCharacters,
+      ...PathCompleteProvider.triggerCharacters.split(''),
     )
   }
   async provideCompletionItems(

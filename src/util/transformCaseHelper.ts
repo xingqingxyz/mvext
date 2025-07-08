@@ -13,7 +13,7 @@ export type WordCase =
   | 'title'
   | 'upper'
 
-export type ComplexWordCase = Exclude<WordCase, 'lower' | 'upper'>
+type ComplexWordCase = Exclude<WordCase, 'lower' | 'upper'>
 
 export const casesList = Object.freeze([
   'camel',
@@ -38,10 +38,7 @@ function capitalize(word: string) {
     : word
 }
 
-/**
- * Functions join the `words` (raw`[a-zA-Z_-$][\w$]*`) array and transform to target case.
- */
-export function joinWords(words: string[], wc: ComplexWordCase) {
+function joinWords(words: string[], wc: ComplexWordCase) {
   switch (wc) {
     case 'camel':
       return words
@@ -71,7 +68,7 @@ export function joinWords(words: string[], wc: ComplexWordCase) {
 }
 
 const reGetWords = /([A-Z]+)([A-Z][a-z]+)|[A-Z][a-z]+|[a-z]+|[A-Z]+/g
-export function getWord(text: string, wc: ComplexWordCase) {
+function getWord(text: string, wc: ComplexWordCase) {
   switch (wc) {
     case 'normal':
     case 'sentence':

@@ -3,7 +3,7 @@ import type { ExtensionContext } from 'vscode'
 /**
  * Workspace state Memento keys
  */
-export enum WStateKey {
+export const enum WStateKey {
   hexColorLanguages = 'hexColor.languages',
   terminalLaunchLastArgs = 'terminalLaunch.lastArgs',
 }
@@ -11,7 +11,7 @@ export enum WStateKey {
 /**
  * All extension setContext call keys
  */
-export enum ContextKey {
+export const enum ContextKey {
   terminalLaunchLanguages = 'mvext.terminalLaunch.languages',
 }
 

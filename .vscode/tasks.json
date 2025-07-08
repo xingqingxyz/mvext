@@ -9,27 +9,7 @@
         "isDefault": true
       },
       "isBackground": true,
-      "problemMatcher": [
-        {
-          "applyTo": "allDocuments",
-          "fileLocation": ["relative", "${workspaceFolder}"],
-          "owner": "rollup",
-          "source": "rollup-watch",
-          "severity": "error",
-          "pattern": {
-            "regexp": "^\\[!\\](?: \\(plugin [^)]+\\))? RollupError: (\\S+) \\((\\d+):(\\d+)\\): (.*)$",
-            "file": 1,
-            "line": 2,
-            "column": 3,
-            "message": 4
-          },
-          "background": {
-            "activeOnStart": true,
-            "beginsPattern": "^bundles (.*) → (.*)\\.{3}$",
-            "endsPattern": "^\\[\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}\\] waiting for changes\\.{3}"
-          }
-        }
-      ],
+      "problemMatcher": ["$rollup-watch"],
       "label": "npm: watch"
     }
   ]

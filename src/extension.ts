@@ -17,12 +17,12 @@ import {
   transformCaseDefault,
   transformCaseWithPicker,
 } from './transformCase'
-import { SelectionCodeActionsProvider } from './tsCodeActions/selection'
+import { SelectionCodeActionsProvider } from './tsCodeAction/selection'
 import { terminalRunCode } from './util/terminalRunCode'
 
-export function activate(context: ExtensionContext) {
+export async function activate(context: ExtensionContext) {
   setExtContext(context)
-  HexColorProvider.init!()
+  HexColorProvider.init()
   new StyluaFormatter()
   new ShfmtFormatter()
   new PathCompleteProvider()
@@ -51,9 +51,6 @@ export function activate(context: ExtensionContext) {
       'mvext.terminalFilterSelection',
       terminalFilterSelection,
     ),
-    commands.registerCommand('mvext.terminalRunSelection', () =>
-      commands.executeCommand('workbench.action.terminal.runSelectedText'),
-    ),
     commands.registerCommand('mvext.terminalLaunch', terminalLaunch),
     commands.registerCommand('mvext.terminalLaunchArgs', terminalLaunchArgs),
     workspace.onDidChangeConfiguration(
@@ -66,7 +63,7 @@ export function activate(context: ExtensionContext) {
         ),
     ),
   )
-  return commands.executeCommand(
+  await commands.executeCommand(
     'setContext',
     ContextKey.terminalLaunchLanguages,
     Object.keys(getExtConfig('terminalLaunch.languages')),

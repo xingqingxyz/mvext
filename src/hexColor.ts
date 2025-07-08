@@ -40,16 +40,7 @@ function colorToHex(color: Color): string {
 export class HexColorProvider implements DocumentColorProvider, Disposable {
   static readonly reColor = /#(?:[\da-f]{8}|[\da-f]{6}|[\da-f]{3,4})/gi
   static readonly providersMap = new Map<string, HexColorProvider>()
-  static dispose() {
-    extContext.workspaceState.update(
-      WStateKey.hexColorLanguages,
-      Array.from(this.providersMap.keys()),
-    )
-    for (const provider of this.providersMap.values()) {
-      provider.dispose()
-    }
-  }
-  static init?() {
+  static init() {
     extContext.subscriptions.push(
       commands.registerTextEditorCommand('mvext.hexColor.toggleLanguage', (e) =>
         this.toggleHexColorLanguage(e.document.languageId),
@@ -59,7 +50,15 @@ export class HexColorProvider implements DocumentColorProvider, Disposable {
     extContext.workspaceState
       .get<string[]>(WStateKey.hexColorLanguages)
       ?.forEach((languageId) => this.toggleHexColorLanguage(languageId))
-    delete this.init
+  }
+  static dispose() {
+    extContext.workspaceState.update(
+      WStateKey.hexColorLanguages,
+      Array.from(this.providersMap.keys()),
+    )
+    for (const provider of this.providersMap.values()) {
+      provider.dispose()
+    }
   }
   static toggleHexColorLanguage(languageId: string) {
     if (this.providersMap.has(languageId)) {

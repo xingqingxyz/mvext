@@ -55,24 +55,22 @@ export async function transformCaseWithPicker() {
   }
   const word = document.getText(range)
   const defaultWc = getExtConfig('transformCase.defaultCase', document)
-  return window
-    .showQuickPick(
-      casesList.map(
-        (wc) =>
-          ({
-            label: wc,
-            description: transformCaseHelper(word, wc),
-            picked: wc === defaultWc,
-          }) satisfies QuickPickItem,
-      ),
-      {
-        title: 'Transform Case',
-      },
-    )
-    .then(
-      (item) =>
-        item && editor.edit((edit) => transformCase(editor, edit, item.label)),
-    )
+  const item = await window.showQuickPick(
+    casesList.map(
+      (wc) =>
+        ({
+          label: wc,
+          description: transformCaseHelper(word, wc),
+          picked: wc === defaultWc,
+        }) satisfies QuickPickItem,
+    ),
+    {
+      title: 'Transform Case',
+    },
+  )
+  if (item) {
+    await editor.edit((edit) => transformCase(editor, edit, item.label))
+  }
 }
 
 /**
@@ -91,7 +89,7 @@ export async function renameWithCase(wc?: WordCase) {
     }>('vscode.prepareRename', document.uri, selection.start)
     const newName = wc
       ? transformCaseHelper(placeholder, wc)
-      : await showRenameUI(
+      : await showRenameWithCaseUI(
           placeholder,
           getExtConfig('transformCase.defaultCase', document),
         )
@@ -105,7 +103,7 @@ export async function renameWithCase(wc?: WordCase) {
   } catch {}
 }
 
-async function showRenameUI(curWord: string, preselect?: WordCase) {
+async function showRenameWithCaseUI(curWord: string, preselect?: WordCase) {
   const item = await window.showQuickPick(
     casesList.map(
       (wc) =>
@@ -117,17 +115,13 @@ async function showRenameUI(curWord: string, preselect?: WordCase) {
     ),
     { title: 'Rename with Case' },
   )
-  if (!item) {
-    throw new Error('no item selected')
-  }
-  const value = await window.showInputBox({
-    title: 'Rename Symbol',
-    placeHolder: 'New name',
-    ignoreFocusOut: true,
-    value: item.description,
-  })
-  if (!value) {
-    throw new Error('invalid value')
-  }
-  return value
+  return (
+    item &&
+    (await window.showInputBox({
+      title: 'Rename Symbol',
+      placeHolder: 'New name',
+      ignoreFocusOut: true,
+      value: item.description,
+    }))
+  )
 }

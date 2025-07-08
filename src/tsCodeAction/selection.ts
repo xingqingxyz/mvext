@@ -23,7 +23,6 @@ function swapVarHelper(text: string) {
 }
 
 export class SelectionCodeActionsProvider implements CodeActionProvider {
-  static readonly reDelFunc = /^\s*[\w$[\]'"]+\s*\(.*\)\s*$/
   constructor() {
     extContext.subscriptions.push(
       languages.registerCodeActionsProvider(

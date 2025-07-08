@@ -3,8 +3,8 @@ import { getExtConfig } from './config'
 import { extContext, WStateKey } from './context'
 
 /**
- * Resolves python,(java|type)script(react)?,shellscript,powershell,csharp,fsharp,
- * bat,
+ * Resolves python,(java|type)script(react)?,shellscript,powershell,csharp,
+ * fsharp,bat,
  */
 function getLangIdByExt(ext: string) {
   ext = ext.toLowerCase()
