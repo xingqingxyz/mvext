@@ -2,7 +2,7 @@
   "activationEvents": [
     "onStartupFinished"
   ],
-  "author": "Ming Chen",
+  "author": "Ming Chen <cm.email@qq.com> (https://github.com/xingqingxyz)",
   "bugs": {
     "url": "https://github.com/xingqingxyz/vincode/issues"
   },
@@ -13,16 +13,179 @@
     "commands": [
       {
         "command": "vincode.toggleVimMode",
-        "title": "Toggle Vim Mode"
+        "title": "Toggle Vim Mode",
+        "category": "vim"
+      },
+      {
+        "command": "vincode.toggleLessMode",
+        "title": "Toggle Less Mode",
+        "category": "vim"
+      },
+      {
+        "command": "vincode.triggerLeader",
+        "title": "Trigger Leader Key",
+        "category": "vim"
+      },
+      {
+        "command": "vincode.triggerSpacevim",
+        "title": "Trigger Spacevim Key",
+        "category": "vim"
+      },
+      {
+        "command": "vincode.repeatPrevLineChar",
+        "title": "Repeat Prev Line Char"
+      },
+      {
+        "command": "vincode.repeatNextLineChar",
+        "title": "Repeat Next Line Char"
+      },
+      {
+        "command": "vincode.cursorHalfPageDown",
+        "title": "Cursor Half Page Down"
+      },
+      {
+        "command": "vincode.cursorHalfPageUp",
+        "title": "Cursor Half Page Up"
+      },
+      {
+        "command": "vincode.manKeyword",
+        "title": "Man Keyword"
       }
     ],
     "keybindings": [
       {
         "command": "vincode.toggleVimMode",
-        "key": "ctrl+shift+space"
+        "key": "shift+space",
+        "when": "editorTextFocus"
+      },
+      {
+        "command": "vincode.toggleVimMode",
+        "args": [
+          false
+        ],
+        "key": "i",
+        "when": "editorTextFocus && vincode.vimMode == 'normal'"
+      },
+      {
+        "command": "vincode.toggleLessMode",
+        "key": "ctrl+alt+space",
+        "when": "editorTextFocus"
+      },
+      {
+        "command": "vincode.triggerLeader",
+        "key": "alt+space",
+        "when": "editorTextFocus"
+      },
+      {
+        "command": "vincode.triggerSpacevim",
+        "key": "alt+shift+space",
+        "when": "editorTextFocus"
+      },
+      {
+        "command": "vincode.repeatPrevLineChar",
+        "key": "ctrl+y",
+        "when": "editorTextFocus && !editorReadonly"
+      },
+      {
+        "command": "vincode.repeatNextLineChar",
+        "key": "ctrl+e",
+        "when": "editorTextFocus && !editorReadonly"
+      },
+      {
+        "command": "vincode.toggleLessMode",
+        "args": [
+          false
+        ],
+        "key": "q",
+        "when": "vincode.less && editorTextFocus"
+      },
+      {
+        "command": "scrollPageDown",
+        "key": "f",
+        "when": "vincode.less && editorTextFocus"
+      },
+      {
+        "command": "scrollPageDown",
+        "key": "space",
+        "when": "vincode.less && editorTextFocus"
+      },
+      {
+        "command": "scrollPageUp",
+        "key": "b",
+        "when": "vincode.less && editorTextFocus"
+      },
+      {
+        "command": "scrollPageUp",
+        "key": "shift+space",
+        "when": "vincode.less && editorTextFocus"
+      },
+      {
+        "command": "vincode.cursorHalfPageDown",
+        "key": "d",
+        "when": "vincode.less && editorTextFocus"
+      },
+      {
+        "command": "vincode.cursorHalfPageUp",
+        "key": "u",
+        "when": "vincode.less && editorTextFocus"
+      },
+      {
+        "command": "scrollLineDown",
+        "key": "e",
+        "when": "vincode.less && editorTextFocus"
+      },
+      {
+        "command": "scrollLineUp",
+        "key": "y",
+        "when": "vincode.less && editorTextFocus"
+      },
+      {
+        "command": "cursorDown",
+        "key": "j",
+        "when": "vincode.less && editorTextFocus"
+      },
+      {
+        "command": "cursorUp",
+        "key": "k",
+        "when": "vincode.less && editorTextFocus"
+      },
+      {
+        "command": "cursorLeft",
+        "key": "h",
+        "when": "vincode.less && editorTextFocus"
+      },
+      {
+        "command": "cursorRight",
+        "key": "l",
+        "when": "vincode.less && editorTextFocus"
+      },
+      {
+        "command": "cursorTop",
+        "key": "g",
+        "when": "vincode.less && editorTextFocus"
+      },
+      {
+        "command": "cursorBottom",
+        "key": "shift+g",
+        "when": "vincode.less && editorTextFocus"
+      },
+      {
+        "command": "vincode.manKeyword",
+        "key": "shift+k",
+        "when": "vincode.less && editorTextFocus"
       }
     ]
   },
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": true
+    },
+    "virtualWorkspaces": true
+  },
+  "extensionKind": [
+    "ui"
+  ],
+  "packageManager": "pnpm@10.12.4",
   "description": "Bring benefits from Vim to VSCode.",
   "devDependencies": {
     "@eslint/js": "^9.30.1",
@@ -46,12 +209,11 @@
   "license": "MIT",
   "lint-staged": {
     "*.{js,ts,json,md}": "prettier -w",
-    "*.{js,ts}": "eslint --fix"
+    "*.{js,ts}": "eslint --cache --fix"
   },
   "main": "./dist/extension.js",
   "name": "vincode",
   "prettier": {
-    "bracketSameLine": true,
     "semi": false,
     "singleQuote": true
   },
@@ -68,12 +230,12 @@
   "scripts": {
     "simple-mode": "esbuild --bundle --external:vscode --format=esm --outfile=dist/extension.js --platform=node --target=node22 src/simple-mode/index.ts --sourcemap --watch",
     "watch": "pnpm _esbuild --sourcemap --watch",
-    "lint": "eslint --fix src",
+    "lint": "eslint --cache --fix src",
     "test": "vscode-test",
     "pretest": "pnpm _esbuild --format=cjs --outfile=out/extension.js && pnpm build:test && node -e \"var obj = require('./package.json'); delete obj.type; obj.main = 'extension.js'; fs.writeFileSync('out/package.json', JSON.stringify(obj), 'utf8')\"",
-    "vscode:prepublish": "pnpm _esbuild --minify",
+    "vscode:prepublish": "pnpm _esbuild --define:__DEV__=false --minify",
     "build:test": "esbuild --format=cjs --outdir=out/test --platform=node --target=node22 src/test/**/*.ts",
-    "_esbuild": "esbuild --bundle --external:vscode --format=esm --outfile=dist/extension.js --platform=node --target=node22 src/extension.ts"
+    "_esbuild": "esbuild --define:__DEV__=true --bundle --external:vscode --format=esm --outfile=dist/extension.js --platform=node --target=node22 src/extension.ts"
   },
   "version": "0.0.1",
   "type": "module",

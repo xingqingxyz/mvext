@@ -1,3 +1,5 @@
-declare const __DEV__: boolean
+const __DEV__: boolean
 
-interface ActionHandler {}
+interface Object {
+  __proto__?: Object | null
+}

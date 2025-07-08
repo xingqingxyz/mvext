@@ -1,9 +1,13 @@
 import { window } from 'vscode'
+import { formatDate } from '.'
 
 class Logger {
-  private panel = window.createOutputChannel('VinCode')
+  private panel = window.createOutputChannel('Vincode', 'log')
   private write(msg: string, level: 'debug' | 'info' | 'warn' | 'error') {
-    this.panel.appendLine(`${new Date().toLocaleString()} [${level}] ${msg}`)
+    if (__DEV__) {
+      console[level](msg)
+    }
+    this.panel.appendLine(`${formatDate(new Date())} [${level}] ${msg}`)
   }
   debug(msg: string) {
     this.write(msg, 'debug')

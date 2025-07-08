@@ -116,15 +116,15 @@ export class TextObjects implements TextObjectsType {
     return bracketLookup(document, position, ['<', '>'])
   }
   'a('(document: TextDocument, position: Position): Range {
-    return bracketLookup(document, position, ['(', ')'], false)
+    return bracketLookup(document, position, ['(', ')'], true)
   }
   'a['(document: TextDocument, position: Position): Range {
-    return bracketLookup(document, position, ['[', ']'], false)
+    return bracketLookup(document, position, ['[', ']'], true)
   }
   'a{'(document: TextDocument, position: Position): Range {
-    return bracketLookup(document, position, ['{', '}'], false)
+    return bracketLookup(document, position, ['{', '}'], true)
   }
   'a<'(document: TextDocument, position: Position): Range {
-    return bracketLookup(document, position, ['<', '>'], false)
+    return bracketLookup(document, position, ['<', '>'], true)
   }
 }

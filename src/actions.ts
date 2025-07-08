@@ -349,5 +349,3 @@ class Actions implements ActionsType {
     editor: TextEditor,
   ) {}
 }
-
-export const actions = new Actions()

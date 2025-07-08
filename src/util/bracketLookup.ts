@@ -5,12 +5,12 @@ export function* preLookup(
   document: TextDocument,
   position: Position,
   str: string,
-  keepLine = false,
-  skipCursor = false,
+  keepLine?: boolean,
+  skipCursor?: boolean,
 ) {
   const minLinr = keepLine ? position.line : 0
   for (
-    let linr = position.line, chr = position.character - +skipCursor;
+    let linr = position.line, chr = position.character + +!skipCursor;
     linr >= minLinr;
     linr--
   ) {
@@ -19,7 +19,7 @@ export function* preLookup(
       chr = text.length
     }
     while (true) {
-      chr = text.lastIndexOf(str, chr)
+      chr = text.lastIndexOf(str, chr - 1)
       if (chr === -1) {
         break
       } else {
@@ -29,22 +29,26 @@ export function* preLookup(
   }
 }
 
+/**
+ * @param keepLine default false
+ * @param skipCursor default false
+ */
 export function* postLookup(
   document: TextDocument,
   position: Position,
   str: string,
-  keepLine = false,
-  skipCursor = false,
+  keepLine?: boolean,
+  skipCursor?: boolean,
 ) {
   const maxEdge = keepLine ? position.line + 1 : document.lineCount
   for (
-    let linr = position.line, chr = position.character + +skipCursor;
+    let linr = position.line, chr = position.character - +!skipCursor;
     linr < maxEdge;
-    linr++, chr = 0
+    linr++, chr = -1
   ) {
     const { text } = document.lineAt(linr)
     while (true) {
-      chr = text.indexOf(str, chr)
+      chr = text.indexOf(str, chr + 1)
       if (chr === -1) {
         break
       } else {
@@ -58,7 +62,7 @@ export function bracketLookup(
   document: TextDocument,
   position: Position,
   [lb, rb]: [string, string],
-  inner = true,
+  outer?: boolean,
 ): Range {
   if (lb === rb) {
     throw 'brackets are the same: ' + lb
@@ -73,29 +77,24 @@ export function bracketLookup(
     `(${lb.replace(reEscapeRegexp, '\\$&')})|(${rb.replace(reEscapeRegexp, '\\$&')})`,
     'g',
   )
-  const text = document.getText(
-    new Range(left.line, left.character + lb.length, document.lineCount, 0),
-  )
-  const leftOffset = document.offsetAt(left)
-  const posOffset = document.offsetAt(position)
   let diff = 0
+  let linr = left.line
+  let text = document.lineAt(left).text.slice(left.character + lb.length)
   for (const matches of text.matchAll(reBrackets)) {
     if (matches[1]) {
       diff--
     } else {
       diff++
     }
-    if (!diff && matches.index + leftOffset >= posOffset) {
-      return inner
-        ? new Range(
-            left.with(undefined, left.character + lb.length),
-            document.positionAt(matches.index + leftOffset),
-          )
-        : new Range(
-            left,
-            document.positionAt(matches.index + leftOffset + rb.length),
-          )
+    if (!diff) {
+      return outer
+        ? new Range(left, new Position(linr, matches.index + rb.length))
+        : new Range(left.line, left.character + lb.length, linr, matches.index)
     }
+    if (++linr >= document.lineCount) {
+      break
+    }
+    ;({ text } = document.lineAt(linr))
   }
   return new Range(position, position)
 }
@@ -104,19 +103,20 @@ export function* preLookupRegExp(
   document: TextDocument,
   position: Position,
   regexp: RegExp,
-  skipCursor = false,
+  skipCursor?: boolean,
 ) {
   let linr = position.line,
     text = document
       .lineAt(position.line)
       .text.slice(0, position.character + +!skipCursor)
-  while (linr >= 0) {
+  while (true) {
     for (const { index } of Array.from(text.matchAll(regexp)).reverse()) {
       yield new Position(linr, index)
     }
-    if (linr--) {
-      ;({ text } = document.lineAt(linr))
+    if (!linr--) {
+      break
     }
+    ;({ text } = document.lineAt(linr))
   }
 }
 
@@ -137,11 +137,12 @@ export function* postLookupRegExp(
     if (++linr >= document.lineCount) {
       break
     }
-    void ({ text } = document.lineAt(linr))
+    ;({ text } = document.lineAt(linr))
   }
 }
 
-export const bracketsMap = {
+type BracketChar = '(' | ')' | '[' | ']' | '{' | '}' | '<' | '>'
+export const bracketsMap = Object.freeze({
   '(': ')',
   '[': ']',
   '{': '}',
@@ -150,14 +151,13 @@ export const bracketsMap = {
   ']': '[',
   '}': '{',
   '>': '<',
-} as const
+} as Record<BracketChar, BracketChar>)
 
 export function preBracketPairLookup(
   document: TextDocument,
   position: Position,
-  rpair: ')' | ']' | '}' | '>',
+  [lpair, rpair]: [BracketChar, BracketChar],
 ) {
-  const lpair = bracketsMap[rpair]
   for (
     let linr = position.line, chr = position.character - 1, cnt = 1;
     linr >= 0;
@@ -187,9 +187,8 @@ export function preBracketPairLookup(
 export function postBracketPairLookup(
   document: TextDocument,
   position: Position,
-  lpair: '(' | '[' | '{' | '<',
+  [lpair, rpair]: [BracketChar, BracketChar],
 ) {
-  const rpair = bracketsMap[lpair]
   for (
     let linr = position.line, chr = position.character + 1, cnt = -1;
     linr < document.lineCount;
@@ -211,4 +210,17 @@ export function postBracketPairLookup(
     }
   }
   return position
+}
+
+export function bracketPairLookup(document: TextDocument, position: Position) {
+  const char = document.getText(
+    new Range(position, position.with(undefined, position.character + 1)),
+  ) as BracketChar
+  if (!Object.hasOwn(bracketsMap, char)) {
+    throw 'bracket char not found'
+  }
+  if ('([{<'.includes(char)) {
+    return postBracketPairLookup(document, position, [char, bracketsMap[char]])
+  }
+  return preBracketPairLookup(document, position, [bracketsMap[char], char])
 }
