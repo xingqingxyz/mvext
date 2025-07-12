@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unnecessary-condition */
 import { setTimeout as setTimeoutPm } from 'timers/promises'
 import {
   commands,
@@ -186,8 +185,7 @@ export async function terminalRunCode(
   const terminal =
     window.terminals.find(
       (t) =>
-        // @ts-expect-error ignore undefined key
-        shellToLanguageId[t.state.shell] === languageId ||
+        shellToLanguageId[t.state.shell as 'pwsh'] === languageId ||
         t.name.toLowerCase().includes(languageId),
     ) ?? (await createTerminal(languageId))
   terminal.show()

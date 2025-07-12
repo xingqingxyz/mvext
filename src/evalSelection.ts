@@ -152,7 +152,7 @@ export async function terminalFilterSelection() {
       : `(cat << 'EOF'\n${lines.join('\n')}\nEOF\n) | `,
     false,
   )
-  let text = await new Promise<string>((resolve, reject) => {
+  let text = await new Promise<string>((resolve) => {
     const event = window.onDidStartTerminalShellExecution((e) => {
       if (e.shellIntegration !== terminal.shellIntegration) {
         return

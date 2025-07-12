@@ -11,7 +11,7 @@ export type MvextConfig = {
   'transformCase.defaultCase': WordCase
   'shfmt.extraArgs': string[]
   'stylua.extraArgs': string[]
-  'dictionaryComplete.enabled': boolean
+  'invokeComplete.enabled': boolean
 }
 
 export function getExtConfig<const T extends keyof MvextConfig>(

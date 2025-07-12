@@ -2,6 +2,10 @@
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## [0.16.0]
+
+- Feature: [`invokeComplete`](src/invokeComplete/index.ts) invoke complete directly for special items.
+
 ## [0.15.0]
 
 - Feature: [`terminalLaunch`](src/terminalLaunch.ts) launch source files in active terminal from title bar.

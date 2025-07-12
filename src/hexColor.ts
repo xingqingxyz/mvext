@@ -91,6 +91,7 @@ export class HexColorProvider implements DocumentColorProvider, Disposable {
     }
     return colors
   }
+  /* eslint-disable @typescript-eslint/no-unused-vars */
   provideColorPresentations(
     color: Color,
     context: { readonly document: TextDocument; readonly range: Range },

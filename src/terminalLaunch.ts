@@ -46,6 +46,15 @@ function getLangIdByExt(ext: string) {
   }
 }
 
+function getTerminal() {
+  return (
+    window.terminals
+      .concat(window.activeTerminal ? window.activeTerminal : [])
+      .findLast((t) => !t.state.isInteractedWith && t.shellIntegration) ??
+    window.createTerminal()
+  )
+}
+
 export async function terminalLaunch(
   uri: Uri,
   arg2: Uri[] | undefined | object,
@@ -58,7 +67,7 @@ export async function terminalLaunch(
   if (!(await workspace.saveAll())) {
     return
   }
-  const terminal = window.activeTerminal ?? window.createTerminal()
+  const terminal = getTerminal()
   terminal.show()
   let languageId
   languageId = Array.isArray(arg2)

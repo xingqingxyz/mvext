@@ -28,7 +28,7 @@ export class ShfmtFormatter implements DocumentFormattingEditProvider {
       const p = execFile(
         'shfmt',
         [
-          ...getExtConfig('shfmt.extraArgs'),
+          ...getExtConfig('shfmt.extraArgs', document),
           '--filename',
           document.fileName,
           '-i',
@@ -38,7 +38,7 @@ export class ShfmtFormatter implements DocumentFormattingEditProvider {
           encoding: 'utf-8',
           signal: tokenToSignal(token),
         },
-        (err, stdout, stderr) => {
+        (err, stdout) => {
           if (err) reject(new Error('shfmt executing error: ' + err.message))
           else resolve(stdout)
         },

@@ -1,5 +1,6 @@
 **
-!assets
+!resources
 !out/extension.js
+!out/*.wasm
 !CHANGELOG.md
 !LICENSE

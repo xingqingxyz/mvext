@@ -9,8 +9,8 @@ import {
 import { ShfmtFormatter } from './formatter/shfmt'
 import { StyluaFormatter } from './formatter/stylua'
 import { HexColorProvider } from './hexColor'
+import { InvokeCompleteProvider } from './invokeComplete'
 import { MarkdownBlockRunProvider } from './markdownBlockRun'
-import { PathCompleteProvider } from './pathComplete'
 import { terminalLaunch, terminalLaunchArgs } from './terminalLaunch'
 import {
   renameWithCase,
@@ -19,16 +19,23 @@ import {
 } from './transformCase'
 import { SelectionCodeActionsProvider } from './tsCodeAction/selection'
 import { terminalRunCode } from './util/terminalRunCode'
+import { initTreeSitter, tsParser } from './util/tsParser'
 
 export async function activate(context: ExtensionContext) {
   setExtContext(context)
+  await initTreeSitter(context)
   HexColorProvider.init()
+  new InvokeCompleteProvider(context)
   new StyluaFormatter()
   new ShfmtFormatter()
-  new PathCompleteProvider()
   new MarkdownBlockRunProvider()
   new SelectionCodeActionsProvider()
   context.subscriptions.push(
+    {
+      dispose() {
+        tsParser.delete()
+      },
+    },
     commands.registerCommand('mvext.terminalRunCode', terminalRunCode),
     commands.registerCommand('mvext._copyCodeBlock', (text: string) =>
       env.clipboard.writeText(text),

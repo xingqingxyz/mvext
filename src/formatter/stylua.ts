@@ -32,7 +32,7 @@ export class StyluaFormatter
       const p = execFile(
         'stylua',
         [
-          ...getExtConfig('stylua.extraArgs'),
+          ...getExtConfig('stylua.extraArgs', document),
           '--stdin-filepath',
           document.fileName,
           '--indent-type',
@@ -45,7 +45,7 @@ export class StyluaFormatter
           encoding: 'utf-8',
           signal: tokenToSignal(token),
         },
-        (err, stdout, stderr) => {
+        (err, stdout) => {
           if (err) reject(err)
           else resolve(stdout)
         },
@@ -73,7 +73,7 @@ export class StyluaFormatter
       const p = execFile(
         'stylua',
         [
-          ...getExtConfig('stylua.extraArgs'),
+          ...getExtConfig('stylua.extraArgs', document),
           '--stdin-filepath',
           document.fileName,
           '--range-start',
@@ -90,7 +90,7 @@ export class StyluaFormatter
           encoding: 'utf-8',
           signal: tokenToSignal(token),
         },
-        (err, stdout, stderr) => {
+        (err, stdout) => {
           if (err) reject(err)
           else resolve(stdout)
         },
