@@ -7,6 +7,7 @@ import {
   workspace,
   type ExtensionContext,
 } from 'vscode'
+import { statusBarItem } from './statusBarItem'
 import { kebabToPascal } from './util'
 
 export type Mode = 'normal' | 'insert' | 'pending' | 'visual' | 'command'
@@ -62,7 +63,12 @@ export class ModeController {
   public async setMode(mode: Mode) {
     this[(this._mode + 'Leave') as 'insertLeave'].fire()
     this[((this._mode = mode) + 'Enter') as 'insertLeave'].fire()
-    await commands.executeCommand('setContext', 'vincode.vimMode', mode)
+    await this._updateMode()
+  }
+  private async _updateMode() {
+    statusBarItem.text = `|-${this._mode.toUpperCase()}-|`
+    statusBarItem.show()
+    await commands.executeCommand('setContext', 'vincode.vimMode', this._mode)
   }
   private _onNormalEnter() {
     const editor = window.activeTextEditor!
@@ -89,6 +95,7 @@ export class ModeController {
       this.normalEnter.event(this._onNormalEnter.bind(this)),
       this.normalLeave.event(this._onNormalLeave.bind(this)),
     )
+    this._updateMode()
   }
   //#endregion
 }

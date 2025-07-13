@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-this-alias */
 
 export const enum ActionHandlerKind {
-  Invoke,
+  Immediate,
   Count,
   Terminator,
 }
@@ -14,10 +14,10 @@ export interface ActionHandlerContext {
 }
 
 export type ActionMeta = {
-  handler: (context: ActionHandlerContext) => void
+  handler: (context: ActionHandlerContext) => PromiseOr<void>
 } & (
   | {
-      kind: ActionHandlerKind.Invoke
+      kind: ActionHandlerKind.Immediate
     }
   | {
       kind: ActionHandlerKind.Count

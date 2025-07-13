@@ -1,5 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { type Position, type TextDocument, type TextEditor } from 'vscode'
+import { ActionHandlerKind, type ActionMeta } from './actionTire'
+import { TextObject } from './textObject'
 
 export interface ActionsType
   extends Record<
@@ -348,4 +350,44 @@ class Actions implements ActionsType {
     count: number,
     editor: TextEditor,
   ) {}
+}
+
+export function* produceAction(): Generator<[string, ActionMeta]> {
+  const textObject = new TextObject()
+  for (const name of Object.getOwnPropertyNames(TextObject.prototype)) {
+    switch (textObject[name as 'iw'].length) {
+      case 2:
+        yield [
+          'c' + name,
+          {
+            kind: ActionHandlerKind.Immediate,
+            async handler(context) {
+              await textObject.changeTextObject(context)
+            },
+          },
+        ]
+        yield [
+          'd' + name,
+          {
+            kind: ActionHandlerKind.Immediate,
+            async handler(context) {
+              await textObject.deleteTextObject(context)
+            },
+          },
+        ]
+        yield [
+          'y' + name,
+          {
+            kind: ActionHandlerKind.Immediate,
+            async handler(context) {
+              await textObject.deleteTextObject(context)
+            },
+          },
+        ]
+        break
+      default:
+        console.log('skiped textObject: ' + name)
+        break
+    }
+  }
 }

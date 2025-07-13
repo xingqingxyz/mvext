@@ -1,4 +1,5 @@
 import { commands, type ExtensionContext } from 'vscode'
+import { registerCustomComplete } from './commands/customComplete'
 import { repeatNextLineChar, repeatPrevLineChar } from './commands/insert'
 import { Consumer } from './consumer'
 import {
@@ -9,6 +10,7 @@ import {
 } from './less'
 
 export async function activate(context: ExtensionContext) {
+  registerCustomComplete(context)
   const consumer = new Consumer(context)
   context.subscriptions.push(
     commands.registerCommand(

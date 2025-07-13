@@ -22,9 +22,8 @@ export function* preLookup(
       chr = text.lastIndexOf(str, chr - 1)
       if (chr === -1) {
         break
-      } else {
-        yield new Position(linr, chr)
       }
+      yield new Position(linr, chr)
     }
   }
 }
@@ -51,52 +50,10 @@ export function* postLookup(
       chr = text.indexOf(str, chr + 1)
       if (chr === -1) {
         break
-      } else {
-        yield new Position(linr, chr)
       }
+      yield new Position(linr, chr)
     }
   }
-}
-
-export function bracketLookup(
-  document: TextDocument,
-  position: Position,
-  [lb, rb]: [string, string],
-  outer?: boolean,
-): Range {
-  if (lb === rb) {
-    throw 'brackets are the same: ' + lb
-  } else if ((lb + rb).includes('\n')) {
-    throw 'brackets contains eol'
-  }
-  const { done, value: left } = preLookup(document, position, lb).next()
-  if (done) {
-    return new Range(position, position)
-  }
-  const reBrackets = new RegExp(
-    `(${lb.replace(reEscapeRegexp, '\\$&')})|(${rb.replace(reEscapeRegexp, '\\$&')})`,
-    'g',
-  )
-  let diff = 0
-  let linr = left.line
-  let text = document.lineAt(left).text.slice(left.character + lb.length)
-  for (const matches of text.matchAll(reBrackets)) {
-    if (matches[1]) {
-      diff--
-    } else {
-      diff++
-    }
-    if (!diff) {
-      return outer
-        ? new Range(left, new Position(linr, matches.index + rb.length))
-        : new Range(left.line, left.character + lb.length, linr, matches.index)
-    }
-    if (++linr >= document.lineCount) {
-      break
-    }
-    ;({ text } = document.lineAt(linr))
-  }
-  return new Range(position, position)
 }
 
 export function* preLookupRegExp(
@@ -107,7 +64,7 @@ export function* preLookupRegExp(
 ) {
   let linr = position.line,
     text = document
-      .lineAt(position.line)
+      .lineAt(linr)
       .text.slice(0, position.character + +!skipCursor)
   while (true) {
     for (const { index } of Array.from(text.matchAll(regexp)).reverse()) {
@@ -124,25 +81,74 @@ export function* postLookupRegExp(
   document: TextDocument,
   position: Position,
   regexp: RegExp,
-  skipCursor = false,
+  skipCursor?: boolean,
 ) {
-  let linr = position.line,
-    text = document
-      .lineAt(position.line)
-      .text.slice(position.character + +skipCursor)
+  const start = position.character + (skipCursor ? 1 : 0)
+  let linr = position.line
+  for (const { index } of document
+    .lineAt(linr)
+    .text.slice(start)
+    .matchAll(regexp)) {
+    yield new Position(linr, start + index)
+  }
   while (true) {
-    for (const { index } of text.matchAll(regexp)) {
+    if (++linr >= document.lineCount) {
+      break
+    }
+    for (const { index } of document.lineAt(linr).text.matchAll(regexp)) {
       yield new Position(linr, index)
+    }
+  }
+}
+
+export function pairLookup(
+  document: TextDocument,
+  position: Position,
+  [lpair, rpair]: [string, string],
+  outer?: boolean,
+): Range {
+  if (lpair === rpair) {
+    throw 'brackets are the same: ' + lpair
+  } else if ((lpair + rpair).includes('\n')) {
+    throw 'brackets contains eol'
+  }
+  const { done, value: left } = preLookup(document, position, lpair).next()
+  if (done) {
+    return new Range(position, position)
+  }
+  const reBrackets = new RegExp(
+    `(${lpair.replace(reEscapeRegexp, '\\$&')})|(${rpair.replace(reEscapeRegexp, '\\$&')})`,
+    'g',
+  )
+  let diff = 0
+  let linr = left.line
+  let text = document.lineAt(left).text.slice(left.character + lpair.length)
+  for (const matches of text.matchAll(reBrackets)) {
+    if (matches[1]) {
+      diff--
+    } else {
+      diff++
+    }
+    if (!diff) {
+      return outer
+        ? new Range(left, new Position(linr, matches.index + rpair.length))
+        : new Range(
+            left.line,
+            left.character + lpair.length,
+            linr,
+            matches.index,
+          )
     }
     if (++linr >= document.lineCount) {
       break
     }
     ;({ text } = document.lineAt(linr))
   }
+  return new Range(position, position)
 }
 
 type BracketChar = '(' | ')' | '[' | ']' | '{' | '}' | '<' | '>'
-export const bracketsMap = Object.freeze({
+const bracketsMap = Object.freeze({
   '(': ')',
   '[': ']',
   '{': '}',
@@ -153,7 +159,7 @@ export const bracketsMap = Object.freeze({
   '>': '<',
 } as Record<BracketChar, BracketChar>)
 
-export function preBracketPairLookup(
+function preBracketPairLookup(
   document: TextDocument,
   position: Position,
   [lpair, rpair]: [BracketChar, BracketChar],
@@ -184,7 +190,7 @@ export function preBracketPairLookup(
   return position
 }
 
-export function postBracketPairLookup(
+function postBracketPairLookup(
   document: TextDocument,
   position: Position,
   [lpair, rpair]: [BracketChar, BracketChar],

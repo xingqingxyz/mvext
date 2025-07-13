@@ -29,7 +29,7 @@ class Motion {
     return document.validatePosition(position.with(undefined, count - 1))
   }
   //#endregion
-  '^'(document: TextDocument, position: Position, count: number): Position {
+  _(document: TextDocument, position: Position, count: number): Position {
     return new Position(
       Math.max(0, position.line - count + 1),
       document.lineAt(position).firstNonWhitespaceCharacterIndex,
@@ -55,10 +55,10 @@ class Motion {
     }
     for (position of (backward ? preLookup : postLookup)(
       document,
-      range.end,
+      backward ? range.start : range.end,
       document.getText(range),
       false,
-      true,
+      backward,
     )) {
       if (!--count) {
         break
@@ -77,20 +77,6 @@ class Motion {
       }
     }
     return position
-  }
-  '-'(document: TextDocument, position: Position, count: number): Position {
-    count = Math.max(0, position.line - count)
-    return new Position(
-      count,
-      document.lineAt(count).firstNonWhitespaceCharacterIndex,
-    )
-  }
-  '+'(document: TextDocument, position: Position, count: number): Position {
-    count = Math.min(document.lineCount - 1, position.line + count)
-    return new Position(
-      count,
-      document.lineAt(count).firstNonWhitespaceCharacterIndex,
-    )
   }
   '/'(
     document: TextDocument,
@@ -134,33 +120,61 @@ class Motion {
       reverse: true,
     })
   }
+  '('(document: TextDocument, position: Position, count: number): Position {
+    return this[')'](document, position, count, true)
+  }
   ')'(
     document: TextDocument,
     position: Position,
     count: number,
     backward = false,
   ): Position {
-    throw new Error('Function not implemented.')
-  }
-  '('(document: TextDocument, position: Position, count: number): Position {
-    return this[')'](document, position, count, true)
-  }
-  '['(document: TextDocument, position: Position, count: number): Position {
-    throw new Error('Function not implemented.')
-  }
-  ']'(document: TextDocument, position: Position, count: number): Position {
-    throw new Error('Function not implemented.')
+    // regex index at multi start
+    if (
+      !backward &&
+      '!?=,.:;'.includes(document.lineAt(position).text[position.character])
+    ) {
+      count++
+    }
+    for (position of (backward ? preLookupRegExp : postLookupRegExp)(
+      document,
+      position,
+      /[!?=,.:;]+/g,
+      backward,
+    )) {
+      if (!--count) {
+        break
+      }
+    }
+    return position
   }
   '{'(document: TextDocument, position: Position, count: number): Position {
+    return this['}'](document, position, count, true)
+  }
+  '}'(
+    document: TextDocument,
+    position: Position,
+    count: number,
+    backward = false,
+  ): Position {
+    for (position of (backward ? preLookupRegExp : postLookupRegExp)(
+      document,
+      backward
+        ? document.lineAt(Math.max(0, position.line - 1)).range.end
+        : document.lineAt(Math.min(document.lineCount, position.line + 1)).range
+            .start,
+      /^\s*$/g,
+    )) {
+      if (!--count) {
+        break
+      }
+    }
+    return position
+  }
+  '[['(document: TextDocument, position: Position, count: number): Position {
     throw new Error('Function not implemented.')
   }
-  '}'(document: TextDocument, position: Position, count: number): Position {
-    throw new Error('Function not implemented.')
-  }
-  '`'(document: TextDocument, position: Position, count: number): Position {
-    throw new Error('Function not implemented.')
-  }
-  "'"(document: TextDocument, position: Position, count: number): Position {
+  ']]'(document: TextDocument, position: Position, count: number): Position {
     throw new Error('Function not implemented.')
   }
   w(
@@ -172,8 +186,8 @@ class Motion {
     for (position of (backward ? preLookupRegExp : postLookupRegExp)(
       document,
       position,
-      /\b\w/g,
-      !backward,
+      /(?<=\W)\w/g,
+      backward,
     )) {
       if (!--count) {
         break
@@ -190,8 +204,8 @@ class Motion {
     for (position of (backward ? preLookupRegExp : postLookupRegExp)(
       document,
       position,
-      /(?=\s)\S/g,
-      !backward,
+      /(?<=\s)\S/g,
+      backward,
     )) {
       if (!--count) {
         break
@@ -205,11 +219,15 @@ class Motion {
     count: number,
     backward = false,
   ): Position {
+    // hack solves string slice debuff
+    if (backward) {
+      count++
+    }
     for (position of (backward ? preLookupRegExp : postLookupRegExp)(
       document,
       position,
-      /(?=\w)\b/g,
-      !backward,
+      /(?<=\w)\b/g,
+      backward,
     )) {
       if (!--count) {
         break
@@ -223,11 +241,15 @@ class Motion {
     count: number,
     backward = false,
   ): Position {
+    // hack solves string slice debuff
+    if (backward) {
+      count++
+    }
     for (position of (backward ? preLookupRegExp : postLookupRegExp)(
       document,
       position,
-      /(?=\S)\s/g,
-      !backward,
+      /(?<=\S)(?:\s|$)/g,
+      backward,
     )) {
       if (!--count) {
         break
@@ -236,16 +258,16 @@ class Motion {
     return position
   }
   ge(document: TextDocument, position: Position, count: number): Position {
-    return this.e(document, position, count, false)
+    return this.e(document, position, count, true)
   }
   gE(document: TextDocument, position: Position, count: number): Position {
-    return this.E(document, position, count, false)
+    return this.E(document, position, count, true)
   }
   b(document: TextDocument, position: Position, count: number): Position {
-    return this.w(document, position, count, false)
+    return this.w(document, position, count, true)
   }
   B(document: TextDocument, position: Position, count: number): Position {
-    return this.W(document, position, count, false)
+    return this.W(document, position, count, true)
   }
   G(
     document: TextDocument,
@@ -324,16 +346,20 @@ class Motion {
     return position.with(undefined, Math.max(0, position.character - count))
   }
   j(document: TextDocument, position: Position, count: number): Position {
-    return position.with(
-      Math.min(document.lineCount - 1, position.line + count),
-    )
+    return document.validatePosition(position.with(position.line + count))
   }
   k(document: TextDocument, position: Position, count: number): Position {
-    return position.with(Math.max(0, position.line - count))
+    return document.validatePosition(
+      position.with(Math.max(0, position.line - count)),
+    )
   }
   l(document: TextDocument, position: Position, count: number): Position {
-    return document.validatePosition(
-      position.with(undefined, position.character + count),
+    return position.with(
+      undefined,
+      Math.min(
+        document.lineAt(position).range.end.character,
+        position.character + count,
+      ),
     )
   }
   H(document: TextDocument, position: Position, count: number): Position {
@@ -373,8 +399,8 @@ class Motion {
       : new Selection(position, position)
     editor.revealRange(editor.selection)
   }
+  getRange() {}
 }
-Motion.prototype['_' as 'n'] = Motion.prototype['^']
 
 export function* produceAction(): Generator<[string, ActionMeta]> {
   const motion = new Motion()
@@ -384,7 +410,7 @@ export function* produceAction(): Generator<[string, ActionMeta]> {
     switch (motion[key].length) {
       case 2:
       case 3:
-        meta = { kind: ActionHandlerKind.Invoke, handler }
+        meta = { kind: ActionHandlerKind.Immediate, handler }
         break
       case 4:
         meta = '/?'.includes(key)

@@ -1,13 +1,8 @@
-import {
-  commands,
-  StatusBarAlignment,
-  window,
-  type ExtensionContext,
-} from 'vscode'
+import { commands, type ExtensionContext } from 'vscode'
 import { ActionHandlerKind, actionTire } from './actionTire'
 import { ModeController } from './modeController'
 import { produceAction } from './motion'
-import { execFilePm, noop } from './util'
+import { statusBarItem } from './statusBarItem'
 import { logger } from './util/logger'
 
 const enum SequenceKind {
@@ -15,6 +10,7 @@ const enum SequenceKind {
   Command,
   Digit,
   ArgStr,
+  Invoke,
 }
 
 class ConsumerSequence {
@@ -39,22 +35,15 @@ export class Consumer {
   sequence = new ConsumerSequence()
   handler = this.handleSequence()
   modeController: ModeController
-  statusBarItem = window.createStatusBarItem(
-    'modeLine',
-    StatusBarAlignment.Left,
-    9,
-  )
   constructor(context: ExtensionContext) {
     this.modeController = new ModeController(context)
     this.handler.next()
-    this.statusBarItem.name = 'Vincode Mode Line'
-    this.statusBarItem.tooltip = 'enqueued keys'
     this.updateStatusBarItem()
     for (const args of produceAction()) {
       actionTire.add(...args)
     }
     actionTire.add('v', {
-      kind: ActionHandlerKind.Invoke,
+      kind: ActionHandlerKind.Immediate,
       handler: () => {
         this.inVisual = !this.inVisual
       },
@@ -88,35 +77,22 @@ export class Consumer {
         this.compositionSequence = ''
         return
       }),
+      commands.registerCommand('vincode.nextSequence', (key) =>
+        this.handler.next(key),
+      ),
     )
   }
   updateStatusBarItem() {
-    this.statusBarItem.text = `|-${this.modeController.mode.toUpperCase()}-|\t${this.sequence}`
-    this.statusBarItem.show()
+    statusBarItem.text = `|-${this.modeController.mode.toUpperCase()}-|\t${this.sequence}`
+    statusBarItem.show()
   }
   clear() {
     this.sequence = new ConsumerSequence()
     this.actionTireNode = actionTire
     this.updateStatusBarItem()
   }
-  tryInvoke() {
-    try {
-      const digit = this.sequence[SequenceKind.Digit]
-      this.actionTireNode.meta!.handler({
-        command: this.sequence[SequenceKind.Command],
-        count: digit.length ? +digit : undefined,
-        argStr: this.sequence[SequenceKind.ArgStr],
-        select: this.inVisual,
-      })
-    } catch {
-      logger.error('handler failed for ' + this.sequence)
-    } finally {
-      this.clear()
-    }
-  }
-  tryPushInvoke(key: string) {
-    let { kind } = this.sequence
-    switch (kind) {
+  nextSequence(key: string) {
+    switch (this.sequence.kind) {
       case SequenceKind.Init:
         switch (key) {
           case '1':
@@ -128,78 +104,90 @@ export class Consumer {
           case '7':
           case '8':
           case '9':
-            kind = SequenceKind.Digit
-            break
+            this.sequence.kind = SequenceKind.Digit
+            return true
           default:
-            kind = SequenceKind.Command
-            break
+            this.sequence.kind = SequenceKind.Command
+            return true
         }
-        break
       case SequenceKind.Digit:
         if (Number.isNaN(+key)) {
-          kind = SequenceKind.Command
+          this.sequence.kind = SequenceKind.Command
+          return true
         }
+        this.sequence[SequenceKind.Digit] += key
         break
-    }
-    let invoke
-    switch (kind) {
       case SequenceKind.Command: {
+        if (this.actionTireNode.meta) {
+          throw 'last sequence invoke or kind transform failed'
+        }
         const node = this.actionTireNode.children[key.charCodeAt(0)]
         if (!node) {
-          this.clear()
-          logger.error('unknown key: ' + key)
-          if (process.platform === 'linux') {
-            void execFilePm('/usr/bin/paplay', [
-              '/usr/share/sounds/gnome/default/alerts/string.ogg',
-            ]).catch(noop)
-          }
-          return
+          throw 'unknown key: ' + key
         }
         this.actionTireNode = node
+        this.sequence[SequenceKind.Command] += key
         switch (node.meta?.kind) {
-          case ActionHandlerKind.Invoke:
-            invoke = true
-            break
+          case ActionHandlerKind.Immediate:
+            this.sequence.kind = SequenceKind.Invoke
+            return true
           case ActionHandlerKind.Count:
-            this.sequence.kind = SequenceKind.ArgStr
-            break
           case ActionHandlerKind.Terminator:
             this.sequence.kind = SequenceKind.ArgStr
             break
         }
         break
       }
-      case SequenceKind.ArgStr: {
-        const meta = this.actionTireNode.meta!
-        switch (meta.kind) {
-          case ActionHandlerKind.Invoke:
-            this.clear()
-            logger.error('invoke sequence not cleared, is last invoke failed?')
-            return
+      case SequenceKind.ArgStr:
+        switch (this.actionTireNode.meta!.kind) {
+          case ActionHandlerKind.Immediate:
+            throw 'last immediate invoke not cleared'
           case ActionHandlerKind.Count:
-            invoke =
-              this.sequence[SequenceKind.ArgStr].length + 1 === meta.count
-            break
-          case ActionHandlerKind.Terminator:
-            invoke = key === meta.terminator
-            if (invoke) {
-              key = ''
+            if (
+              this.actionTireNode.meta!.count ===
+              (this.sequence[SequenceKind.ArgStr] += key).length
+            ) {
+              this.sequence.kind = SequenceKind.Invoke
+              return true
             }
             break
+          case ActionHandlerKind.Terminator:
+            if (this.actionTireNode.meta!.terminator === key) {
+              this.sequence.kind = SequenceKind.Invoke
+              return true
+            }
+            this.sequence[SequenceKind.ArgStr] += key
+            break
         }
         break
-      }
+      case SequenceKind.Invoke:
+        try {
+          const digit = this.sequence[SequenceKind.Digit]
+          this.actionTireNode.meta!.handler({
+            command: this.sequence[SequenceKind.Command],
+            count: digit.length ? +digit : undefined,
+            argStr: this.sequence[SequenceKind.ArgStr],
+            select: this.inVisual,
+          })
+          this.clear()
+        } catch (e) {
+          throw `handler failed for ${this.sequence}: ${e}`
+        }
+        break
     }
-    this.sequence[kind] += key
-    this.updateStatusBarItem()
-    if (invoke) {
-      this.tryInvoke()
-    }
-    return
+    return false
   }
   *handleSequence() {
+    let key: string
     while (true) {
-      this.tryPushInvoke(yield)
+      key = yield
+      try {
+        while (this.nextSequence(key)) {}
+        this.updateStatusBarItem()
+      } catch (e) {
+        this.clear()
+        logger.error(`nextSequence: ${e}`)
+      }
     }
   }
 }

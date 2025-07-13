@@ -12,6 +12,10 @@
   "contributes": {
     "commands": [
       {
+        "command": "vincode.runLocalFile",
+        "title": "Run Local File"
+      },
+      {
         "command": "vincode.toggleVimMode",
         "title": "Toggle Vim Mode",
         "category": "vim"
@@ -60,9 +64,7 @@
       },
       {
         "command": "vincode.toggleVimMode",
-        "args": [
-          false
-        ],
+        "args": false,
         "key": "i",
         "when": "editorTextFocus && vincode.vimMode == 'normal'"
       },
@@ -82,6 +84,23 @@
         "when": "editorTextFocus"
       },
       {
+        "command": "vincode.triggerSpacevim",
+        "key": "space",
+        "when": "editorTextFocus && vincode.vimMode == 'normal'"
+      },
+      {
+        "command": "vincode.nextSequence",
+        "args": "h",
+        "key": "backspace",
+        "when": "editorTextFocus && vincode.vimMode == 'normal'"
+      },
+      {
+        "command": "vincode.nextSequence",
+        "args": "l",
+        "key": "tab",
+        "when": "editorTextFocus && vincode.vimMode == 'normal'"
+      },
+      {
         "command": "vincode.repeatPrevLineChar",
         "key": "ctrl+y",
         "when": "editorTextFocus && !editorReadonly"
@@ -93,9 +112,7 @@
       },
       {
         "command": "vincode.toggleLessMode",
-        "args": [
-          false
-        ],
+        "args": false,
         "key": "q",
         "when": "vincode.less && editorTextFocus"
       },
@@ -188,23 +205,23 @@
   "packageManager": "pnpm@10.12.4",
   "description": "Bring benefits from Vim to VSCode.",
   "devDependencies": {
-    "@eslint/js": "^9.30.1",
+    "@eslint/js": "^9.31.0",
     "@types/mocha": "^10.0.10",
-    "@types/node": "~22.15.32",
-    "@types/vscode": "^1.101.0",
+    "@types/node": "~22.15.35",
+    "@types/vscode": "^1.102.0",
     "@vscode/test-cli": "^0.0.11",
     "@vscode/test-electron": "^2.5.2",
-    "esbuild": "^0.25.5",
-    "eslint": "^9.29.0",
+    "esbuild": "^0.25.6",
+    "eslint": "^9.31.0",
     "lint-staged": "^16.1.2",
-    "prettier": "^3.5.3",
+    "prettier": "^3.6.2",
     "simple-git-hooks": "^2.13.0",
     "typescript": "^5.8.3",
-    "typescript-eslint": "^8.34.1"
+    "typescript-eslint": "^8.36.0"
   },
   "displayName": "Morden Vim in VSCode",
   "engines": {
-    "vscode": "^1.101.0"
+    "vscode": "^1.102.0"
   },
   "license": "MIT",
   "lint-staged": {
@@ -228,7 +245,6 @@
     "pre-commit": "pnpx lint-staged"
   },
   "scripts": {
-    "simple-mode": "esbuild --bundle --external:vscode --format=esm --outfile=dist/extension.js --platform=node --target=node22 src/simple-mode/index.ts --sourcemap --watch",
     "watch": "pnpm _esbuild --sourcemap --watch",
     "lint": "eslint --cache --fix src",
     "test": "vscode-test",
@@ -237,9 +253,6 @@
     "build:test": "esbuild --format=cjs --outdir=out/test --platform=node --target=node22 src/test/**/*.ts",
     "_esbuild": "esbuild --define:__DEV__=true --bundle --external:vscode --format=esm --outfile=dist/extension.js --platform=node --target=node22 src/extension.ts"
   },
-  "version": "0.0.1",
-  "type": "module",
-  "dependencies": {
-    "rxjs": "^7.8.2"
-  }
+  "version": "0.0.2",
+  "type": "module"
 }
