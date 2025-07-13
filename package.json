@@ -153,7 +153,6 @@
             "go": "go run",
             "javascript": "node",
             "javascriptreact": "bun x tsx",
-            "powershell": "&",
             "python": "uv run python",
             "shellscript": "bash",
             "typescript": "bun x tsx",
@@ -238,31 +237,31 @@
       {
         "command": "mvext.invokeComplete",
         "args": "css",
-        "key": "ctrl+x ctrl+c",
+        "key": "ctrl+i ctrl+c",
         "when": "editorTextFocus"
       },
       {
         "command": "mvext.invokeComplete",
         "args": "dictionary",
-        "key": "ctrl+x ctrl+d",
+        "key": "ctrl+i ctrl+d",
         "when": "editorTextFocus"
       },
       {
         "command": "mvext.invokeComplete",
         "args": "line",
-        "key": "ctrl+x ctrl+l",
+        "key": "ctrl+i ctrl+l",
         "when": "editorTextFocus"
       },
       {
         "command": "mvext.invokeComplete",
         "args": "path",
-        "key": "ctrl+x ctrl+p",
+        "key": "ctrl+i ctrl+p",
         "when": "editorTextFocus"
       },
       {
         "command": "mvext.invokeComplete",
         "args": "user",
-        "key": "ctrl+x ctrl+u",
+        "key": "ctrl+i ctrl+u",
         "when": "editorTextFocus"
       }
     ],
