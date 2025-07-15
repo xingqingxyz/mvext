@@ -31,6 +31,22 @@ export const casesList = Object.freeze([
   'upper',
 ] as const)
 
+export const caseShortMap = Object.freeze({
+  camel: 'c',
+  constant: 'cc',
+  dot: '.',
+  header: 'h',
+  kebab: '-',
+  normal: ' ',
+  pascal: 'p',
+  path: '/',
+  sentence: 's',
+  snake: '_',
+  title: 't',
+  lower: 'l',
+  upper: 'u',
+} as Record<WordCase, string>)
+
 function capitalize(word: string) {
   const index = word.match(/[a-z]/)?.index
   return index !== undefined

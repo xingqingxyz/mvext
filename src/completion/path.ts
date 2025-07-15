@@ -11,11 +11,12 @@ import {
   type CancellationToken,
   type CompletionContext,
   type CompletionItemProvider,
+  type ExtensionContext,
   type Position,
   type TextDocument,
 } from 'vscode'
-import { getExtConfig } from './config'
-import { isWin32 } from './util'
+import { getExtConfig } from '../config'
+import { isWin32 } from '../util'
 
 export class PathCompleteProvider implements CompletionItemProvider {
   // reference to the Vim editor's 'isfname'
@@ -59,11 +60,13 @@ export class PathCompleteProvider implements CompletionItemProvider {
     }
     return path.normalize(suffix)
   }
-  constructor() {
-    languages.registerCompletionItemProvider(
-      { pattern: '**' },
-      this,
-      ...PathCompleteProvider.triggerCharacters.split(''),
+  constructor(context: ExtensionContext) {
+    context.subscriptions.push(
+      languages.registerCompletionItemProvider(
+        { scheme: 'file', pattern: '**' },
+        this,
+        ...PathCompleteProvider.triggerCharacters.split(''),
+      ),
     )
   }
   async provideCompletionItems(

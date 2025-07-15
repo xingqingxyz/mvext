@@ -1,6 +1,6 @@
-import { type Uri, window, workspace } from 'vscode'
+import { type ExtensionContext, type Uri, window, workspace } from 'vscode'
 import { getExtConfig } from './config'
-import { extContext, WStateKey } from './context'
+import { WStateKey } from './context'
 
 /**
  * Resolves python,(java|type)script(react)?,shellscript,powershell,csharp,
@@ -85,15 +85,15 @@ export async function terminalLaunch(
   terminal.sendText(`${config[languageId]} '${uri.fsPath}' ${argstr}`)
 }
 
-export async function terminalLaunchArgs(uri: Uri) {
+export async function terminalLaunchArgs(context: ExtensionContext, uri: Uri) {
   const argStr = await window.showInputBox({
     title: 'Launch with Arguments',
     ignoreFocusOut: true,
-    value: extContext.workspaceState.get(WStateKey.terminalLaunchLastArgs),
+    value: context.workspaceState.get(WStateKey.terminalLaunchLastArgs),
   })
   if (argStr === undefined) {
     return
   }
-  extContext.workspaceState.update(WStateKey.terminalLaunchLastArgs, argStr)
+  context.workspaceState.update(WStateKey.terminalLaunchLastArgs, argStr)
   return terminalLaunch(uri, undefined, argStr)
 }

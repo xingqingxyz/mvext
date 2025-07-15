@@ -8,10 +8,11 @@ import {
   type CancellationToken,
   type Disposable,
   type DocumentColorProvider,
+  type ExtensionContext,
   type ProviderResult,
   type TextDocument,
 } from 'vscode'
-import { extContext, WStateKey } from './context'
+import { WStateKey } from './context'
 
 function hexToColor(hex: string): Color {
   const step = hex.length > 5 ? 2 : 1
@@ -40,19 +41,21 @@ function colorToHex(color: Color): string {
 export class HexColorProvider implements DocumentColorProvider, Disposable {
   static readonly reColor = /#(?:[\da-f]{8}|[\da-f]{6}|[\da-f]{3,4})/gi
   static readonly providersMap = new Map<string, HexColorProvider>()
-  static init() {
-    extContext.subscriptions.push(
+  private static context: ExtensionContext
+  static init(context: ExtensionContext) {
+    this.context = context
+    context.subscriptions.push(
       commands.registerTextEditorCommand('mvext.hexColor.toggleLanguage', (e) =>
         this.toggleHexColorLanguage(e.document.languageId),
       ),
       this,
     )
-    extContext.workspaceState
+    context.workspaceState
       .get<string[]>(WStateKey.hexColorLanguages)
       ?.forEach((languageId) => this.toggleHexColorLanguage(languageId))
   }
   static dispose() {
-    extContext.workspaceState.update(
+    this.context.workspaceState.update(
       WStateKey.hexColorLanguages,
       Array.from(this.providersMap.keys()),
     )

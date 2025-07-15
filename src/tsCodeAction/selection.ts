@@ -1,4 +1,3 @@
-import { extContext } from '@/context'
 import {
   CodeAction,
   CodeActionTriggerKind,
@@ -9,6 +8,7 @@ import {
   type CodeActionContext,
   type CodeActionProvider,
   type Command,
+  type ExtensionContext,
   type ProviderResult,
   type Range,
   type Selection,
@@ -23,8 +23,8 @@ function swapVarHelper(text: string) {
 }
 
 export class SelectionCodeActionsProvider implements CodeActionProvider {
-  constructor() {
-    extContext.subscriptions.push(
+  constructor(context: ExtensionContext) {
+    context.subscriptions.push(
       languages.registerCodeActionsProvider(
         ['javascript', 'typescript', 'javascriptreact', 'typescriptreact'],
         this,
@@ -38,6 +38,7 @@ export class SelectionCodeActionsProvider implements CodeActionProvider {
     document: TextDocument,
     range: Selection | Range,
     context: CodeActionContext,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     token: CancellationToken,
   ): ProviderResult<(CodeAction | Command)[]> {
     if (context.triggerKind !== CodeActionTriggerKind.Invoke || range.isEmpty) {

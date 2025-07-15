@@ -10,6 +10,7 @@ import {
 } from 'vscode'
 import { getExtConfig } from './config'
 import {
+  caseShortMap,
   casesList,
   transformCaseHelper,
   type WordCase,
@@ -59,7 +60,8 @@ export async function transformCaseWithPicker() {
     casesList.map(
       (wc) =>
         ({
-          label: wc,
+          label: caseShortMap[wc],
+          detail: wc,
           description: transformCaseHelper(word, wc),
           picked: wc === defaultWc,
         }) satisfies QuickPickItem,
@@ -69,7 +71,7 @@ export async function transformCaseWithPicker() {
     },
   )
   if (item) {
-    await editor.edit((edit) => transformCase(editor, edit, item.label))
+    await editor.edit((edit) => transformCase(editor, edit, item.detail))
   }
 }
 
@@ -87,11 +89,20 @@ export async function renameWithCase(wc?: WordCase) {
       range: Range
       placeholder: string
     }>('vscode.prepareRename', document.uri, selection.start)
+    const preselect = getExtConfig('transformCase.defaultCase', document)
     const newName = wc
       ? transformCaseHelper(placeholder, wc)
-      : await showRenameWithCaseUI(
-          placeholder,
-          getExtConfig('transformCase.defaultCase', document),
+      : await window.showQuickPick(
+          casesList.map(
+            (wc) =>
+              ({
+                label: caseShortMap[wc],
+                detail: wc,
+                description: transformCaseHelper(placeholder, wc),
+                picked: preselect === wc,
+              }) satisfies QuickPickItem,
+          ),
+          { title: 'Rename with Case' },
         )
     const wspEdit = await commands.executeCommand<WorkspaceEdit>(
       'vscode.executeDocumentRenameProvider',
@@ -101,27 +112,4 @@ export async function renameWithCase(wc?: WordCase) {
     )
     await workspace.applyEdit(wspEdit)
   } catch {}
-}
-
-async function showRenameWithCaseUI(curWord: string, preselect?: WordCase) {
-  const item = await window.showQuickPick(
-    casesList.map(
-      (wc) =>
-        ({
-          label: wc,
-          description: transformCaseHelper(curWord, wc),
-          picked: preselect === wc,
-        }) satisfies QuickPickItem,
-    ),
-    { title: 'Rename with Case' },
-  )
-  return (
-    item &&
-    (await window.showInputBox({
-      title: 'Rename Symbol',
-      placeHolder: 'New name',
-      ignoreFocusOut: true,
-      value: item.description,
-    }))
-  )
 }

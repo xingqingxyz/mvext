@@ -14,12 +14,7 @@ import {
   type ProviderResult,
   type TextDocument,
 } from 'vscode'
-import {
-  Node,
-  type ParseCallback,
-  type Point,
-  type Tree,
-} from 'web-tree-sitter'
+import type { Node, ParseCallback, Point, Tree } from 'web-tree-sitter'
 
 export class CssCompleteProvider implements CompletionItemProvider {
   private readonly treeMap = new WeakMap<TextDocument, Tree | null>()

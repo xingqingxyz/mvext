@@ -6,6 +6,7 @@ import {
   type CancellationToken,
   type CodeLensProvider,
   type Event,
+  type ExtensionContext,
   type ProviderResult,
   type TextDocument,
 } from 'vscode'
@@ -13,8 +14,10 @@ import {
 export class MarkdownBlockRunProvider implements CodeLensProvider {
   static readonly reCodeBlockRange =
     /(?<=^\s*|\n\s*)```([^\n]*)\n(.*?)\n\s*```\s*(?:\n|$)/gs
-  constructor() {
-    languages.registerCodeLensProvider('markdown', this)
+  constructor(context: ExtensionContext) {
+    context.subscriptions.push(
+      languages.registerCodeLensProvider('markdown', this),
+    )
   }
   onDidChangeCodeLenses?: Event<void> | undefined
   provideCodeLenses(

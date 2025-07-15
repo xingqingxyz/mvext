@@ -81,11 +81,6 @@
     ],
     "configuration": {
       "properties": {
-        "mvext.invokeComplete.enabled": {
-          "default": true,
-          "markdownDescription": "Enable invoke completion",
-          "type": "boolean"
-        },
         "mvext.evalSelection.languages": {
           "additionalProperties": {
             "description": "Language Id : Eval Config",
@@ -263,6 +258,36 @@
         "args": "user",
         "key": "ctrl+i ctrl+u",
         "when": "editorTextFocus"
+      },
+      {
+        "command": "mvext.refreshComplete",
+        "args": "css",
+        "key": "alt+c",
+        "when": "editorTextFocus && suggestWidgetVisible"
+      },
+      {
+        "command": "mvext.refreshComplete",
+        "args": "dictionary",
+        "key": "alt+d",
+        "when": "editorTextFocus && suggestWidgetVisible"
+      },
+      {
+        "command": "mvext.refreshComplete",
+        "args": "line",
+        "key": "alt+l",
+        "when": "editorTextFocus && suggestWidgetVisible"
+      },
+      {
+        "command": "mvext.refreshComplete",
+        "args": "path",
+        "key": "alt+p",
+        "when": "editorTextFocus && suggestWidgetVisible"
+      },
+      {
+        "command": "mvext.refreshComplete",
+        "args": "user",
+        "key": "alt+u",
+        "when": "editorTextFocus && suggestWidgetVisible"
       }
     ],
     "menus": {
@@ -373,20 +398,20 @@
     "@rollup/plugin-typescript": "^12.1.4",
     "@swc-node/register": "^1.10.10",
     "@types/mocha": "^10.0.10",
-    "@types/node": "^22.16.3",
+    "@types/node": "^22.16.4",
     "@types/vscode": "^1.102.0",
     "@types/which": "^3.0.4",
     "eslint": "^9.31.0",
     "lint-staged": "^16.1.2",
     "mocha": "^11.7.1",
     "prettier": "^3.6.2",
-    "rollup": "^4.45.0",
+    "rollup": "^4.45.1",
     "simple-git-hooks": "^2.13.0",
     "strip-ansi": "^7.1.0",
     "tslib": "^2.8.1",
-    "typescript-eslint": "^8.36.0",
     "typescript": "^5.8.3",
-    "web-tree-sitter": "^0.25.6",
+    "typescript-eslint": "^8.37.0",
+    "web-tree-sitter": "^0.25.8",
     "which": "^5.0.0"
   },
   "displayName": "Eval Launch Completion",
@@ -422,5 +447,5 @@
     "pre-commit": "pnpx lint-staged"
   },
   "type": "module",
-  "version": "0.16.0"
+  "version": "0.16.1"
 }

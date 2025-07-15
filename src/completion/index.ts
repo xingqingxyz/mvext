@@ -1,5 +1,3 @@
-import { getExtConfig } from '@/config'
-import { PathCompleteProvider } from '@/pathComplete'
 import { isWin32 } from '@/util'
 import {
   type CancellationToken,
@@ -18,6 +16,7 @@ import {
 import { CssCompleteProvider } from './css'
 import { DictionaryCompleteProvider } from './dictionary'
 import { LineCompleteProvider } from './line'
+import { PathCompleteProvider } from './path'
 import { UserCompleteProvider } from './user'
 
 type InvokeCompleteKind =
@@ -29,26 +28,37 @@ type InvokeCompleteKind =
   | 'none'
 
 export class InvokeCompleteProvider implements CompletionItemProvider {
-  private kind: InvokeCompleteKind = 'none'
   private css: CompletionItemProvider
   private dictionary = new DictionaryCompleteProvider()
+  private kind: InvokeCompleteKind = 'none'
   private line = new LineCompleteProvider()
-  private path = new PathCompleteProvider()
+  private path: CompletionItemProvider
   private user = new UserCompleteProvider()
-  private enabled = getExtConfig('invokeComplete.enabled')
   constructor(context: ExtensionContext) {
     this.css = new CssCompleteProvider(context)
+    this.path = new PathCompleteProvider(context)
     context.subscriptions.push(
       commands.registerCommand(
         'mvext.invokeComplete',
         async (kind: InvokeCompleteKind) => {
           this.kind = kind
-          await commands.executeCommand('hideSuggestWidget')
           await commands.executeCommand('editor.action.triggerSuggest')
           this.kind = 'none'
         },
+        commands.registerCommand(
+          'mvext.refreshComplete',
+          async (kind: InvokeCompleteKind) => {
+            await commands.executeCommand('hideSuggestWidget')
+            this.kind = kind
+            await commands.executeCommand('editor.action.triggerSuggest')
+            this.kind = 'none'
+          },
+        ),
       ),
-      languages.registerCompletionItemProvider({ pattern: '**' }, this),
+      languages.registerCompletionItemProvider(
+        { scheme: 'file', pattern: '**' },
+        this,
+      ),
     )
   }
   provideCompletionItems(

@@ -1,5 +1,4 @@
 import { getExtConfig } from '@/config'
-import { extContext } from '@/context'
 import { tokenToSignal } from '@/util'
 import { execFile } from 'child_process'
 import {
@@ -9,13 +8,14 @@ import {
   TextEdit,
   type CancellationToken,
   type DocumentFormattingEditProvider,
+  type ExtensionContext,
   type FormattingOptions,
   type TextDocument,
 } from 'vscode'
 
 export class ShfmtFormatter implements DocumentFormattingEditProvider {
-  constructor() {
-    extContext.subscriptions.push(
+  constructor(context: ExtensionContext) {
+    context.subscriptions.push(
       languages.registerDocumentFormattingEditProvider('shellscript', this),
     )
   }

@@ -1,6 +1,7 @@
 import { type ExtensionContext, commands, env, workspace } from 'vscode'
+import { InvokeCompleteProvider } from './completion'
 import { getExtConfig } from './config'
-import { ContextKey, setExtContext } from './context'
+import { ContextKey } from './context'
 import {
   evalSelection,
   terminalEvalSelection,
@@ -9,7 +10,6 @@ import {
 import { ShfmtFormatter } from './formatter/shfmt'
 import { StyluaFormatter } from './formatter/stylua'
 import { HexColorProvider } from './hexColor'
-import { InvokeCompleteProvider } from './invokeComplete'
 import { MarkdownBlockRunProvider } from './markdownBlockRun'
 import { terminalLaunch, terminalLaunchArgs } from './terminalLaunch'
 import {
@@ -22,14 +22,13 @@ import { terminalRunCode } from './util/terminalRunCode'
 import { initTreeSitter, tsParser } from './util/tsParser'
 
 export async function activate(context: ExtensionContext) {
-  setExtContext(context)
   await initTreeSitter(context)
-  HexColorProvider.init()
+  HexColorProvider.init(context)
   new InvokeCompleteProvider(context)
-  new StyluaFormatter()
-  new ShfmtFormatter()
-  new MarkdownBlockRunProvider()
-  new SelectionCodeActionsProvider()
+  new StyluaFormatter(context)
+  new ShfmtFormatter(context)
+  new MarkdownBlockRunProvider(context)
+  new SelectionCodeActionsProvider(context)
   context.subscriptions.push(
     {
       dispose() {
@@ -40,7 +39,6 @@ export async function activate(context: ExtensionContext) {
     commands.registerCommand('mvext._copyCodeBlock', (text: string) =>
       env.clipboard.writeText(text),
     ),
-    commands.registerCommand('mvext.renameWithCase', renameWithCase),
     commands.registerTextEditorCommand(
       'mvext.transformCaseDefault',
       transformCaseDefault,
@@ -49,6 +47,7 @@ export async function activate(context: ExtensionContext) {
       'mvext.transformCaseWithPicker',
       transformCaseWithPicker,
     ),
+    commands.registerCommand('mvext.renameWithCase', renameWithCase),
     commands.registerCommand('mvext.evalSelection', evalSelection),
     commands.registerCommand(
       'mvext.terminalEvalSelection',
@@ -59,7 +58,9 @@ export async function activate(context: ExtensionContext) {
       terminalFilterSelection,
     ),
     commands.registerCommand('mvext.terminalLaunch', terminalLaunch),
-    commands.registerCommand('mvext.terminalLaunchArgs', terminalLaunchArgs),
+    commands.registerCommand('mvext.terminalLaunchArgs', (uri) =>
+      terminalLaunchArgs(context, uri),
+    ),
     workspace.onDidChangeConfiguration(
       (e) =>
         e.affectsConfiguration('mvext.terminalLaunch.languages') &&
