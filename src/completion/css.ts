@@ -1,8 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { positionToPoint, tsParser } from '@/util/tsParser'
+import { getParseCallback, positionToPoint, TSParser } from '@/util/tsParser'
 import {
   CompletionItemKind,
-  MarkdownString,
   Position,
   Range,
   workspace,
@@ -11,10 +10,9 @@ import {
   type CompletionItem,
   type CompletionItemProvider,
   type ExtensionContext,
-  type ProviderResult,
   type TextDocument,
 } from 'vscode'
-import type { Node, ParseCallback, Point, Tree } from 'web-tree-sitter'
+import type { Node, Tree } from 'web-tree-sitter'
 
 export class CssCompleteProvider implements CompletionItemProvider {
   private readonly treeMap = new WeakMap<TextDocument, Tree | null>()
@@ -27,6 +25,7 @@ export class CssCompleteProvider implements CompletionItemProvider {
     'javascriptreact',
     'typescriptreact',
   ])
+  private readonly parser = TSParser.parsers.css
   constructor(context: ExtensionContext) {
     context.subscriptions.push(
       workspace.onDidOpenTextDocument((document) => {
@@ -35,7 +34,7 @@ export class CssCompleteProvider implements CompletionItemProvider {
         }
         this.treeMap.set(
           document,
-          tsParser.parse(this.getParseCallback(document)),
+          this.parser.parse(getParseCallback(document)),
         )
       }),
       workspace.onDidChangeTextDocument((e) => {
@@ -44,7 +43,7 @@ export class CssCompleteProvider implements CompletionItemProvider {
         }
         const tree =
           this.treeMap.get(e.document) ??
-          tsParser.parse(this.getParseCallback(e.document))!
+          this.parser.parse(getParseCallback(e.document))!
         this.treeMap.set(e.document, tree)
         e.contentChanges.forEach((cc) => {
           const lines = (
@@ -67,14 +66,6 @@ export class CssCompleteProvider implements CompletionItemProvider {
       }),
     )
   }
-  getParseCallback(document: TextDocument): ParseCallback {
-    return (index: number | Range, position: Point) =>
-      position.row < document.lineCount
-        ? document
-            .getText(document.lineAt(position.row).rangeIncludingLineBreak)
-            .slice(position.column)
-        : undefined
-  }
   provideCompletionItems(
     document: TextDocument,
     position: Position,
@@ -89,8 +80,8 @@ export class CssCompleteProvider implements CompletionItemProvider {
       return
     }
     const needle = document.getText(range)
-    const tree = tsParser.parse(
-      this.getParseCallback(document),
+    const tree = this.parser.parse(
+      getParseCallback(document),
       this.treeMap.get(document),
     )
     if (!tree) {
@@ -114,27 +105,7 @@ export class CssCompleteProvider implements CompletionItemProvider {
           kind: CompletionItemKind.Keyword,
           sortText: '10',
           detail: `${document.fileName}:${node.startPosition.row}:${node.startPosition.column}`,
-          data: {
-            document,
-            startLine: node.startPosition.row,
-          },
         }) as CompletionItem,
     )
-  }
-  resolveCompletionItem(
-    item: CompletionItem & {
-      data: {
-        document: TextDocument
-        startLine: number
-      }
-    },
-    token: CancellationToken,
-  ): ProviderResult<CompletionItem> {
-    item.documentation = new MarkdownString(
-      '```css\n' +
-        item.data.document.lineAt(item.data.startLine).text +
-        '\n```',
-    )
-    return item
   }
 }

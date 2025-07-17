@@ -1,14 +1,12 @@
-import { setTimeout as setTimeoutPm } from 'timers/promises'
 import {
   commands,
-  extensions,
   ThemeIcon,
   window,
-  workspace,
   type Terminal,
   type TerminalOptions,
 } from 'vscode'
-import { isWin32 } from '.'
+import which from 'which'
+import { isWin32, setTimeoutPm } from '.'
 import { getExtConfig } from '../config'
 
 export type TerminalRunLanguageIds =
@@ -44,20 +42,39 @@ export function getTerminalRunLanguageId(
   }
 }
 
+async function getTerminalCommand(
+  languageId: TerminalRunLanguageIds,
+): Promise<Pick<TerminalOptions, 'shellPath' | 'shellArgs'>> {
+  let config = getExtConfig('terminalLaunch.languages')[languageId]
+  switch (languageId) {
+    case 'python':
+      config ??= 'uv run python'
+      break
+    case 'javascript':
+      config ??= 'node'
+      break
+    case 'typescript':
+      config ??= 'bun x tsx'
+      break
+    default:
+      throw 'not implemented'
+  }
+  const shellArgs = config.split(' ')
+  return {
+    shellPath: await which(shellArgs.shift()!),
+    shellArgs,
+  }
+}
+
 async function createShellIntegratedTerminal(profileName: string) {
-  await commands.executeCommand(
-    profileName === 'python'
-      ? 'python.startREPL'
-      : 'workbench.action.terminal.newWithProfile',
-    {
-      profileName,
-    },
-  )
+  await commands.executeCommand('workbench.action.terminal.newWithProfile', {
+    profileName,
+  })
   return new Promise<Terminal>((resolve, reject) => {
     const timeout = setTimeout(() => {
       event.dispose()
-      reject('create shell integrated terminal timeout')
-    }, 30000)
+      reject(`create shell integrated ${profileName} terminal timeout`)
+    }, 6000)
     const event = window.onDidChangeTerminalShellIntegration((e) => {
       if (e.terminal.name === profileName) {
         event.dispose()
@@ -66,35 +83,6 @@ async function createShellIntegratedTerminal(profileName: string) {
       }
     })
   })
-}
-
-function getTerminalCommand(
-  languageId: TerminalRunLanguageIds,
-): Pick<TerminalOptions, 'shellPath' | 'shellArgs'> {
-  const shellPath = isWin32 ? process.env.COMSPEC! : '/bin/sh'
-  let config = getExtConfig('terminalLaunch.languages')[languageId]
-  switch (languageId) {
-    case 'python':
-      config ??= 'uv run python'
-      return {
-        shellPath,
-        shellArgs: isWin32 ? '/D /C ' + config : ['-c', config],
-      }
-    case 'javascript':
-      config ??= 'node'
-      return {
-        shellPath,
-        shellArgs: isWin32 ? '/D /C ' + config : ['-c', config],
-      }
-    case 'typescript':
-      config ??= 'bun x tsx'
-      return {
-        shellPath,
-        shellArgs: isWin32 ? '/D /C ' + config : ['-c', config],
-      }
-    default:
-      throw 'not implemented'
-  }
 }
 
 async function createTerminal(languageId: TerminalRunLanguageIds) {
@@ -109,43 +97,39 @@ async function createTerminal(languageId: TerminalRunLanguageIds) {
           profileName: 'Command Prompt',
         },
       )
-      return window.activeTerminal!
+      return setTimeoutPm(90, window.activeTerminal!)
     case 'shellscript':
       return createShellIntegratedTerminal(isWin32 ? 'Git Bash' : 'bash')
     case 'powershell':
       return createShellIntegratedTerminal(isWin32 ? 'PowerShell' : 'pwsh')
-    case 'python': {
-      if (
-        extensions.getExtension('ms-python.python') &&
-        workspace
-          .getConfiguration('python')
-          .get<boolean>('terminal.shellIntegration.enabled')
-      ) {
-        return createShellIntegratedTerminal('python')
-      }
-      return window.createTerminal({
-        name: languageId,
-        iconPath: new ThemeIcon('python'),
-        isTransient: false,
-        ...getTerminalCommand('python'),
-      })
-    }
+    case 'python':
+      return setTimeoutPm(
+        300,
+        window.createTerminal({
+          name: languageId,
+          iconPath: new ThemeIcon('python'),
+          isTransient: false,
+          ...(await getTerminalCommand(languageId)),
+        }),
+      )
     case 'javascript':
-      return window.createTerminal({
-        name: languageId,
-        iconPath: new ThemeIcon('console'),
-        isTransient: false,
-        ...getTerminalCommand('javascript'),
-      })
-    case 'typescript': {
-      const terminal = window.createTerminal({
-        name: languageId,
-        iconPath: new ThemeIcon('console'),
-        isTransient: false,
-        ...getTerminalCommand('typescript'),
-      })
-      return setTimeoutPm(1000, terminal)
-    }
+      return setTimeoutPm(
+        300,
+        window.createTerminal({
+          name: languageId,
+          isTransient: false,
+          ...(await getTerminalCommand(languageId)),
+        }),
+      )
+    case 'typescript':
+      return setTimeoutPm(
+        780,
+        window.createTerminal({
+          name: languageId,
+          isTransient: false,
+          ...(await getTerminalCommand(languageId)),
+        }),
+      )
   }
 }
 

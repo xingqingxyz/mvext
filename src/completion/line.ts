@@ -1,7 +1,7 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import {
   CompletionItemKind,
   Range,
+  window,
   workspace,
   type CancellationToken,
   type CompletionContext,
@@ -12,14 +12,14 @@ import {
 } from 'vscode'
 
 export class LineCompleteProvider implements CompletionItemProvider {
-  *filterActiveDocumentsLines(
+  *filterDocumentLines(
     document: TextDocument,
-    position: Position,
     needle: string,
+    token: CancellationToken,
   ) {
     for (const textDocument of workspace.textDocuments) {
-      if (textDocument === document) {
-        continue
+      if (token.isCancellationRequested) {
+        return
       }
       for (const line of textDocument
         .getText()
@@ -34,20 +34,19 @@ export class LineCompleteProvider implements CompletionItemProvider {
     document: TextDocument,
     position: Position,
     token: CancellationToken,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     context: CompletionContext,
   ) {
+    const { selection } = window.activeTextEditor!
+    const range = selection.isEmpty
+      ? (document.getWordRangeAtPosition(position) ??
+        new Range(
+          position.with(undefined, Math.max(0, position.character - 3)),
+          position,
+        ))
+      : selection
     return Array.from(
-      this.filterActiveDocumentsLines(
-        document,
-        position,
-        document.getText(
-          document.getWordRangeAtPosition(position) ??
-            new Range(
-              position.with(undefined, Math.max(0, position.character - 3)),
-              position,
-            ),
-        ),
-      ),
+      this.filterDocumentLines(document, document.getText(range), token),
       (text) =>
         ({
           label: text,

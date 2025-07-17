@@ -3,7 +3,7 @@ import path from 'path'
 import stripAnsi from 'strip-ansi'
 import { window, type Range } from 'vscode'
 import { getExtConfig } from './config'
-import { execFilePm } from './util'
+import { execFilePm, setTimeoutPm } from './util'
 import {
   getTerminalRunLanguageId,
   terminalRunCode,
@@ -20,6 +20,17 @@ import {
  *
  * OSC 633 ; E ; <commandline> [; <nonce] ST - Explicitly set the command line with an optional nonce.
  */
+function trimCommandOutput(text: string) {
+  // first two lines are OSC 633 E record, last line is new prompt
+  text = text.slice(
+    text.indexOf('\x1b]633;C\x07') + 8,
+    text.indexOf('\x1b]633;D'),
+  )
+  if (text.includes('\x1b[')) {
+    text = stripAnsi(text)
+  }
+  return text.trimEnd()
+}
 
 export async function evalSelection() {
   const editor = window.activeTextEditor
@@ -33,7 +44,8 @@ export async function evalSelection() {
   if (!Object.hasOwn(config, languageId)) {
     languageId = getTerminalRunLanguageId(languageId)
     if (!Object.hasOwn(config, languageId)) {
-      return window.showWarningMessage('no eval config found for ' + languageId)
+      await window.showWarningMessage('no eval config found for ' + languageId)
+      return
     }
   }
   const [cmd, ...args] = config[languageId].split(' ')
@@ -52,14 +64,17 @@ export async function evalSelection() {
           args.concat(document.getText(range)),
           options,
         ).then(
-          (r) => ({ text: r.stdout, range }),
+          (r) => ({
+            text: r.stdout.includes('\x1b[') ? stripAnsi(r.stdout) : r.stdout,
+            range,
+          }),
           (e: unknown) => ({ text: String(e), range }),
         )
       }
     })(),
   )
 
-  return editor.edit((edit) => {
+  await editor.edit((edit) => {
     // ignore empty results, modify it directly
     for (const { text, range } of results) {
       edit.replace(range, text)
@@ -74,6 +89,7 @@ export async function terminalEvalSelection() {
   }
 
   const { document } = editor
+  const languageId = getTerminalRunLanguageId(document.languageId)
   const selectMap = new Map<Range, string>()
 
   for (let range of editor.selections as readonly Range[]) {
@@ -85,29 +101,14 @@ export async function terminalEvalSelection() {
     } else {
       text = document.getText(range)
     }
-
-    text =
-      (await terminalRunCode(
-        text,
-        getTerminalRunLanguageId(document.languageId),
-      )) ?? ''
-    if (!text.length) {
-      continue
+    text = (await terminalRunCode(text, languageId)) ?? ''
+    if (text.length) {
+      selectMap.set(range, trimCommandOutput(text))
     }
-
-    // first two lines are OSC 633 E record, last line is new prompt
-    text = text
-      .slice(text.indexOf('\x1b]633;C\x07') + 8, text.indexOf('\x1b]633;D'))
-      .trimEnd()
-    if (text.includes('\x1b[')) {
-      text = stripAnsi(text)
-    }
-    selectMap.set(range, text)
   }
 
   if (!selectMap.size) {
-    await window.showInformationMessage('no shell integration found')
-    return
+    return // no shell integration e.g. nodejs
   }
   await editor.edit((edit) => {
     for (const [selectionRange, result] of selectMap) {
@@ -121,18 +122,14 @@ export async function terminalEvalSelection() {
  */
 export async function terminalFilterSelection() {
   const editor = window.activeTextEditor
-  const terminal = window.activeTerminal ?? window.createTerminal()
-  if (
-    !(
-      editor &&
-      terminal.shellIntegration &&
-      ['pwsh', 'bash', 'gitbash', 'zsh', 'wsl'].includes(
-        terminal.state.shell ?? '',
-      )
-    )
-  ) {
+  if (!editor) {
     return
   }
+  const terminal =
+    window.terminals
+      .concat(window.activeTerminal ?? [])
+      .findLast((t) => t.shellIntegration) ??
+    (await setTimeoutPm(300, window.createTerminal()))
 
   const { document, selections } = editor
   const lines = []
@@ -152,7 +149,7 @@ export async function terminalFilterSelection() {
       : `(cat << 'EOF'\n${lines.join('\n')}\nEOF\n) | `,
     false,
   )
-  let text = await new Promise<string>((resolve) => {
+  const text = await new Promise<string>((resolve) => {
     const event = window.onDidStartTerminalShellExecution((e) => {
       if (e.shellIntegration !== terminal.shellIntegration) {
         return
@@ -165,21 +162,15 @@ export async function terminalFilterSelection() {
             text += data
           }
           return text
-        })(),
+        })().then(trimCommandOutput),
       )
     })
   })
-
-  text = text
-    .slice(text.indexOf('\x1b]633;C\x07') + 8, text.indexOf('\x1b]633;D'))
-    .trimEnd()
-  if (text.includes('\x1b[')) {
-    text = stripAnsi(text)
-  }
   if (!text.length) {
     return
   }
-  return editor.edit((edit) =>
+
+  await editor.edit((edit) =>
     edit.replace(
       selections[0].isEmpty
         ? document.lineAt(selections[0].start).range

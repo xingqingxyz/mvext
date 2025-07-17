@@ -75,8 +75,20 @@
       {
         "category": "mvext",
         "command": "mvext.invokeComplete",
-        "shortTitle": "Invoke Complete",
-        "title": "Invoke Complete (CSS, Dictionary or Line)"
+        "shortTitle": "Invoke Special Complete",
+        "title": "Invoke Complete (css,dict,line,path,user)"
+      },
+      {
+        "category": "mvext",
+        "command": "mvext.refreshComplete",
+        "shortTitle": "Refresh Complete to Special Complete",
+        "title": "Refresh Complete (css,dict,line,path,user)"
+      },
+      {
+        "category": "mvext",
+        "command": "mvext.refreshRunList",
+        "icon": "$(refresh)",
+        "title": "Refresh Run List"
       }
     ],
     "configuration": {
@@ -107,9 +119,8 @@
           "additionalProperties": {
             "type": "string"
           },
-          "default": {},
-          "examples": {
-            "@": "${workspaceFolder}/src"
+          "default": {
+            "@/": "${workspaceFolder}/src/"
           },
           "markdownDescription": "Path mappings for path completion:\n- `${workspaceFolder}` means workspace folder\n- `~` means `os.homedir()`\n- use $VAR to substitute to environment variables",
           "scope": "resource",
@@ -191,9 +202,14 @@
           "type": "string"
         }
       },
-      "title": "mvext"
+      "title": "Eval Launch Completion"
     },
     "keybindings": [
+      {
+        "command": "mvext.refreshRunList",
+        "key": "ctrl+alt+r",
+        "when": "editorTextFocus && editorLangId == css"
+      },
       {
         "command": "mvext.transformCaseDefault",
         "key": "alt+x d",
@@ -227,36 +243,36 @@
       {
         "command": "workbench.action.terminal.runSelectedText",
         "key": "f8",
-        "when": "editorTextFocus && editorLangId != 'powershell'"
+        "when": "editorTextFocus && editorLangId != powershell"
       },
       {
         "command": "mvext.invokeComplete",
         "args": "css",
-        "key": "ctrl+i ctrl+c",
+        "key": "alt+c ctrl+space",
         "when": "editorTextFocus"
       },
       {
         "command": "mvext.invokeComplete",
-        "args": "dictionary",
-        "key": "ctrl+i ctrl+d",
+        "args": "dict",
+        "key": "alt+d ctrl+space",
         "when": "editorTextFocus"
       },
       {
         "command": "mvext.invokeComplete",
         "args": "line",
-        "key": "ctrl+i ctrl+l",
+        "key": "alt+l ctrl+space",
         "when": "editorTextFocus"
       },
       {
         "command": "mvext.invokeComplete",
         "args": "path",
-        "key": "ctrl+i ctrl+p",
+        "key": "alt+p ctrl+space",
         "when": "editorTextFocus"
       },
       {
         "command": "mvext.invokeComplete",
         "args": "user",
-        "key": "ctrl+i ctrl+u",
+        "key": "alt+u ctrl+space",
         "when": "editorTextFocus"
       },
       {
@@ -267,7 +283,7 @@
       },
       {
         "command": "mvext.refreshComplete",
-        "args": "dictionary",
+        "args": "dict",
         "key": "alt+d",
         "when": "editorTextFocus && suggestWidgetVisible"
       },
@@ -306,6 +322,13 @@
         {
           "command": "mvext.terminalLaunchArgs",
           "when": "!listMultiSelection && resourceLangId in mvext.terminalLaunch.languages"
+        }
+      ],
+      "view/title": [
+        {
+          "command": "mvext.refreshRunList",
+          "group": "navigation",
+          "when": "view == mvext.runList"
         }
       ]
     },
@@ -383,6 +406,7 @@
         {
           "icon": "$(run)",
           "id": "mvext.runList",
+          "contextualTitle": "Run List",
           "name": "Run List"
         }
       ]
@@ -425,7 +449,7 @@
   },
   "main": "./out/extension.js",
   "name": "mvext",
-  "packageManager": "pnpm@10.13.0",
+  "packageManager": "pnpm@10.13.1",
   "prettier": {
     "semi": false,
     "singleQuote": true
@@ -447,5 +471,5 @@
     "pre-commit": "pnpx lint-staged"
   },
   "type": "module",
-  "version": "0.16.1"
+  "version": "0.16.2"
 }

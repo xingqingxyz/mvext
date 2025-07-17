@@ -14,28 +14,23 @@ import {
   type TextDocument,
 } from 'vscode'
 import { CssCompleteProvider } from './css'
-import { DictionaryCompleteProvider } from './dictionary'
+import { DictCompleteProvider } from './dict'
 import { LineCompleteProvider } from './line'
 import { PathCompleteProvider } from './path'
 import { UserCompleteProvider } from './user'
 
-type InvokeCompleteKind =
-  | 'css'
-  | 'dictionary'
-  | 'line'
-  | 'path'
-  | 'user'
-  | 'none'
+type InvokeCompleteKind = 'css' | 'dict' | 'line' | 'path' | 'user' | 'none'
 
 export class InvokeCompleteProvider implements CompletionItemProvider {
   private css: CompletionItemProvider
-  private dictionary = new DictionaryCompleteProvider()
+  private dict: CompletionItemProvider
   private kind: InvokeCompleteKind = 'none'
   private line = new LineCompleteProvider()
   private path: CompletionItemProvider
   private user = new UserCompleteProvider()
   constructor(context: ExtensionContext) {
     this.css = new CssCompleteProvider(context)
+    this.dict = new DictCompleteProvider(context)
     this.path = new PathCompleteProvider(context)
     context.subscriptions.push(
       commands.registerCommand(

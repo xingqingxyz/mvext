@@ -9,6 +9,7 @@ import {
   type WorkspaceEdit,
 } from 'vscode'
 import { getExtConfig } from './config'
+import { noop } from './util'
 import {
   caseShortMap,
   casesList,
@@ -55,15 +56,12 @@ export async function transformCaseWithPicker() {
     return
   }
   const word = document.getText(range)
-  const defaultWc = getExtConfig('transformCase.defaultCase', document)
   const item = await window.showQuickPick(
     casesList.map(
       (wc) =>
         ({
           label: caseShortMap[wc],
-          detail: wc,
           description: transformCaseHelper(word, wc),
-          picked: wc === defaultWc,
         }) satisfies QuickPickItem,
     ),
     {
@@ -71,7 +69,15 @@ export async function transformCaseWithPicker() {
     },
   )
   if (item) {
-    await editor.edit((edit) => transformCase(editor, edit, item.detail))
+    await editor.edit((edit) =>
+      transformCase(
+        editor,
+        edit,
+        Object.entries(caseShortMap).find(
+          (e) => e[1] === item.label,
+        )![0] as WordCase,
+      ),
+    )
   }
 }
 
@@ -84,32 +90,37 @@ export async function renameWithCase(wc?: WordCase) {
     return
   }
   const { document, selection } = editor
-  try {
-    const { placeholder, range } = await commands.executeCommand<{
-      range: Range
-      placeholder: string
-    }>('vscode.prepareRename', document.uri, selection.start)
-    const preselect = getExtConfig('transformCase.defaultCase', document)
-    const newName = wc
-      ? transformCaseHelper(placeholder, wc)
-      : await window.showQuickPick(
+  const result = await commands
+    .executeCommand<
+      | {
+          range: Range
+          placeholder: string
+        }
+      | undefined
+    >('vscode.prepareRename', document.uri, selection.active)
+    .then(undefined, noop)
+  if (!result) {
+    return
+  }
+  const newName = wc
+    ? transformCaseHelper(result.placeholder, wc)
+    : ((
+        await window.showQuickPick(
           casesList.map(
             (wc) =>
               ({
                 label: caseShortMap[wc],
-                detail: wc,
-                description: transformCaseHelper(placeholder, wc),
-                picked: preselect === wc,
+                description: transformCaseHelper(result.placeholder, wc),
               }) satisfies QuickPickItem,
           ),
           { title: 'Rename with Case' },
         )
-    const wspEdit = await commands.executeCommand<WorkspaceEdit>(
-      'vscode.executeDocumentRenameProvider',
-      document.uri,
-      range.start,
-      newName,
-    )
-    await workspace.applyEdit(wspEdit)
-  } catch {}
+      )?.description ?? result.placeholder)
+  const wspEdit = await commands.executeCommand<WorkspaceEdit>(
+    'vscode.executeDocumentRenameProvider',
+    document.uri,
+    result.range.start,
+    newName,
+  )
+  await workspace.applyEdit(wspEdit)
 }

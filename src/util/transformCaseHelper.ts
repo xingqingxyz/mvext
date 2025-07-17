@@ -33,7 +33,7 @@ export const casesList = Object.freeze([
 
 export const caseShortMap = Object.freeze({
   camel: 'c',
-  constant: 'cc',
+  constant: '0',
   dot: '.',
   header: 'h',
   kebab: '-',

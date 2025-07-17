@@ -43,6 +43,7 @@ export class UserCompleteProvider implements CompletionItemProvider {
           ({
             label: word,
             sortText: '10',
+            detail: wordsFile,
             kind: CompletionItemKind.Keyword,
           }) as CompletionItem,
       )

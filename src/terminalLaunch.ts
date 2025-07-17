@@ -1,4 +1,10 @@
-import { type ExtensionContext, type Uri, window, workspace } from 'vscode'
+import {
+  type ExtensionContext,
+  type Terminal,
+  type Uri,
+  window,
+  workspace,
+} from 'vscode'
 import { getExtConfig } from './config'
 import { WStateKey } from './context'
 
@@ -46,28 +52,36 @@ function getLangIdByExt(ext: string) {
   }
 }
 
-function getTerminal() {
-  return (
-    window.terminals
-      .concat(window.activeTerminal ? window.activeTerminal : [])
-      .findLast((t) => !t.state.isInteractedWith && t.shellIntegration) ??
-    window.createTerminal()
-  )
-}
-
 export async function terminalLaunch(
   uri: Uri,
   arg2: Uri[] | undefined | object,
   argstr = '',
 ) {
   if (uri.scheme !== 'file') {
-    window.showWarningMessage('Please save or download the file first.')
+    await window.showWarningMessage('Please save or download the file first.')
     return
   }
   if (!(await workspace.saveAll())) {
     return
   }
-  const terminal = getTerminal()
+  const terminal =
+    window.terminals
+      .concat(window.activeTerminal ?? [])
+      .findLast((t) => t.shellIntegration) ??
+    (await new Promise<Terminal>((resolve, reject) => {
+      const terminal = window.createTerminal()
+      const timeout = setTimeout(() => {
+        event.dispose()
+        reject('create terminal timeout')
+      }, 6000)
+      const event = window.onDidChangeTerminalState((t) => {
+        if (t === terminal && t.state.isInteractedWith) {
+          event.dispose()
+          clearTimeout(timeout)
+          resolve(t)
+        }
+      })
+    }))
   terminal.show()
   let languageId
   languageId = Array.isArray(arg2)

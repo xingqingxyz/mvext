@@ -1,6 +1,7 @@
 import { execFile } from 'child_process'
 import { promisify } from 'util'
 import type { CancellationToken } from 'vscode'
+export { setTimeout as setTimeoutPm } from 'timers/promises'
 
 export const isWin32 = process.platform === 'win32'
 export const execFilePm = promisify(execFile)

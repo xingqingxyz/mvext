@@ -11,6 +11,7 @@ import { ShfmtFormatter } from './formatter/shfmt'
 import { StyluaFormatter } from './formatter/stylua'
 import { HexColorProvider } from './hexColor'
 import { MarkdownBlockRunProvider } from './markdownBlockRun'
+import { registerRunList } from './runList'
 import { terminalLaunch, terminalLaunchArgs } from './terminalLaunch'
 import {
   renameWithCase,
@@ -19,10 +20,12 @@ import {
 } from './transformCase'
 import { SelectionCodeActionsProvider } from './tsCodeAction/selection'
 import { terminalRunCode } from './util/terminalRunCode'
-import { initTreeSitter, tsParser } from './util/tsParser'
+import { TSParser } from './util/tsParser'
 
 export async function activate(context: ExtensionContext) {
-  await initTreeSitter(context)
+  await TSParser.init(context)
+  await TSParser.createParser('css')
+  registerRunList(context)
   HexColorProvider.init(context)
   new InvokeCompleteProvider(context)
   new StyluaFormatter(context)
@@ -30,11 +33,6 @@ export async function activate(context: ExtensionContext) {
   new MarkdownBlockRunProvider(context)
   new SelectionCodeActionsProvider(context)
   context.subscriptions.push(
-    {
-      dispose() {
-        tsParser.delete()
-      },
-    },
     commands.registerCommand('mvext.terminalRunCode', terminalRunCode),
     commands.registerCommand('mvext._copyCodeBlock', (text: string) =>
       env.clipboard.writeText(text),
