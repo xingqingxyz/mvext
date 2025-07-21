@@ -148,16 +148,6 @@ export function pairLookup(
 }
 
 type BracketChar = '(' | ')' | '[' | ']' | '{' | '}' | '<' | '>'
-const bracketsMap = Object.freeze({
-  '(': ')',
-  '[': ']',
-  '{': '}',
-  '<': '>',
-  ')': '(',
-  ']': '[',
-  '}': '{',
-  '>': '<',
-} as Record<BracketChar, BracketChar>)
 
 function preBracketPairLookup(
   document: TextDocument,
@@ -222,11 +212,17 @@ export function bracketPairLookup(document: TextDocument, position: Position) {
   const char = document.getText(
     new Range(position, position.with(undefined, position.character + 1)),
   ) as BracketChar
-  if (!Object.hasOwn(bracketsMap, char)) {
-    throw 'bracket char not found'
+  let index
+  if ((index = '([{<'.indexOf(char)) !== -1) {
+    return postBracketPairLookup(document, position, [
+      char,
+      ')]}>'[index] as BracketChar,
+    ])
+  } else if ((index = ')]}>'.indexOf(char)) !== -1) {
+    return preBracketPairLookup(document, position, [
+      '([{<'[index] as BracketChar,
+      char,
+    ])
   }
-  if ('([{<'.includes(char)) {
-    return postBracketPairLookup(document, position, [char, bracketsMap[char]])
-  }
-  return preBracketPairLookup(document, position, [bracketsMap[char], char])
+  throw 'unknown bracket char ' + char
 }

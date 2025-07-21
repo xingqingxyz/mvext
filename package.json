@@ -6,34 +6,24 @@
   "bugs": {
     "url": "https://github.com/xingqingxyz/vincode/issues"
   },
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": true
+    },
+    "virtualWorkspaces": true
+  },
   "categories": [
     "Keymaps"
   ],
   "contributes": {
     "commands": [
       {
-        "command": "vincode.runLocalFile",
-        "title": "Run Local File"
-      },
-      {
         "command": "vincode.toggleVimMode",
-        "title": "Toggle Vim Mode",
-        "category": "vim"
+        "title": "Toggle Vim Mode"
       },
       {
         "command": "vincode.toggleLessMode",
-        "title": "Toggle Less Mode",
-        "category": "vim"
-      },
-      {
-        "command": "vincode.triggerLeader",
-        "title": "Trigger Leader Key",
-        "category": "vim"
-      },
-      {
-        "command": "vincode.triggerSpacevim",
-        "title": "Trigger Spacevim Key",
-        "category": "vim"
+        "title": "Toggle Less Mode"
       },
       {
         "command": "vincode.repeatPrevLineChar",
@@ -54,6 +44,14 @@
       {
         "command": "vincode.manKeyword",
         "title": "Man Keyword"
+      },
+      {
+        "command": "vincode.leapToWordStart",
+        "title": "Leap to Word Start"
+      },
+      {
+        "command": "vincode.cancelLeap",
+        "title": "Cancel Leap"
       }
     ],
     "keybindings": [
@@ -63,42 +61,21 @@
         "when": "editorTextFocus"
       },
       {
-        "command": "vincode.toggleVimMode",
-        "args": false,
-        "key": "i",
-        "when": "editorTextFocus && vincode.vimMode == 'normal'"
-      },
-      {
         "command": "vincode.toggleLessMode",
         "key": "ctrl+alt+space",
         "when": "editorTextFocus"
       },
       {
-        "command": "vincode.triggerLeader",
-        "key": "alt+space",
-        "when": "editorTextFocus"
-      },
-      {
-        "command": "vincode.triggerSpacevim",
-        "key": "alt+shift+space",
-        "when": "editorTextFocus"
-      },
-      {
-        "command": "vincode.triggerSpacevim",
-        "key": "space",
-        "when": "editorTextFocus && vincode.vimMode == 'normal'"
-      },
-      {
-        "command": "vincode.nextSequence",
         "args": "h",
+        "command": "vincode.nextSequence",
         "key": "backspace",
-        "when": "editorTextFocus && vincode.vimMode == 'normal'"
+        "when": "editorTextFocus && vincode.mode != insert"
       },
       {
-        "command": "vincode.nextSequence",
         "args": "l",
+        "command": "vincode.nextSequence",
         "key": "tab",
-        "when": "editorTextFocus && vincode.vimMode == 'normal'"
+        "when": "editorTextFocus && vincode.mode != insert"
       },
       {
         "command": "vincode.repeatPrevLineChar",
@@ -111,98 +88,98 @@
         "when": "editorTextFocus && !editorReadonly"
       },
       {
-        "command": "vincode.toggleLessMode",
         "args": false,
+        "command": "vincode.toggleLessMode",
         "key": "q",
-        "when": "vincode.less && editorTextFocus"
+        "when": "editorTextFocus && vincode.mode == less"
       },
       {
         "command": "scrollPageDown",
         "key": "f",
-        "when": "vincode.less && editorTextFocus"
+        "when": "editorTextFocus && vincode.mode == less"
       },
       {
         "command": "scrollPageDown",
         "key": "space",
-        "when": "vincode.less && editorTextFocus"
+        "when": "editorTextFocus && vincode.mode == less"
       },
       {
         "command": "scrollPageUp",
         "key": "b",
-        "when": "vincode.less && editorTextFocus"
+        "when": "editorTextFocus && vincode.mode == less"
       },
       {
         "command": "scrollPageUp",
         "key": "shift+space",
-        "when": "vincode.less && editorTextFocus"
+        "when": "editorTextFocus && vincode.mode == less"
       },
       {
         "command": "vincode.cursorHalfPageDown",
         "key": "d",
-        "when": "vincode.less && editorTextFocus"
+        "when": "editorTextFocus && vincode.mode == less"
       },
       {
         "command": "vincode.cursorHalfPageUp",
         "key": "u",
-        "when": "vincode.less && editorTextFocus"
+        "when": "editorTextFocus && vincode.mode == less"
       },
       {
         "command": "scrollLineDown",
         "key": "e",
-        "when": "vincode.less && editorTextFocus"
+        "when": "editorTextFocus && vincode.mode == less"
       },
       {
         "command": "scrollLineUp",
         "key": "y",
-        "when": "vincode.less && editorTextFocus"
+        "when": "editorTextFocus && vincode.mode == less"
       },
       {
         "command": "cursorDown",
         "key": "j",
-        "when": "vincode.less && editorTextFocus"
+        "when": "editorTextFocus && vincode.mode == less"
       },
       {
         "command": "cursorUp",
         "key": "k",
-        "when": "vincode.less && editorTextFocus"
+        "when": "editorTextFocus && vincode.mode == less"
       },
       {
         "command": "cursorLeft",
         "key": "h",
-        "when": "vincode.less && editorTextFocus"
+        "when": "editorTextFocus && vincode.mode == less"
       },
       {
         "command": "cursorRight",
         "key": "l",
-        "when": "vincode.less && editorTextFocus"
+        "when": "editorTextFocus && vincode.mode == less"
       },
       {
         "command": "cursorTop",
         "key": "g",
-        "when": "vincode.less && editorTextFocus"
+        "when": "editorTextFocus && vincode.mode == less"
       },
       {
         "command": "cursorBottom",
         "key": "shift+g",
-        "when": "vincode.less && editorTextFocus"
+        "when": "editorTextFocus && vincode.mode == less"
       },
       {
         "command": "vincode.manKeyword",
         "key": "shift+k",
-        "when": "vincode.less && editorTextFocus"
+        "when": "editorTextFocus && vincode.mode == less"
+      },
+      {
+        "command": "vincode.leapToWordStart",
+        "key": "alt+space",
+        "when": "editorTextFocus && vincode.mode != leap"
+      },
+      {
+        "command": "vincode.cancelLeap",
+        "key": "escape",
+        "when": "editorTextFocus && vincode.mode == leap"
       }
     ]
   },
-  "capabilities": {
-    "untrustedWorkspaces": {
-      "supported": true
-    },
-    "virtualWorkspaces": true
-  },
-  "extensionKind": [
-    "ui"
-  ],
-  "packageManager": "pnpm@10.12.4",
   "description": "Bring benefits from Vim to VSCode.",
   "devDependencies": {
     "@eslint/js": "^9.31.0",
@@ -211,18 +188,21 @@
     "@types/vscode": "^1.102.0",
     "@vscode/test-cli": "^0.0.11",
     "@vscode/test-electron": "^2.5.2",
-    "esbuild": "^0.25.6",
+    "esbuild": "^0.25.8",
     "eslint": "^9.31.0",
     "lint-staged": "^16.1.2",
     "prettier": "^3.6.2",
     "simple-git-hooks": "^2.13.0",
     "typescript": "^5.8.3",
-    "typescript-eslint": "^8.36.0"
+    "typescript-eslint": "^8.37.0"
   },
   "displayName": "Morden Vim in VSCode",
   "engines": {
     "vscode": "^1.102.0"
   },
+  "extensionKind": [
+    "ui"
+  ],
   "license": "MIT",
   "lint-staged": {
     "*.{js,ts,json,md}": "prettier -w",
@@ -230,29 +210,30 @@
   },
   "main": "./dist/extension.js",
   "name": "vincode",
+  "packageManager": "pnpm@10.13.1",
   "prettier": {
     "semi": false,
     "singleQuote": true
   },
-  "preview": true,
   "private": true,
   "publisher": "xingqingxyz",
   "repository": {
     "type": "git",
     "url": "https://github.com/xingqingxyz/vincode"
   },
+  "scripts": {
+    "_esbuild": "esbuild --define:__DEV__=true --bundle --external:vscode --format=esm --outfile=dist/extension.js --platform=node --target=node22 src/extension.ts",
+    "build:test": "esbuild --format=cjs --outdir=out/test --platform=node --target=node22 src/test/**/*.ts",
+    "ext-install": "vsce pack -o out/vincode.vsix && code --install-extension out/vincode.vsix",
+    "lint": "eslint --cache --fix src",
+    "pretest": "pnpm _esbuild --format=cjs --outfile=out/extension.js && pnpm build:test && node -e \"var obj = require('./package.json'); delete obj.type; obj.main = 'extension.js'; fs.writeFileSync('out/package.json', JSON.stringify(obj), 'utf8')\"",
+    "test": "vscode-test",
+    "vscode:prepublish": "pnpm _esbuild --define:__DEV__=false --minify",
+    "watch": "pnpm _esbuild --sourcemap --watch"
+  },
   "simple-git-hooks": {
     "pre-commit": "pnpx lint-staged"
   },
-  "scripts": {
-    "watch": "pnpm _esbuild --sourcemap --watch",
-    "lint": "eslint --cache --fix src",
-    "test": "vscode-test",
-    "pretest": "pnpm _esbuild --format=cjs --outfile=out/extension.js && pnpm build:test && node -e \"var obj = require('./package.json'); delete obj.type; obj.main = 'extension.js'; fs.writeFileSync('out/package.json', JSON.stringify(obj), 'utf8')\"",
-    "vscode:prepublish": "pnpm _esbuild --define:__DEV__=false --minify",
-    "build:test": "esbuild --format=cjs --outdir=out/test --platform=node --target=node22 src/test/**/*.ts",
-    "_esbuild": "esbuild --define:__DEV__=true --bundle --external:vscode --format=esm --outfile=dist/extension.js --platform=node --target=node22 src/extension.ts"
-  },
-  "version": "0.0.2",
-  "type": "module"
+  "type": "module",
+  "version": "0.1.0"
 }

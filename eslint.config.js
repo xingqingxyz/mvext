@@ -5,7 +5,7 @@ export default tseslint.config(
   eslint.configs.recommended,
   tseslint.configs.recommended,
   {
-    ignores: ['*.*', 'out/**'],
+    ignores: ['*.*', 'out/**', 'dist/**', 'testdir/**'],
   },
   {
     files: ['src/**/*.ts'],

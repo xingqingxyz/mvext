@@ -11,6 +11,8 @@ import {
   type ActionHandlerContext,
   type ActionMeta,
 } from './actionTire'
+import { modeController } from './modeController'
+import { noop } from './util'
 import {
   bracketPairLookup,
   postLookup,
@@ -20,7 +22,7 @@ import {
 } from './util/bracketLookup'
 import { findMethod } from './util/findMethod'
 
-class Motion {
+export class Motion {
   //#region keepLine
   '0'(document: TextDocument, position: Position, count: number): Position {
     return document.lineAt(position).range.start
@@ -384,49 +386,51 @@ class Motion {
       0,
     )
   }
-  cursorMove(context: ActionHandlerContext) {
+  getSeletion(context: ActionHandlerContext) {
     const editor = window.activeTextEditor!
-    const position = this[context.command as 'f'](
+    const command =
+      this[context.command as '?'] ?? this[context.command.slice(1) as '?']
+    const position = command.call(
+      this,
       editor.document,
       editor.selection.active,
-      this[context.command as 'G'].length === 2
-        ? context.count!
-        : (context.count ?? 1),
+      command.length === 2 ? context.count! : (context.count ?? 1),
       context.argStr!,
     )
-    editor.selection = context.select
-      ? new Selection(editor.selection.anchor, position)
-      : new Selection(position, position)
-    editor.revealRange(editor.selection)
+    return new Selection(
+      modeController.mode === 'visual' ? editor.selection.anchor : position,
+      position,
+    )
   }
-  getRange() {}
+  cursorMove(context: ActionHandlerContext) {
+    const editor = window.activeTextEditor!
+    editor.revealRange((editor.selection = this.getSeletion(context)))
+  }
 }
 
-export function* produceAction(): Generator<[string, ActionMeta]> {
-  const motion = new Motion()
-  const handler = motion.cursorMove.bind(motion)
+export function* produceMeta(): Generator<[string, ActionMeta]> {
   let meta: ActionMeta
   for (const key of Object.getOwnPropertyNames(Motion.prototype) as 'n'[]) {
-    switch (motion[key].length) {
+    switch (Motion.prototype[key].length) {
       case 2:
       case 3:
-        meta = { kind: ActionHandlerKind.Immediate, handler }
+        meta = { kind: ActionHandlerKind.Immediate, handler: noop }
         break
       case 4:
         meta = '/?'.includes(key)
           ? {
               kind: ActionHandlerKind.Terminator,
               terminator: '\n',
-              handler,
+              handler: noop,
             }
           : {
               kind: ActionHandlerKind.Count,
               count: 1,
-              handler,
+              handler: noop,
             }
         break
       default:
-        console.log('skiped motion key ' + key)
+        console.log('skipped motion key ' + key)
         continue
     }
     yield [key, meta]

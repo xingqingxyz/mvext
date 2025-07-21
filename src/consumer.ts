@@ -1,8 +1,15 @@
-import { commands, type ExtensionContext } from 'vscode'
-import { ActionHandlerKind, actionTire } from './actionTire'
-import { ModeController } from './modeController'
-import { produceAction } from './motion'
+import { commands, env, Selection, window, type ExtensionContext } from 'vscode'
+import { produceAction } from './action'
+import {
+  ActionHandlerKind,
+  actionTire,
+  type ActionHandlerContext,
+} from './actionTire'
+import { Leap } from './leap'
+import { modeController } from './modeController'
+import { Motion, produceMeta } from './motion'
 import { statusBarItem } from './statusBarItem'
+import { produceKey, TextObject } from './textObject'
 import { logger } from './util/logger'
 
 const enum SequenceKind {
@@ -29,45 +36,50 @@ class ConsumerSequence {
 
 export class Consumer {
   inComposition = false
-  inVisual = false
   compositionSequence = ''
   actionTireNode = actionTire
   sequence = new ConsumerSequence()
   handler = this.handleSequence()
-  modeController: ModeController
   constructor(context: ExtensionContext) {
-    this.modeController = new ModeController(context)
+    const leap = new Leap(context)
     this.handler.next()
-    this.updateStatusBarItem()
-    for (const args of produceAction()) {
-      actionTire.add(...args)
-    }
-    actionTire.add('v', {
-      kind: ActionHandlerKind.Immediate,
-      handler: () => {
-        this.inVisual = !this.inVisual
-      },
-    })
+    this.setupActionTire()
     context.subscriptions.push(
       commands.registerCommand('type', (arg: { text: string }) => {
-        if (this.modeController.mode !== 'normal') {
-          return commands.executeCommand('default:type', arg)
-        } else if (this.inComposition) {
-          this.compositionSequence += arg.text
-        } else {
-          this.handler.next(arg.text)
+        switch (modeController.mode) {
+          case 'less':
+            return
+          case 'leap':
+            leap.nextChar(arg.text)
+            return
+          case 'insert':
+            return commands.executeCommand('default:type', arg)
+          default:
+            if (this.inComposition) {
+              this.compositionSequence += arg.text
+              return
+            }
+            this.handler.next(arg.text)
+            return
         }
-        return
       }),
       commands.registerCommand('compositionStart', (arg) => {
-        if (this.modeController.mode !== 'normal') {
+        if (modeController.mode === 'insert') {
           return commands.executeCommand('default:compositionStart', arg)
         }
         this.inComposition = true
         return
       }),
-      commands.registerCommand('compositionEnd', (arg) => {
-        if (this.modeController.mode !== 'normal') {
+      commands.registerCommand('compositionEnd', async (arg) => {
+        if (modeController.mode === 'insert') {
+          if (this.compositionSequence.length) {
+            // returns received text
+            await commands.executeCommand('default:compositionStart', {})
+            for (const text of this.compositionSequence) {
+              await commands.executeCommand('default:type', { text })
+            }
+            this.compositionSequence = ''
+          }
           return commands.executeCommand('default:compositionEnd', arg)
         }
         this.inComposition = false
@@ -80,10 +92,94 @@ export class Consumer {
       commands.registerCommand('vincode.nextSequence', (key) =>
         this.handler.next(key),
       ),
+      commands.registerCommand(
+        'vincode.toggleVimMode',
+        async (mode?: boolean) => {
+          const curMode = modeController.mode === 'normal'
+          mode ??= !curMode
+          if (mode === curMode) {
+            return
+          }
+          await modeController.setMode(mode ? 'normal' : 'insert')
+        },
+      ),
     )
   }
+  setupActionTire() {
+    const motion = new Motion()
+    const motionHandlers = {
+      '': motion.cursorMove.bind(motion),
+      c: async (context: ActionHandlerContext) => {
+        await window.activeTextEditor!.edit((edit) =>
+          edit.delete(motion.getSeletion(context)),
+        )
+        await modeController.setMode('insert')
+      },
+      d: async (context: ActionHandlerContext) => {
+        await window.activeTextEditor!.edit((edit) =>
+          edit.delete(motion.getSeletion(context)),
+        )
+      },
+      y: async (context: ActionHandlerContext) => {
+        const range = motion.getSeletion(context)
+        if (!range.isEmpty) {
+          await env.clipboard.writeText(
+            window.activeTextEditor!.document.getText(range),
+          )
+        }
+      },
+    }
+    for (const [key, meta] of produceMeta()) {
+      for (const [prefix, handler] of Object.entries(motionHandlers)) {
+        actionTire.add(prefix + key, { ...meta, handler })
+      }
+    }
+    const textObject = new TextObject()
+    const textObjectHandlers = {
+      '': (context: ActionHandlerContext) => {
+        if (modeController.mode === 'visual') {
+          const range = textObject.getRange(context)
+          window.activeTextEditor!.selection = new Selection(
+            range.start,
+            range.end,
+          )
+        }
+      },
+      c: async (context: ActionHandlerContext) => {
+        await window.activeTextEditor!.edit((edit) =>
+          edit.delete(textObject.getRange(context)),
+        )
+        await modeController.setMode('insert')
+      },
+      d: async (context: ActionHandlerContext) => {
+        await window.activeTextEditor!.edit((edit) =>
+          edit.delete(textObject.getRange(context)),
+        )
+      },
+      y: async (context: ActionHandlerContext) => {
+        const range = textObject.getRange(context)
+        if (!range.isEmpty) {
+          await env.clipboard.writeText(
+            window.activeTextEditor!.document.getText(range),
+          )
+        }
+      },
+    }
+    for (const key of produceKey()) {
+      for (const [prefix, handler] of Object.entries(textObjectHandlers)) {
+        actionTire.add(prefix + key, {
+          kind: ActionHandlerKind.Immediate,
+          handler,
+        })
+      }
+    }
+    for (const [key, meta] of produceAction()) {
+      actionTire.add(key, meta)
+    }
+    console.log(Array.from(actionTire))
+  }
   updateStatusBarItem() {
-    statusBarItem.text = `|-${this.modeController.mode.toUpperCase()}-|\t${this.sequence}`
+    statusBarItem.text = `|-${modeController.mode.toUpperCase()}-| ${this.sequence}`
     statusBarItem.show()
   }
   clear() {
@@ -167,7 +263,6 @@ export class Consumer {
             command: this.sequence[SequenceKind.Command],
             count: digit.length ? +digit : undefined,
             argStr: this.sequence[SequenceKind.ArgStr],
-            select: this.inVisual,
           })
           this.clear()
         } catch (e) {

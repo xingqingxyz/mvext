@@ -10,7 +10,6 @@ export interface ActionHandlerContext {
   command: string
   count?: number
   argStr?: string
-  select?: boolean
 }
 
 export type ActionMeta = {
@@ -49,15 +48,28 @@ class ActionTire {
     }
     return node
   }
-  public *keys(): Generator<ActionTire> {
+  public *keys(s = ''): Generator<string> {
+    if (this.meta) {
+      yield s
+      return
+    }
+    for (let i = 0; i < this.children.length; i++) {
+      if (this.children[i] === undefined) {
+        continue
+      }
+      yield* this.children[i]!.keys(s + String.fromCharCode(i))
+    }
+  }
+  public *values(): Generator<ActionTire> {
     if (this.meta) {
       yield this
+      return
     }
     for (const child of this.children) {
       if (child === undefined) {
         continue
       }
-      yield* child.keys()
+      yield* child.values()
     }
   }
   [Symbol.iterator] = this.keys

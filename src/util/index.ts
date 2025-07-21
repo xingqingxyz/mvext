@@ -24,3 +24,24 @@ export function formatDate(date: Date) {
     date.getMilliseconds().toString().padStart(3, '0'),
   )
 }
+
+export function reverseCase(word: string) {
+  let newWord = ''
+  for (let i = 0, code; i < word.length; i++) {
+    code = word.charCodeAt(i)
+    switch (true) {
+      case code < 65:
+        break
+      case code < 91:
+        code = code + 32
+        break
+      case code < 97:
+        break
+      case code < 123:
+        code = code - 32
+        break
+    }
+    newWord += String.fromCharCode(code)
+  }
+  return newWord
+}

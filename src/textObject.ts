@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { Position, Range, window, type TextDocument } from 'vscode'
-import type { ActionHandlerContext } from './actionTire'
+import { type ActionHandlerContext } from './actionTire'
 import {
   pairLookup,
   postLookupRegExp,
@@ -131,20 +131,23 @@ export class TextObject {
   'a<'(document: TextDocument, position: Position): Range {
     return pairLookup(document, position, ['<', '>'], true)
   }
-  async deleteTextObject(context: ActionHandlerContext) {
+  getRange(context: ActionHandlerContext) {
     const editor = window.activeTextEditor!
-    const range = this[context.command as 'iw'](
+    return this[context.command.slice(1) as 'iw'](
       editor.document,
       editor.selection.active,
     )
-    await editor.edit((edit) => edit.delete(range))
   }
-  async changeTextObject(context: ActionHandlerContext) {
-    const editor = window.activeTextEditor!
-    const range = this[context.command as 'iw'](
-      editor.document,
-      editor.selection.active,
-    )
-    await editor.edit((edit) => edit.replace(range, context.argStr!))
+}
+
+export function* produceKey(): Generator<string> {
+  for (const key of Object.getOwnPropertyNames(
+    TextObject.prototype,
+  ) as 'iw'[]) {
+    if (TextObject.prototype[key].length === 2) {
+      yield key
+    } else {
+      console.log('skipped textObject key ' + key)
+    }
   }
 }

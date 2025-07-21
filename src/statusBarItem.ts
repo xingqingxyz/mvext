@@ -6,4 +6,4 @@ export const statusBarItem = window.createStatusBarItem(
   9,
 )
 statusBarItem.name = 'Vincode Mode Line'
-statusBarItem.tooltip = 'mode | enqueued keys'
+statusBarItem.tooltip = 'mode & enqueued keys'

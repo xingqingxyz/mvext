@@ -10,18 +10,10 @@ import {
 import { statusBarItem } from './statusBarItem'
 import { kebabToPascal } from './util'
 
-export type Mode = 'normal' | 'insert' | 'pending' | 'visual' | 'command'
+export type Mode = 'normal' | 'insert' | 'leap' | 'less' | 'visual'
 
-export class ModeController {
+class ModeController {
   //#region events
-  private insertLeave = new EventEmitter<void>()
-  public onInsertLeave(listener: () => unknown) {
-    return this.insertLeave.event(listener)
-  }
-  private insertEnter = new EventEmitter<void>()
-  public onInsertEnter(listener: () => unknown) {
-    return this.insertEnter.event(listener)
-  }
   private normalLeave = new EventEmitter<void>()
   public onNormalLeave(listener: () => unknown) {
     return this.normalLeave.event(listener)
@@ -30,45 +22,33 @@ export class ModeController {
   public onNormalEnter(listener: () => unknown) {
     return this.normalEnter.event(listener)
   }
-  private pendingLeave = new EventEmitter<void>()
-  public onPendingLeave(listener: () => unknown) {
-    return this.pendingLeave.event(listener)
+  private lessLeave = new EventEmitter<void>()
+  public onLessLeave(listener: () => unknown) {
+    return this.lessLeave.event(listener)
   }
-  private pendingEnter = new EventEmitter<void>()
-  public onpendingEnter(listener: () => unknown) {
-    return this.pendingEnter.event(listener)
-  }
-  private visualLeave = new EventEmitter<void>()
-  public onVisualLeave(listener: () => unknown) {
-    return this.visualLeave.event(listener)
-  }
-  private visualEnter = new EventEmitter<void>()
-  public onVisualEnter(listener: () => unknown) {
-    return this.visualEnter.event(listener)
-  }
-  private commandLeave = new EventEmitter<void>()
-  public onCommandLeave(listener: () => unknown) {
-    return this.commandLeave.event(listener)
-  }
-  private commandEnter = new EventEmitter<void>()
-  public onCommandEnter(listener: () => unknown) {
-    return this.commandEnter.event(listener)
+  private lessEnter = new EventEmitter<void>()
+  public onLessEnter(listener: () => unknown) {
+    return this.lessEnter.event(listener)
   }
   //#endregion
-  //#region mode
+  private prevMode: Mode = 'insert'
   private _mode: Mode = 'insert'
   public get mode() {
     return this._mode
   }
   public async setMode(mode: Mode) {
-    this[(this._mode + 'Leave') as 'insertLeave'].fire()
-    this[((this._mode = mode) + 'Enter') as 'insertLeave'].fire()
+    this.prevMode = this._mode
+    this[(this._mode + 'Leave') as 'normalLeave']?.fire()
+    this[((this._mode = mode) + 'Enter') as 'normalLeave']?.fire()
     await this._updateMode()
+  }
+  public async restoreMode() {
+    await this.setMode(this.prevMode)
   }
   private async _updateMode() {
     statusBarItem.text = `|-${this._mode.toUpperCase()}-|`
     statusBarItem.show()
-    await commands.executeCommand('setContext', 'vincode.vimMode', this._mode)
+    await commands.executeCommand('setContext', 'vincode.mode', this._mode)
   }
   private _onNormalEnter() {
     const editor = window.activeTextEditor!
@@ -90,12 +70,31 @@ export class ModeController {
         ) as 'Line'
       ]
   }
+  private async _onLessEnter() {
+    window.activeTextEditor!.options.cursorStyle = TextEditorCursorStyle.Block
+    await commands.executeCommand('workbench.action.toggleZenMode')
+  }
+  private async _onLessLeave() {
+    window.activeTextEditor!.options.cursorStyle =
+      TextEditorCursorStyle[
+        kebabToPascal(
+          workspace.getConfiguration('editor').get<string>('cursorStyle')!,
+        ) as 'Line'
+      ]
+    await commands.executeCommand('workbench.action.exitZenMode')
+  }
   constructor(context: ExtensionContext) {
     context.subscriptions.push(
       this.normalEnter.event(this._onNormalEnter.bind(this)),
       this.normalLeave.event(this._onNormalLeave.bind(this)),
+      this.lessEnter.event(this._onLessEnter.bind(this)),
+      this.lessLeave.event(this._onLessLeave.bind(this)),
     )
-    this._updateMode()
+    void this._updateMode()
   }
-  //#endregion
+}
+
+export let modeController: ModeController
+export function initModeController(context: ExtensionContext) {
+  modeController = new ModeController(context)
 }
