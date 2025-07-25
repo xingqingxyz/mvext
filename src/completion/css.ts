@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { getParseCallback, positionToPoint, TSParser } from '@/util/tsParser'
+import { getParseCallback, getParser, positionToPoint } from '@/util/tsParser'
 import {
   CompletionItemKind,
   Position,
@@ -12,7 +12,7 @@ import {
   type ExtensionContext,
   type TextDocument,
 } from 'vscode'
-import type { Node, Tree } from 'web-tree-sitter'
+import type { Node, Parser, Tree } from 'web-tree-sitter'
 
 export class CssCompleteProvider implements CompletionItemProvider {
   private readonly treeMap = new WeakMap<TextDocument, Tree | null>()
@@ -25,18 +25,22 @@ export class CssCompleteProvider implements CompletionItemProvider {
     'javascriptreact',
     'typescriptreact',
   ])
-  private readonly parser = TSParser.parsers.css
+  private parser!: Parser
   constructor(context: ExtensionContext) {
+    void getParser('css').then((p) => (this.parser = p))
     context.subscriptions.push(
-      workspace.onDidOpenTextDocument((document) => {
-        if (document.languageId !== 'css') {
-          return
-        }
-        this.treeMap.set(
-          document,
-          this.parser.parse(getParseCallback(document)),
-        )
-      }),
+      workspace.onDidOpenTextDocument(
+        (document) =>
+          document.languageId === 'css' &&
+          this.treeMap.set(
+            document,
+            this.parser.parse(getParseCallback(document)),
+          ),
+      ),
+      workspace.onDidCloseTextDocument(
+        (document) =>
+          document.languageId === 'css' && this.treeMap.delete(document),
+      ),
       workspace.onDidChangeTextDocument((e) => {
         if (e.document.languageId !== 'css') {
           return

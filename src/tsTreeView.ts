@@ -17,23 +17,19 @@ import {
 import { Node, type Tree } from 'web-tree-sitter'
 import {
   getParseCallback,
+  getParser,
   nodeRangeToString,
   nodeToRange,
-  TSParser,
+  type TSLanguageId,
 } from './util/tsParser'
 
-class RunListTreeDataProvier implements TreeDataProvider<Node> {
-  private readonly parser = TSParser.parsers.css
-  private tree: Tree
+class TSTreeDataProvier implements TreeDataProvider<Node> {
+  private tree?: Tree
   private _onDidChangeTreeData = new EventEmitter<Node[] | undefined>()
-  constructor() {
-    this.tree = this.parser.parse(
-      getParseCallback(window.activeTextEditor!.document),
-    )!
-  }
-  refresh() {
-    this.tree = this.parser.parse(
-      getParseCallback(window.activeTextEditor!.document),
+  async refresh() {
+    const { document } = window.activeTextEditor!
+    this.tree = (await getParser(document.languageId as TSLanguageId)).parse(
+      getParseCallback(document),
     )!
     this._onDidChangeTreeData.fire(undefined)
   }
@@ -56,10 +52,11 @@ class RunListTreeDataProvier implements TreeDataProvider<Node> {
     return item
   }
   getChildren(element?: Node): ProviderResult<Node[]> {
-    if (!element) {
-      return [this.tree.rootNode]
-    }
-    return element.children as Node[]
+    return this.tree
+      ? element
+        ? (element.children as Node[])
+        : [this.tree.rootNode]
+      : []
   }
   getParent(element: Node): ProviderResult<Node> {
     return element.parent
@@ -74,20 +71,19 @@ class RunListTreeDataProvier implements TreeDataProvider<Node> {
   }
 }
 
-const runListDecorationType = window.createTextEditorDecorationType({
-  border: '1px solid',
-  borderColor: new ThemeColor('editor.selectionHighlightBorder'),
+const tsTreeViewDT = window.createTextEditorDecorationType({
+  border: '1px solid yellow',
   backgroundColor: new ThemeColor('editor.selectionBackground'),
 })
 
-export function registerRunList(context: ExtensionContext) {
-  const provider = new RunListTreeDataProvier()
-  const view = window.createTreeView('mvext.runList', {
+export function registerTSTreeView(context: ExtensionContext) {
+  const provider = new TSTreeDataProvier()
+  const view = window.createTreeView('mvext.tsTreeView', {
     treeDataProvider: provider,
   })
   context.subscriptions.push(
     commands.registerCommand(
-      'mvext.refreshRunList',
+      'mvext.refreshTSTreeView',
       provider.refresh.bind(provider),
     ),
     view,
@@ -95,7 +91,7 @@ export function registerRunList(context: ExtensionContext) {
     view.onDidChangeSelection(async ({ selection: [node] }) => {
       const range = nodeToRange(node)
       window.activeTextEditor!.revealRange(range)
-      window.activeTextEditor!.setDecorations(runListDecorationType, [
+      window.activeTextEditor!.setDecorations(tsTreeViewDT, [
         {
           range,
           hoverMessage: `${node.grammarType} at ${node.startPosition.row}:${node.startPosition.column}`,

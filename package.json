@@ -86,9 +86,9 @@
       },
       {
         "category": "mvext",
-        "command": "mvext.refreshRunList",
+        "command": "mvext.refreshTSTreeView",
         "icon": "$(refresh)",
-        "title": "Refresh Run List"
+        "title": "Refresh Tree Sitter Tree View"
       }
     ],
     "configuration": {
@@ -206,11 +206,6 @@
     },
     "keybindings": [
       {
-        "command": "mvext.refreshRunList",
-        "key": "ctrl+alt+r",
-        "when": "editorTextFocus && editorLangId == css"
-      },
-      {
         "command": "mvext.transformCaseDefault",
         "key": "alt+x d",
         "when": "editorTextFocus && !editorReadonly"
@@ -314,6 +309,13 @@
           "when": "editorLangId in mvext.terminalLaunch.languages"
         }
       ],
+      "editor/title/context": [
+        {
+          "command": "mvext.refreshTSTreeView",
+          "group": "navigation",
+          "when": "editorLangId in csharp,cpp,css,go,ini,java,javascript,javascriptreact,typescript,typescriptreact,python,ruby,rust"
+        }
+      ],
       "explorer/context": [
         {
           "command": "mvext.terminalLaunch",
@@ -326,9 +328,9 @@
       ],
       "view/title": [
         {
-          "command": "mvext.refreshRunList",
+          "command": "mvext.refreshTSTreeView",
           "group": "navigation",
-          "when": "view == mvext.runList"
+          "when": "view == mvext.tsTreeView"
         }
       ]
     },
@@ -405,7 +407,7 @@
       "explorer": [
         {
           "icon": "$(run)",
-          "id": "mvext.runList",
+          "id": "mvext.tsTreeView",
           "contextualTitle": "Run List",
           "name": "Run List"
         }
@@ -422,9 +424,10 @@
     "@rollup/plugin-typescript": "^12.1.4",
     "@swc-node/register": "^1.10.10",
     "@types/mocha": "^10.0.10",
-    "@types/node": "^22.16.4",
+    "@types/node": "^22.16.5",
     "@types/vscode": "^1.102.0",
     "@types/which": "^3.0.4",
+    "@vscode/tree-sitter-wasm": "^0.1.4",
     "eslint": "^9.31.0",
     "lint-staged": "^16.1.2",
     "mocha": "^11.7.1",
@@ -463,12 +466,12 @@
   "scripts": {
     "ext-install": "vsce pack -o out/mvext.vsix && code --install-extension out/mvext.vsix",
     "lint": "eslint --fix --cache src",
-    "test": "mocha -r @swc-node/register --extension ts src/test/**/*.ts",
+    "test": "mocha -r @swc-node/register/esm-register --extension ts src/test/**/*.ts",
     "vscode:prepublish": "rollup -c --environment NODE_ENV:production",
     "watch": "rollup -c -w"
   },
   "simple-git-hooks": {
-    "pre-commit": "pnpx lint-staged"
+    "pre-commit": "npx --no lint-staged"
   },
   "type": "module",
   "version": "0.16.2"

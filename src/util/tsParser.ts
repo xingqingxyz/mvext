@@ -14,44 +14,87 @@ import {
 } from 'web-tree-sitter'
 
 export type TSLanguageId =
+  | 'csharp'
+  | 'cpp'
   | 'css'
+  | 'go'
+  | 'ini'
+  | 'java'
   | 'javascript'
+  | 'javascriptreact'
   | 'typescript'
   | 'typescriptreact'
-  | 'html'
+  | 'python'
+  | 'ruby'
+  | 'rust'
 
-export class TSParser {
-  private constructor() {}
-  private static context: ExtensionContext
-  static readonly parsers = {} as Record<TSLanguageId, Parser>
-  static async init(context: ExtensionContext) {
-    this.context = context
-    await Parser.init()
-  }
-  static async createParser(languageId: TSLanguageId) {
-    if (Object.hasOwn(this.parsers, languageId)) {
-      return this.parsers[languageId]
-    }
-    const parser = new Parser()
-    this.context.subscriptions.push({
-      dispose() {
-        parser.delete()
-      },
-    })
-    parser.setLanguage(
-      await Language.load(
-        this.context.asAbsolutePath(
-          `resources/wasm/tree-sitter-${languageId}.wasm`,
-        ),
-      ),
-    )
-    this.parsers[languageId] = parser
-    return parser
+type TSLanguageWasmId =
+  | 'c-sharp'
+  | 'cpp'
+  | 'css'
+  | 'go'
+  | 'ini'
+  | 'java'
+  | 'javascript'
+  | 'python'
+  | 'regex'
+  | 'ruby'
+  | 'rust'
+  | 'tsx'
+  | 'typescript'
+
+let extContext: ExtensionContext
+const parsers = {} as Record<TSLanguageId, Parser>
+
+export async function initTSParser(context: ExtensionContext) {
+  extContext = context
+  await Parser.init()
+}
+
+function getLanguageWasmId(languageId: TSLanguageId): TSLanguageWasmId {
+  switch (languageId) {
+    case 'csharp':
+      return 'c-sharp'
+    case 'cpp':
+    case 'css':
+    case 'go':
+    case 'ini':
+    case 'java':
+    case 'javascript':
+    case 'typescript':
+    case 'python':
+    case 'ruby':
+    case 'rust':
+      return languageId
+    case 'javascriptreact':
+      return 'javascript'
+    case 'typescriptreact':
+      return 'tsx'
   }
 }
 
+export async function getParser(languageId: TSLanguageId) {
+  languageId = getLanguageWasmId(languageId) as TSLanguageId
+  if (Object.hasOwn(parsers, languageId)) {
+    return parsers[languageId]
+  }
+  const parser = new Parser()
+  extContext.subscriptions.push({
+    dispose() {
+      parser.delete()
+    },
+  })
+  return (parsers[languageId] = parser.setLanguage(
+    await Language.load(
+      extContext.asAbsolutePath(
+        `resources/wasm/tree-sitter-${languageId}.wasm`,
+      ),
+    ),
+  ))
+}
+
 export function getParseCallback(document: TextDocument): ParseCallback {
-  return (index: number | Range, position: Point) =>
+  return (index: number, position: Point) =>
     position.row < document.lineCount
       ? document
           .getText(document.lineAt(position.row).rangeIncludingLineBreak)
@@ -66,7 +109,7 @@ export function positionToPoint(position: Position): Point {
   }
 }
 
-export function nodeToRange<const T>(
+export function nodeToRange<const T extends boolean>(
   node: Node,
   selection?: T,
 ): T extends true ? Selection : Range {

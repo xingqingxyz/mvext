@@ -11,7 +11,6 @@ import { ShfmtFormatter } from './formatter/shfmt'
 import { StyluaFormatter } from './formatter/stylua'
 import { HexColorProvider } from './hexColor'
 import { MarkdownBlockRunProvider } from './markdownBlockRun'
-import { registerRunList } from './runList'
 import { terminalLaunch, terminalLaunchArgs } from './terminalLaunch'
 import {
   renameWithCase,
@@ -19,13 +18,13 @@ import {
   transformCaseWithPicker,
 } from './transformCase'
 import { SelectionCodeActionsProvider } from './tsCodeAction/selection'
+import { registerTSTreeView } from './tsTreeView'
 import { terminalRunCode } from './util/terminalRunCode'
-import { TSParser } from './util/tsParser'
+import { initTSParser } from './util/tsParser'
 
 export async function activate(context: ExtensionContext) {
-  await TSParser.init(context)
-  await TSParser.createParser('css')
-  registerRunList(context)
+  await initTSParser(context)
+  registerTSTreeView(context)
   HexColorProvider.init(context)
   new InvokeCompleteProvider(context)
   new StyluaFormatter(context)
