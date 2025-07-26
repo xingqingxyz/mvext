@@ -1,7 +1,5 @@
-import { type ExtensionContext, commands, env, workspace } from 'vscode'
+import { commands, env, type ExtensionContext } from 'vscode'
 import { InvokeCompleteProvider } from './completion'
-import { getExtConfig } from './config'
-import { ContextKey } from './context'
 import {
   evalSelection,
   terminalEvalSelection,
@@ -17,20 +15,20 @@ import {
   transformCaseDefault,
   transformCaseWithPicker,
 } from './transformCase'
-import { SelectionCodeActionsProvider } from './tsCodeAction/selection'
+import { TransformCodeActionProvider } from './tsCodeAction/provider'
+import { initTSParser } from './tsParser'
 import { registerTSTreeView } from './tsTreeView'
 import { terminalRunCode } from './util/terminalRunCode'
-import { initTSParser } from './util/tsParser'
 
 export async function activate(context: ExtensionContext) {
   await initTSParser(context)
   registerTSTreeView(context)
   HexColorProvider.init(context)
   new InvokeCompleteProvider(context)
+  new TransformCodeActionProvider(context)
   new StyluaFormatter(context)
   new ShfmtFormatter(context)
   new MarkdownBlockRunProvider(context)
-  new SelectionCodeActionsProvider(context)
   context.subscriptions.push(
     commands.registerCommand('mvext.terminalRunCode', terminalRunCode),
     commands.registerCommand('mvext._copyCodeBlock', (text: string) =>
@@ -58,19 +56,5 @@ export async function activate(context: ExtensionContext) {
     commands.registerCommand('mvext.terminalLaunchArgs', (uri) =>
       terminalLaunchArgs(context, uri),
     ),
-    workspace.onDidChangeConfiguration(
-      (e) =>
-        e.affectsConfiguration('mvext.terminalLaunch.languages') &&
-        commands.executeCommand(
-          'setContext',
-          ContextKey.terminalLaunchLanguages,
-          Object.keys(getExtConfig('terminalLaunch.languages')),
-        ),
-    ),
-  )
-  await commands.executeCommand(
-    'setContext',
-    ContextKey.terminalLaunchLanguages,
-    Object.keys(getExtConfig('terminalLaunch.languages')),
   )
 }

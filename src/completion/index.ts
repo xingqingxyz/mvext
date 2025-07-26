@@ -22,14 +22,13 @@ import { UserCompleteProvider } from './user'
 type InvokeCompleteKind = 'css' | 'dict' | 'line' | 'path' | 'user' | 'none'
 
 export class InvokeCompleteProvider implements CompletionItemProvider {
-  private css: CompletionItemProvider
+  private css = new CssCompleteProvider()
   private dict: CompletionItemProvider
   private kind: InvokeCompleteKind = 'none'
   private line = new LineCompleteProvider()
   private path: CompletionItemProvider
   private user = new UserCompleteProvider()
   constructor(context: ExtensionContext) {
-    this.css = new CssCompleteProvider(context)
     this.dict = new DictCompleteProvider(context)
     this.path = new PathCompleteProvider(context)
     context.subscriptions.push(

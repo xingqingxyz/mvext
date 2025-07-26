@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { tokenToSignal } from '@/util'
 import { readFile } from 'fs/promises'
 import { homedir } from 'os'
@@ -20,6 +19,7 @@ export class UserCompleteProvider implements CompletionItemProvider {
     document: TextDocument,
     position: Position,
     token: CancellationToken,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     context: CompletionContext,
   ) {
     const needle = document.getText(

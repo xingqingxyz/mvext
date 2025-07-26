@@ -87,7 +87,7 @@ export async function terminalLaunch(
   languageId = Array.isArray(arg2)
     ? getLangIdByExt(uri.path.split('.').at(-1)!)
     : window.activeTextEditor!.document.languageId
-  const config = getExtConfig('terminalLaunch.languages')
+  const config = getExtConfig('terminalLaunch.languageMap')
   if (!Object.hasOwn(config, languageId)) {
     languageId = await window.showQuickPick(Object.keys(config), {
       placeHolder: 'Select Language Id',

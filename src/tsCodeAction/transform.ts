@@ -1,7 +1,7 @@
 import { Node } from 'web-tree-sitter'
 
 function unpackParentheses(node: Node) {
-  while (node.grammarType === 'parenthesized_expression') {
+  while (node.type === 'parenthesized_expression') {
     node = node.firstNamedChild!
   }
   return node
@@ -10,7 +10,7 @@ function unpackParentheses(node: Node) {
 export function templateToConcat(root: Node) {
   return (root.namedChildren as Node[])
     .map((n) =>
-      n.grammarType === 'string_fragment'
+      n.type === 'string_fragment'
         ? JSON.stringify(n.text)
         : `(${n.firstNamedChild!.text})`,
     )
@@ -21,15 +21,15 @@ export function concatToTemplate(root: Node) {
   const concats = []
   let node
   do {
-    if (root.grammarType === 'binary_expression') {
-      if (root.child(1)!.grammarType !== '+') {
+    if (root.type === 'binary_expression') {
+      if (root.child(1)!.type !== '+') {
         return
       }
       node = root.childForFieldName('right')!
     } else {
       node = root
     }
-    switch (node.grammarType) {
+    switch (node.type) {
       case 'string':
       case 'template_string':
         concats.push(node.text.slice(1, -1))
@@ -47,10 +47,10 @@ function shouldIfToBinary(root: Node) {
     return
   }
   const consequence = root.childForFieldName('consequence')!
-  switch (consequence.grammarType) {
+  switch (consequence.type) {
     case 'statement_block':
       return consequence.namedChildren.every(
-        (n) => n!.grammarType === 'expression_statement',
+        (n) => n!.type === 'expression_statement',
       )
         ? (consequence.namedChildren as Node[])
         : undefined
@@ -68,7 +68,7 @@ export function ifToBinary(root: Node) {
   const consequence = consequences.map((n) => `(${n.text})`).join(', ')
   let condition, operator
   condition = unpackParentheses(root.childForFieldName('condition')!)
-  if (condition.grammarType === 'unary_expression') {
+  if (condition.type === 'unary_expression') {
     condition = condition.firstNamedChild!.text
     operator = '||'
   } else {
@@ -78,15 +78,15 @@ export function ifToBinary(root: Node) {
   return `${condition} ${operator} ${consequences.length > 1 ? `(${consequence})` : consequence}`
 }
 
-function getIfStat(node: Node, grammarType = 'if_statement') {
+function getIfStat(node: Node, type = 'if_statement') {
   const condtions = []
   let alternative
   do {
-    if (node.grammarType === 'else_clause') {
+    if (node.type === 'else_clause') {
       // compat with ternary_expression
       node = node.firstNamedChild!
     }
-    if (node.grammarType === grammarType) {
+    if (node.type === type) {
       condtions.push({
         node,
         condition: node.childForFieldName('condition')!,
@@ -106,10 +106,10 @@ function getIfStat(node: Node, grammarType = 'if_statement') {
 function shouldIfToTernary(stats: Node[]) {
   const statsList: Node[][] = []
   return stats.every((consequence) =>
-    consequence.grammarType === 'expression_statement'
+    consequence.type === 'expression_statement'
       ? statsList.push([consequence])
       : (consequence.namedChildren as Node[]).every(
-          (n) => n.grammarType === 'expression_statement',
+          (n) => n.type === 'expression_statement',
         ) && statsList.push(consequence.namedChildren as Node[]),
   )
     ? statsList
@@ -138,22 +138,20 @@ export function ifToTernary(root: Node) {
 }
 
 function ifClauseToSwitchClause(root: Node) {
-  if (root.grammarType === 'expression_statement') {
+  if (root.type === 'expression_statement') {
     return root.text + ';break'
   }
   let scoped = 0
   const code = (root.namedChildren as Node[])
-    .map(
-      (n) => ((scoped |= +(n.grammarType !== 'expression_statement')), n.text),
-    )
+    .map((n) => ((scoped |= +(n.type !== 'expression_statement')), n.text))
     .concat('break')
     .join(';')
   return scoped ? `{${code}}` : code
 }
 
-export function ifToSwitch(root: Node, grammarType = 'if_statement') {
-  const stat = getIfStat(root, grammarType)
-  const isClause = grammarType === 'if_statement'
+export function ifToSwitch(root: Node, type = 'if_statement') {
+  const stat = getIfStat(root, type)
+  const isClause = type === 'if_statement'
   return [
     'switch (true) {',
     ...stat.condtions.map(
@@ -179,8 +177,8 @@ function shouldIfToSwitchLeft(stat: ReturnType<typeof getIfStat>) {
   return stat.condtions.every(
     ({ condition }, binary: number | Node) => (
       (binary = unpackParentheses(condition)),
-      binary.grammarType === 'binary_expression' &&
-        binary.child(1)!.grammarType.startsWith('==') &&
+      binary.type === 'binary_expression' &&
+        binary.child(1)!.type.startsWith('==') &&
         (left
           ? binary.childForFieldName('left')!.text === left
           : ((left = binary.childForFieldName('left')!.text), true))
@@ -190,13 +188,13 @@ function shouldIfToSwitchLeft(stat: ReturnType<typeof getIfStat>) {
     : undefined
 }
 
-export function ifToSwitchLeft(root: Node, grammarType = 'if_statement') {
-  const stat = getIfStat(root, grammarType)
+export function ifToSwitchLeft(root: Node, type = 'if_statement') {
+  const stat = getIfStat(root, type)
   const left = shouldIfToSwitchLeft(stat)
   if (left === undefined) {
     return
   }
-  const isClause = grammarType === 'if_statement'
+  const isClause = type === 'if_statement'
   return [
     `switch (${left}) {`,
     ...stat.condtions.map(
@@ -218,7 +216,7 @@ export function ifToSwitchLeft(root: Node, grammarType = 'if_statement') {
 }
 
 export function binaryToIf(root: Node) {
-  const operator = root.child(1)!.grammarType
+  const operator = root.child(1)!.type
   switch (operator) {
     case '&&':
     case '||':
@@ -230,7 +228,7 @@ export function binaryToIf(root: Node) {
   let consequence
   consequence = unpackParentheses(root.childForFieldName('right')!)
   consequence = (
-    consequence.grammarType === 'sequence_expression'
+    consequence.type === 'sequence_expression'
       ? (consequence.namedChildren as Node[])
       : [consequence]
   )
@@ -245,8 +243,7 @@ export function ternaryToIf(root: Node) {
     .map(
       ({ condition, consequence }) => (
         (consequence = unpackParentheses(consequence)),
-        `if (${condition.text}) {\n${(consequence.grammarType ===
-        'sequence_expression'
+        `if (${condition.text}) {\n${(consequence.type === 'sequence_expression'
           ? (consequence.namedChildren as Node[])
           : [consequence]
         )
@@ -255,7 +252,7 @@ export function ternaryToIf(root: Node) {
       ),
     )
     .concat(
-      `{\n${(stat.alternative!.grammarType === 'sequence_expression'
+      `{\n${(stat.alternative!.type === 'sequence_expression'
         ? stat.alternative!.namedChildren
         : [stat.alternative!]
       )
@@ -286,15 +283,15 @@ export function swapTernary(root: Node) {
 }
 
 export function arrowToFunctionExpression(root: Node, name = '') {
-  const asyncPrefix = root.firstChild!.grammarType === 'async' ? 'async ' : ''
+  const asyncPrefix = root.firstChild!.type === 'async' ? 'async ' : ''
   let body
   body = root.childForFieldName('body')!
-  if (body.grammarType === 'statement_block') {
+  if (body.type === 'statement_block') {
     body = body.text
   } else {
     body = unpackParentheses(body)
     body =
-      body.grammarType === 'sequence_expression'
+      body.type === 'sequence_expression'
         ? `{\n${body.namedChildren
             .map(
               (n, i, a) =>
@@ -313,7 +310,7 @@ export function arrowToFunctionExpression(root: Node, name = '') {
 export function arrowToFunction(root: Node) {
   root = root.firstNamedChild!
   const arrowFunction = unpackParentheses(root.childForFieldName('value')!)
-  if (arrowFunction.grammarType !== 'arrow_function') {
+  if (arrowFunction.type !== 'arrow_function') {
     return
   }
   return arrowToFunctionExpression(
@@ -324,7 +321,7 @@ export function arrowToFunction(root: Node) {
 
 function shouldJoinStatementBlock(children: Node[]) {
   let { length } = children
-  switch (children[--length].grammarType) {
+  switch (children[--length].type) {
     case 'expression_statement':
       break
     case 'return_statement':
@@ -334,7 +331,7 @@ function shouldJoinStatementBlock(children: Node[]) {
       return
   }
   while (length--) {
-    if (children[length].grammarType !== 'expression_statement') {
+    if (children[length].type !== 'expression_statement') {
       return
     }
   }
@@ -342,7 +339,7 @@ function shouldJoinStatementBlock(children: Node[]) {
 }
 
 export function functionExpressionToArrow(root: Node) {
-  const asyncPrefix = root.firstChild!.grammarType === 'async' ? 'async ' : ''
+  const asyncPrefix = root.firstChild!.type === 'async' ? 'async ' : ''
   const body = root.childForFieldName('body')!
   const children = shouldJoinStatementBlock(body.namedChildren as Node[])
   return `${asyncPrefix}${root.childForFieldName('parameters')!.text} => ${
@@ -359,7 +356,7 @@ export function functionToArrow(root: Node) {
 }
 
 export function splitDeclaration(root: Node) {
-  const keyword = root.firstChild!.grammarType
+  const keyword = root.firstChild!.type
   return (root.namedChildren as Node[])
     .map((n) => `${keyword} ${n.text}`)
     .join('\n')

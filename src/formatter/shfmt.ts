@@ -16,7 +16,10 @@ import {
 export class ShfmtFormatter implements DocumentFormattingEditProvider {
   constructor(context: ExtensionContext) {
     context.subscriptions.push(
-      languages.registerDocumentFormattingEditProvider('shellscript', this),
+      languages.registerDocumentFormattingEditProvider(
+        { scheme: 'file', language: 'shellscript' },
+        this,
+      ),
     )
   }
   async provideDocumentFormattingEdits(
@@ -28,7 +31,7 @@ export class ShfmtFormatter implements DocumentFormattingEditProvider {
       const p = execFile(
         'shfmt',
         [
-          ...getExtConfig('shfmt.extraArgs', document),
+          ...getExtConfig('shfmt.extraArgs'),
           '--filename',
           document.fileName,
           '-i',

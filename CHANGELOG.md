@@ -2,6 +2,10 @@
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## [0.17.0]
+
+- Feature: [`transform`](src/tsCodeAction/transform.ts) refactor rewrites using tree-sitter.
+
 ## [0.16.0]
 
 - Feature: [`invokeComplete`](src/invokeComplete/index.ts) invoke complete directly for special items.

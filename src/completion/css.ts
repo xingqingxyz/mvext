@@ -1,22 +1,18 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { getParseCallback, getParser, positionToPoint } from '@/util/tsParser'
+import { getParsedTree } from '@/tsParser'
 import {
   CompletionItemKind,
   Position,
-  Range,
-  workspace,
   type CancellationToken,
   type CompletionContext,
   type CompletionItem,
   type CompletionItemProvider,
-  type ExtensionContext,
   type TextDocument,
 } from 'vscode'
-import type { Node, Parser, Tree } from 'web-tree-sitter'
+import type { Node } from 'web-tree-sitter'
 
 export class CssCompleteProvider implements CompletionItemProvider {
-  private readonly treeMap = new WeakMap<TextDocument, Tree | null>()
-  private readonly languageIds = Object.freeze([
+  private static readonly languageIds = Object.freeze([
     'css',
     'scss',
     'html',
@@ -25,73 +21,21 @@ export class CssCompleteProvider implements CompletionItemProvider {
     'javascriptreact',
     'typescriptreact',
   ])
-  private parser!: Parser
-  constructor(context: ExtensionContext) {
-    void getParser('css').then((p) => (this.parser = p))
-    context.subscriptions.push(
-      workspace.onDidOpenTextDocument(
-        (document) =>
-          document.languageId === 'css' &&
-          this.treeMap.set(
-            document,
-            this.parser.parse(getParseCallback(document)),
-          ),
-      ),
-      workspace.onDidCloseTextDocument(
-        (document) =>
-          document.languageId === 'css' && this.treeMap.delete(document),
-      ),
-      workspace.onDidChangeTextDocument((e) => {
-        if (e.document.languageId !== 'css') {
-          return
-        }
-        const tree =
-          this.treeMap.get(e.document) ??
-          this.parser.parse(getParseCallback(e.document))!
-        this.treeMap.set(e.document, tree)
-        e.contentChanges.forEach((cc) => {
-          const lines = (
-            e.document.getText(
-              new Range(cc.range.start.with(undefined, 0), cc.range.start),
-            ) + cc.text
-          ).split('\r\n'.slice(2 - e.document.eol))
-          tree.edit({
-            newEndIndex: cc.rangeOffset + cc.text.length,
-            newEndPosition: {
-              row: cc.range.start.line + lines.length - 1,
-              column: lines.at(-1)!.length,
-            },
-            startIndex: cc.rangeOffset,
-            oldEndIndex: cc.rangeOffset + cc.rangeLength,
-            oldEndPosition: positionToPoint(cc.range.end),
-            startPosition: positionToPoint(cc.range.start),
-          })
-        })
-      }),
-    )
-  }
   provideCompletionItems(
     document: TextDocument,
     position: Position,
     token: CancellationToken,
     context: CompletionContext,
   ) {
-    if (!this.languageIds.includes(document.languageId)) {
+    if (!CssCompleteProvider.languageIds.includes(document.languageId)) {
       return
     }
     const range = document.getWordRangeAtPosition(position)
-    if (!range) {
+    const tree = getParsedTree(document)
+    if (!(range && tree)) {
       return
     }
     const needle = document.getText(range)
-    const tree = this.parser.parse(
-      getParseCallback(document),
-      this.treeMap.get(document),
-    )
-    if (!tree) {
-      return
-    }
-    this.treeMap.set(document, tree)
     const nodes = tree.rootNode.descendantsOfType(
       document.languageId.endsWith('css') ? 'class_selector' : 'class_name',
     ) as Node[]

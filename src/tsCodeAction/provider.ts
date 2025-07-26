@@ -1,9 +1,9 @@
-import { nodeToRange, positionToPoint } from '@/util/tsParser'
-import { fileURLToPath } from 'url'
+import { getParsedTree, nodeToRange, positionToPoint } from '@/tsParser'
 import {
   CodeActionKind,
   CodeActionTriggerKind,
   CompletionItemKind,
+  languages,
   SnippetTextEdit,
   WorkspaceEdit,
   type CancellationToken,
@@ -11,6 +11,7 @@ import {
   type CodeActionContext,
   type CodeActionProvider,
   type Command,
+  type ExtensionContext,
   type ProviderResult,
   type Range,
   type Selection,
@@ -18,7 +19,7 @@ import {
   type TextDocument,
   type Uri,
 } from 'vscode'
-import { Language, Node, Parser, type Tree } from 'web-tree-sitter'
+import { Node, type Tree } from 'web-tree-sitter'
 import {
   arrowToFunction,
   arrowToFunctionExpression,
@@ -50,51 +51,51 @@ interface CodeActionData extends CodeAction {
   }
 }
 
-export class TSRefactor implements CodeActionProvider {
-  private static parser: Parser
-  private tree: Tree
-  static async init() {
-    await Parser.init()
-    this.parser = new Parser()
-    const JavaScript = await Language.load(
-      fileURLToPath(
-        import.meta.resolve(
-          '@vscode/tree-sitter-wasm/wasm/tree-sitter-javascript.wasm',
+function getDescendantPath(root: Node, descendant: Node) {
+  const nodePath = []
+  do {
+    nodePath.push(root)
+  } while ((root = root.childWithDescendant(descendant)!))
+  return nodePath
+}
+
+function getOrderedTypePath(nodePath: Node[]) {
+  const grammerIds: number[] = []
+  const newPath = []
+  for (let i = nodePath.length - 1; i >= 0; i--) {
+    if (!grammerIds.includes(nodePath[i].grammarId)) {
+      grammerIds.push(nodePath[i].grammarId)
+      newPath.push(nodePath[i])
+    }
+  }
+  return newPath
+}
+
+function getOrderedTypePathFromRange(tree: Tree, range: Range | Selection) {
+  const node = tree.rootNode.descendantForPosition(
+    positionToPoint(range.start),
+    positionToPoint(range.end),
+  )!
+  const descendantPath = getDescendantPath(tree.rootNode, node)
+  return getOrderedTypePath(descendantPath)
+}
+
+export class TransformCodeActionProvider implements CodeActionProvider {
+  constructor(context: ExtensionContext) {
+    context.subscriptions.push(
+      languages.registerCodeActionsProvider(
+        ['javascript', 'typescript', 'javascriptreact', 'typescriptreact'].map(
+          (language) => ({ language, scheme: 'file' }),
         ),
+        this,
       ),
     )
-    this.parser.setLanguage(JavaScript)
   }
-  constructor(content: string) {
-    this.tree = TSRefactor.parser.parse(content)!
-  }
-  getDescendantPath(descendant: Node) {
-    const nodePath = []
-    let node
-    node = this.tree.rootNode
-    do {
-      nodePath.push(node)
-    } while ((node = node.childWithDescendant(descendant)))
-    return nodePath
-  }
-  getOrderedTypePath(nodePath: Node[]) {
-    const grammerIds: number[] = []
-    const newPath = []
-    for (let i = nodePath.length - 1; i >= 0; i--) {
-      if (!grammerIds.includes(nodePath[i].grammarId)) {
-        grammerIds.push(nodePath[i].grammarId)
-        newPath.push(nodePath[i])
-      }
-    }
-    return newPath
-  }
-  getActions(node: Node, uri: Uri) {
-    const descendantPath = this.getDescendantPath(node)
-    const orderedTypePath = this.getOrderedTypePath(descendantPath)
+  getActions(orderedTypePath: Node[], uri: Uri) {
     const actions: [typeof ifToBinary, Node][] = []
     const snippetsActions: [typeof cast, Node][] = []
     for (const node of orderedTypePath) {
-      switch (node.grammarType) {
+      switch (node.type) {
         case 'arrow_function':
           actions.push([arrowToFunctionExpression, node])
           break
@@ -137,7 +138,7 @@ export class TSRefactor implements CodeActionProvider {
           actions.push([functionToArrow, node])
           break
       }
-      if (node.grammarType.includes('expression')) {
+      if (node.type.includes('expression')) {
         snippetsActions.push([cast, node], [callWrap, node])
       }
     }
@@ -145,8 +146,8 @@ export class TSRefactor implements CodeActionProvider {
       .map(
         ([callback, node]) =>
           ({
-            title: callback.name,
-            kind: CodeActionKind.Refactor,
+            title: `${callback.name}(${node.type})`,
+            kind: CodeActionKind.RefactorRewrite,
             data: { kind: CompletionItemKind.Text, uri, node, callback },
           }) as CodeAction,
       )
@@ -154,8 +155,8 @@ export class TSRefactor implements CodeActionProvider {
         snippetsActions.map(
           ([callback, node]) =>
             ({
-              title: callback.name,
-              kind: CodeActionKind.Refactor,
+              title: `${callback.name}(${node.type})`,
+              kind: CodeActionKind.RefactorRewrite,
               data: { kind: CompletionItemKind.Snippet, uri, node, callback },
             }) as CodeAction,
         ),
@@ -170,17 +171,16 @@ export class TSRefactor implements CodeActionProvider {
   ): ProviderResult<(CodeAction | Command)[]> {
     if (
       context.triggerKind !== CodeActionTriggerKind.Invoke ||
-      (context.only !== undefined && context.only !== CodeActionKind.Refactor)
+      (context.only && !context.only.contains(CodeActionKind.RefactorRewrite))
     ) {
       return
     }
-    return this.getActions(
-      this.tree.rootNode.descendantForPosition(
-        positionToPoint(range.start),
-        positionToPoint(range.end),
-      )!,
-      document.uri,
-    )
+    const tree = getParsedTree(document)
+    if (!tree) {
+      return
+    }
+    const orderedTypePath = getOrderedTypePathFromRange(tree, range)
+    return orderedTypePath && this.getActions(orderedTypePath, document.uri)
   }
   resolveCodeAction(
     codeAction: CodeAction,

@@ -19,8 +19,14 @@ export class StyluaFormatter
 {
   constructor(context: ExtensionContext) {
     context.subscriptions.push(
-      languages.registerDocumentFormattingEditProvider('lua', this),
-      languages.registerDocumentRangeFormattingEditProvider('lua', this),
+      languages.registerDocumentFormattingEditProvider(
+        { scheme: 'file', language: 'lua' },
+        this,
+      ),
+      languages.registerDocumentRangeFormattingEditProvider(
+        { scheme: 'file', language: 'lua' },
+        this,
+      ),
     )
   }
   async provideDocumentFormattingEdits(
@@ -32,7 +38,7 @@ export class StyluaFormatter
       const p = execFile(
         'stylua',
         [
-          ...getExtConfig('stylua.extraArgs', document),
+          ...getExtConfig('stylua.extraArgs'),
           '--stdin-filepath',
           document.fileName,
           '--indent-type',
@@ -73,7 +79,7 @@ export class StyluaFormatter
       const p = execFile(
         'stylua',
         [
-          ...getExtConfig('stylua.extraArgs', document),
+          ...getExtConfig('stylua.extraArgs'),
           '--stdin-filepath',
           document.fileName,
           '--range-start',

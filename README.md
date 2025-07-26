@@ -1,4 +1,4 @@
-# Eval Launch Completion
+# Ready Go!
 
 This extension ships a set of useful tools:
 
@@ -66,10 +66,5 @@ Simply toggle hex color blocks for each language.
 
 ### TypeScript Code Actions
 
-- `Delete Function Call`
-
-  transform from `func('hello')` to `'hello'`
-
-- `Swap Vars`
-
-  transform from `[a.b, c.d, e.f]` to `[a.b, c.d, e.f] = [e.f, c.d, a.b]`
+See [transform.js](./src/test/suite/tsCodeAction/transform.js) for all refactor
+rewrite code actions supported for javascript languages.

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import {
   commands,
   EventEmitter,
@@ -15,29 +14,32 @@ import {
   type TreeDataProvider,
 } from 'vscode'
 import { Node, type Tree } from 'web-tree-sitter'
+import { getExtConfig } from './config'
 import {
-  getParseCallback,
-  getParser,
+  getParsedTree,
   nodeRangeToString,
   nodeToRange,
   type TSLanguageId,
-} from './util/tsParser'
+} from './tsParser'
 
 class TSTreeDataProvier implements TreeDataProvider<Node> {
-  private tree?: Tree
+  private tree?: Tree | null
+  private languageId?: TSLanguageId
   private _onDidChangeTreeData = new EventEmitter<Node[] | undefined>()
   async refresh() {
     const { document } = window.activeTextEditor!
-    this.tree = (await getParser(document.languageId as TSLanguageId)).parse(
-      getParseCallback(document),
-    )!
+    this.tree = getParsedTree(document)
+    this.languageId = document.languageId as TSLanguageId
+    if (!getExtConfig('treeSitter.syncedLanguages').includes(this.languageId)) {
+      return
+    }
     this._onDidChangeTreeData.fire(undefined)
   }
   onDidChangeTreeData: Event<Node | Node[] | null | undefined> | undefined =
     this._onDidChangeTreeData.event
   getTreeItem(element: Node): TreeItem | Thenable<TreeItem> {
     const item = new TreeItem(
-      element.grammarType,
+      element.type,
       element.childCount && TreeItemCollapsibleState.Expanded,
     )
     item.id = '' + element.id
@@ -48,7 +50,7 @@ class TSTreeDataProvier implements TreeDataProvider<Node> {
           ? 'symbol-field'
           : 'symbol-text',
     )
-    item.description = nodeRangeToString(element)
+    item.description = element.grammarType + ' ' + nodeRangeToString(element)
     return item
   }
   getChildren(element?: Node): ProviderResult<Node[]> {
@@ -58,15 +60,16 @@ class TSTreeDataProvier implements TreeDataProvider<Node> {
         : [this.tree.rootNode]
       : []
   }
-  getParent(element: Node): ProviderResult<Node> {
-    return element.parent
-  }
   resolveTreeItem(
     item: TreeItem,
     element: Node,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     token: CancellationToken,
   ): ProviderResult<TreeItem> {
-    item.tooltip = new MarkdownString().appendCodeblock(element.text, 'css')
+    item.tooltip = new MarkdownString().appendCodeblock(
+      element.text,
+      this.languageId,
+    )
     return item
   }
 }
@@ -83,20 +86,21 @@ export function registerTSTreeView(context: ExtensionContext) {
   })
   context.subscriptions.push(
     commands.registerCommand(
-      'mvext.refreshTSTreeView',
+      'mvext.refreshTsTreeView',
       provider.refresh.bind(provider),
     ),
     view,
-    view.onDidChangeVisibility((e) => e.visible && provider.refresh()),
+    view.onDidChangeVisibility((e) =>
+      e.visible
+        ? provider.refresh()
+        : window.activeTextEditor!.setDecorations(tsTreeViewDT, []),
+    ),
     view.onDidChangeSelection(async ({ selection: [node] }) => {
-      const range = nodeToRange(node)
-      window.activeTextEditor!.revealRange(range)
-      window.activeTextEditor!.setDecorations(tsTreeViewDT, [
-        {
-          range,
-          hoverMessage: `${node.grammarType} at ${node.startPosition.row}:${node.startPosition.column}`,
-        },
-      ])
+      if (node) {
+        const range = nodeToRange(node)
+        window.activeTextEditor!.revealRange(range)
+        window.activeTextEditor!.setDecorations(tsTreeViewDT, [{ range }])
+      }
     }),
   )
 }

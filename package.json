@@ -86,16 +86,16 @@
       },
       {
         "category": "mvext",
-        "command": "mvext.refreshTSTreeView",
+        "command": "mvext.refreshTsTreeView",
         "icon": "$(refresh)",
-        "title": "Refresh Tree Sitter Tree View"
+        "title": "Refresh Tree-sitter Tree View"
       }
     ],
     "configuration": {
       "properties": {
         "mvext.evalSelection.languages": {
+          "markdownDescription": "Map of language to excutable command for eval selections.",
           "additionalProperties": {
-            "description": "Language Id : Eval Config",
             "type": "string"
           },
           "default": {
@@ -107,7 +107,8 @@
             "shellscript": "bash -c",
             "typescript": "bun x tsx -p",
             "typescriptreact": "bun x tsx -p"
-          }
+          },
+          "type": "object"
         },
         "mvext.pathComplete.debounceTimeMs": {
           "default": 200,
@@ -146,7 +147,60 @@
           "markdownDescription": "Formatter stylua's extra command line args",
           "type": "array"
         },
+        "mvext.treeSitter.syncedLanguages": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "csharp",
+              "cpp",
+              "css",
+              "go",
+              "ini",
+              "java",
+              "javascript",
+              "javascriptreact",
+              "typescript",
+              "typescriptreact",
+              "python",
+              "ruby",
+              "rust"
+            ]
+          },
+          "default": [
+            "css",
+            "csharp",
+            "go",
+            "javascript",
+            "javascriptreact",
+            "python",
+            "shellscript",
+            "typescript",
+            "typescriptreact"
+          ],
+          "markdownDescription": "Tree-Sitter synced languages for code actions and completions."
+        },
         "mvext.terminalLaunch.languages": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "bat",
+            "csharp",
+            "dart",
+            "fsharp",
+            "go",
+            "javascript",
+            "javascriptreact",
+            "python",
+            "shellscript",
+            "typescript",
+            "typescriptreact"
+          ],
+          "markdownDescription": "Terminal launch languages to show launch menus."
+        },
+        "mvext.terminalLaunch.languageMap": {
           "additionalProperties": {
             "description": "Language Id : Launch Config",
             "type": "string"
@@ -202,7 +256,7 @@
           "type": "string"
         }
       },
-      "title": "Eval Launch Completion"
+      "title": "Ready Go!"
     },
     "keybindings": [
       {
@@ -306,29 +360,29 @@
         {
           "alt": "mvext.terminalLaunchArgs",
           "command": "mvext.terminalLaunch",
-          "when": "editorLangId in mvext.terminalLaunch.languages"
+          "when": "editorLangId in config.mvext.terminalLaunch.languages"
         }
       ],
       "editor/title/context": [
         {
-          "command": "mvext.refreshTSTreeView",
+          "command": "mvext.refreshTsTreeView",
           "group": "navigation",
-          "when": "editorLangId in csharp,cpp,css,go,ini,java,javascript,javascriptreact,typescript,typescriptreact,python,ruby,rust"
+          "when": "editorLangId in config.mvext.treeSitter.syncedLanguages"
         }
       ],
       "explorer/context": [
         {
           "command": "mvext.terminalLaunch",
-          "when": "!listMultiSelection && resourceLangId in mvext.terminalLaunch.languages"
+          "when": "!listMultiSelection && resourceLangId in config.mvext.terminalLaunch.languages"
         },
         {
           "command": "mvext.terminalLaunchArgs",
-          "when": "!listMultiSelection && resourceLangId in mvext.terminalLaunch.languages"
+          "when": "!listMultiSelection && resourceLangId in config.mvext.terminalLaunch.languages"
         }
       ],
       "view/title": [
         {
-          "command": "mvext.refreshTSTreeView",
+          "command": "mvext.refreshTsTreeView",
           "group": "navigation",
           "when": "view == mvext.tsTreeView"
         }
@@ -406,15 +460,15 @@
     "views": {
       "explorer": [
         {
-          "icon": "$(run)",
+          "icon": "$(list-tree)",
           "id": "mvext.tsTreeView",
-          "contextualTitle": "Run List",
-          "name": "Run List"
+          "contextualTitle": "Tree-sitter Tree View",
+          "name": "Tree-sitter Tree View"
         }
       ]
     }
   },
-  "description": "Eval selections as code, launch file in terminal and auto complete path.",
+  "description": "Invoke terminal commands, eval selections and invoke complete.",
   "devDependencies": {
     "@eslint/js": "^9.31.0",
     "@rollup/plugin-commonjs": "^28.0.6",
@@ -441,7 +495,7 @@
     "web-tree-sitter": "^0.25.8",
     "which": "^5.0.0"
   },
-  "displayName": "Eval Launch Completion",
+  "displayName": "Ready Go!",
   "engines": {
     "vscode": "^1.102.0"
   },
@@ -457,6 +511,12 @@
     "semi": false,
     "singleQuote": true
   },
+  "keywords": [
+    "tree-sitter",
+    "refactor",
+    "highlights",
+    "markdown"
+  ],
   "private": true,
   "publisher": "xingqingxyz",
   "repository": {
@@ -466,13 +526,13 @@
   "scripts": {
     "ext-install": "vsce pack -o out/mvext.vsix && code --install-extension out/mvext.vsix",
     "lint": "eslint --fix --cache src",
-    "test": "mocha -r @swc-node/register/esm-register --extension ts src/test/**/*.ts",
+    "test": "mocha -r @swc-node/register/esm-register --extension ts src/test/**/*.test.ts",
     "vscode:prepublish": "rollup -c --environment NODE_ENV:production",
     "watch": "rollup -c -w"
   },
   "simple-git-hooks": {
-    "pre-commit": "npx --no lint-staged"
+    "pre-commit": "pnpm exec lint-staged"
   },
   "type": "module",
-  "version": "0.16.2"
+  "version": "0.17.0"
 }
