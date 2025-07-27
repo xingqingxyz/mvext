@@ -16,7 +16,7 @@
         "xingqingxyz.mvext",
         "${workspaceFolder}/testdir"
       ],
-      "outFiles": ["${workspaceFolder}/out/**/*.js"],
+      "outFiles": ["${workspaceFolder}/dist/**/*.js"],
       "preLaunchTask": "${defaultBuildTask}"
     },
     {
@@ -25,13 +25,45 @@
       "request": "launch",
       "args": [
         "--extensionDevelopmentPath=${workspaceFolder}",
-        "--extensionTestsPath=${workspaceFolder}/out/test/suite",
+        "--extensionTestsPath=${workspaceFolder}/dist/test/suite",
         "--disable-extensions",
         "--enable-proposed-api",
         "xingqingxyz.mvext",
         "${workspaceFolder}/testdir"
       ],
-      "outFiles": ["${workspaceFolder}/out/**/*.js"]
+      "outFiles": ["${workspaceFolder}/dist/**/*.js"]
+    },
+    {
+      "name": "Run Web Extension",
+      "type": "extensionHost",
+      "request": "launch",
+      "debugWebWorkerHost": true,
+      "args": [
+        "--extensionDevelopmentKind=web",
+        "--extensionDevelopmentPath=${workspaceFolder}",
+        "--disable-extensions",
+        "--enable-proposed-api",
+        "xingqingxyz.mvext",
+        "${workspaceFolder}/testdir"
+      ],
+      "outFiles": ["${workspaceFolder}/dist/**/*.js"],
+      "preLaunchTask": "npm: watch-web"
+    },
+    {
+      "name": "Web Extension Tests",
+      "type": "extensionHost",
+      "request": "launch",
+      "debugWebWorkerHost": true,
+      "args": [
+        "--extensionDevelopmentKind=web",
+        "--extensionDevelopmentPath=${workspaceFolder}",
+        "--extensionTestsPath=${workspaceFolder}/dist/test/suite",
+        "--disable-extensions",
+        "--enable-proposed-api",
+        "xingqingxyz.mvext",
+        "${workspaceFolder}/testdir"
+      ],
+      "outFiles": ["${workspaceFolder}/dist/**/*.js"]
     }
   ]
 }

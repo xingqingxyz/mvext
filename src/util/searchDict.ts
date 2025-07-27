@@ -1,19 +1,17 @@
-import { readFile } from 'fs/promises'
-import { type CancellationToken, type ExtensionContext } from 'vscode'
-import { tokenToSignal } from '.'
+import { type ExtensionContext, Uri, workspace } from 'vscode'
 
 export class SearchDict {
-  private readonly dictFile: string
+  private readonly dictUri: Uri
   constructor(context: ExtensionContext) {
-    this.dictFile = context.asAbsolutePath('resources/words-js-sorted.txt')
+    this.dictUri = Uri.joinPath(
+      context.extensionUri,
+      'resources/words-js-sorted.txt',
+    )
   }
-  async search(word: string, token: CancellationToken) {
-    const words = (
-      await readFile(this.dictFile, {
-        signal: tokenToSignal(token),
-        encoding: 'utf-8',
-      })
-    ).split('\n')
+  async search(word: string) {
+    const words = new TextDecoder('utf-8', { fatal: true })
+      .decode(await workspace.fs.readFile(this.dictUri))
+      .split('\n')
     let i = 0,
       j = words.length
     while (i < j) {

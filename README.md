@@ -66,5 +66,5 @@ Simply toggle hex color blocks for each language.
 
 ### TypeScript Code Actions
 
-See [transform.js](./src/test/suite/tsCodeAction/transform.js) for all refactor
+See [transform.js](./src/test/unit/tsCodeAction/transform.js) for all refactor
 rewrite code actions supported for javascript languages.

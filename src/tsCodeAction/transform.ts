@@ -1,4 +1,4 @@
-import { Node } from 'web-tree-sitter'
+import type { Node } from 'web-tree-sitter'
 
 function unpackParentheses(node: Node) {
   while (node.type === 'parenthesized_expression') {

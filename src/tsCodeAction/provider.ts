@@ -19,7 +19,7 @@ import {
   type TextDocument,
   type Uri,
 } from 'vscode'
-import { Node, type Tree } from 'web-tree-sitter'
+import type { Node, Tree } from 'web-tree-sitter'
 import {
   arrowToFunction,
   arrowToFunctionExpression,

@@ -1,1 +1,5 @@
-declare const __DEV__: boolean
+namespace NodeJS {
+  interface ProcessEnv {
+    NODE_ENV: 'production' | 'dev' | 'web'
+  }
+}

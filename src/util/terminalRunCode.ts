@@ -45,7 +45,7 @@ export function getTerminalRunLanguageId(
 async function getTerminalCommand(
   languageId: TerminalRunLanguageIds,
 ): Promise<Pick<TerminalOptions, 'shellPath' | 'shellArgs'>> {
-  let config = getExtConfig('terminalLaunch.languages')[languageId]
+  let config = getExtConfig('terminalLaunch.languageMap')[languageId]
   switch (languageId) {
     case 'python':
       config ??= 'uv run python'

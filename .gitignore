@@ -1,5 +1,5 @@
 node_modules
-out
-/.eslintcache
-/*.vsix
+dist
+.eslintcache
+*.vsix
 /test.*

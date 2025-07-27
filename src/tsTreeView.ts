@@ -13,7 +13,7 @@ import {
   type ProviderResult,
   type TreeDataProvider,
 } from 'vscode'
-import { Node, type Tree } from 'web-tree-sitter'
+import type { Node, Tree } from 'web-tree-sitter'
 import { getExtConfig } from './config'
 import {
   getParsedTree,

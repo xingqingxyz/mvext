@@ -18,6 +18,7 @@ import {
 import { TransformCodeActionProvider } from './tsCodeAction/provider'
 import { initTSParser } from './tsParser'
 import { registerTSTreeView } from './tsTreeView'
+import { isWeb } from './util'
 import { terminalRunCode } from './util/terminalRunCode'
 
 export async function activate(context: ExtensionContext) {
@@ -26,8 +27,10 @@ export async function activate(context: ExtensionContext) {
   HexColorProvider.init(context)
   new InvokeCompleteProvider(context)
   new TransformCodeActionProvider(context)
-  new StyluaFormatter(context)
-  new ShfmtFormatter(context)
+  if (!isWeb) {
+    new StyluaFormatter(context)
+    new ShfmtFormatter(context)
+  }
   new MarkdownBlockRunProvider(context)
   context.subscriptions.push(
     commands.registerCommand('mvext.terminalRunCode', terminalRunCode),
@@ -43,7 +46,6 @@ export async function activate(context: ExtensionContext) {
       transformCaseWithPicker,
     ),
     commands.registerCommand('mvext.renameWithCase', renameWithCase),
-    commands.registerCommand('mvext.evalSelection', evalSelection),
     commands.registerCommand(
       'mvext.terminalEvalSelection',
       terminalEvalSelection,
@@ -56,5 +58,8 @@ export async function activate(context: ExtensionContext) {
     commands.registerCommand('mvext.terminalLaunchArgs', (uri) =>
       terminalLaunchArgs(context, uri),
     ),
+    ...(isWeb
+      ? []
+      : [commands.registerCommand('mvext.evalSelection', evalSelection)]),
   )
 }

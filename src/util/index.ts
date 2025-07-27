@@ -1,12 +1,21 @@
 import { execFile } from 'child_process'
 import { promisify } from 'util'
 import type { CancellationToken } from 'vscode'
-export { setTimeout as setTimeoutPm } from 'timers/promises'
 
+export const isProd = process.env.NODE_ENV === 'production'
+export const isWeb = isProd || process.env.NODE_ENV === 'web'
 export const isWin32 = process.platform === 'win32'
-export const execFilePm = promisify(execFile)
+export const execFilePm = /* @__PURE__ */ promisify(execFile)
 
 export function noop(): undefined {}
+
+export function setTimeoutPm<T = void>(timeout: number, value?: T) {
+  return new Promise<T>((resolve) => {
+    setTimeout(() => {
+      resolve(value!)
+    }, timeout)
+  })
+}
 
 export function tokenToSignal(token: CancellationToken): AbortSignal {
   const controller = new AbortController()

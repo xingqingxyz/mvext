@@ -1,13 +1,10 @@
-import { tokenToSignal } from '@/util'
-import { readFile } from 'fs/promises'
+import { noop } from '@/util'
 import { homedir } from 'os'
-import path from 'path'
 import {
   CompletionItemKind,
   Range,
+  Uri,
   workspace,
-  type CancellationToken,
-  type CompletionContext,
   type CompletionItem,
   type CompletionItemProvider,
   type Position,
@@ -15,37 +12,31 @@ import {
 } from 'vscode'
 
 export class UserCompleteProvider implements CompletionItemProvider {
-  async provideCompletionItems(
-    document: TextDocument,
-    position: Position,
-    token: CancellationToken,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    context: CompletionContext,
-  ) {
+  async provideCompletionItems(document: TextDocument, position: Position) {
     const needle = document.getText(
       document.getWordRangeAtPosition(position) ??
         new Range(position, position),
     )
-    const wordsFile = path.join(
-      workspace.getWorkspaceFolder(document.uri)?.uri.fsPath ?? homedir(),
+    const wordsUri = Uri.joinPath(
+      workspace.getWorkspaceFolder(document.uri)?.uri ?? Uri.file(homedir()),
       '.vscode/words.txt',
     )
-    return (
-      await readFile(wordsFile, {
-        signal: tokenToSignal(token),
-        encoding: 'utf-8',
-      }).catch(() => '')
+    return await workspace.fs.readFile(wordsUri).then(
+      (bytes) =>
+        new TextDecoder('utf-8', { fatal: true })
+          .decode(bytes)
+          .split(/\r?\n/g)
+          .filter((word) => word.includes(needle))
+          .map(
+            (word) =>
+              ({
+                label: word,
+                sortText: '10',
+                detail: wordsUri.fsPath,
+                kind: CompletionItemKind.Keyword,
+              }) as CompletionItem,
+          ),
+      noop,
     )
-      .split(/\r?\n/g)
-      .filter((word) => word.includes(needle))
-      .map(
-        (word) =>
-          ({
-            label: word,
-            sortText: '10',
-            detail: wordsFile,
-            kind: CompletionItemKind.Keyword,
-          }) as CompletionItem,
-      )
   }
 }

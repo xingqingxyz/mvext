@@ -9,8 +9,16 @@
         "isDefault": true
       },
       "isBackground": true,
-      "problemMatcher": ["$rollup-watch"],
-      "label": "npm: watch"
+      "problemMatcher": ["$rollup-watch"]
+    },
+    {
+      "type": "npm",
+      "script": "watch-web",
+      "group": {
+        "kind": "build"
+      },
+      "isBackground": true,
+      "problemMatcher": ["$rollup-watch"]
     }
   ]
 }

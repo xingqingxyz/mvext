@@ -3,8 +3,15 @@
     "onStartupFinished"
   ],
   "author": "Ming Chen",
+  "browser": "./dist/extension.web.js",
   "bugs": {
     "url": "https://github.com/xingqingxyz/mvext/issues"
+  },
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": true
+    },
+    "virtualWorkspaces": true
   },
   "categories": [
     "Other",
@@ -94,7 +101,6 @@
     "configuration": {
       "properties": {
         "mvext.evalSelection.languages": {
-          "markdownDescription": "Map of language to excutable command for eval selections.",
           "additionalProperties": {
             "type": "string"
           },
@@ -108,6 +114,7 @@
             "typescript": "bun x tsx -p",
             "typescriptreact": "bun x tsx -p"
           },
+          "markdownDescription": "Map of language to excutable command for eval selections.",
           "type": "object"
         },
         "mvext.pathComplete.debounceTimeMs": {
@@ -147,59 +154,6 @@
           "markdownDescription": "Formatter stylua's extra command line args",
           "type": "array"
         },
-        "mvext.treeSitter.syncedLanguages": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "enum": [
-              "csharp",
-              "cpp",
-              "css",
-              "go",
-              "ini",
-              "java",
-              "javascript",
-              "javascriptreact",
-              "typescript",
-              "typescriptreact",
-              "python",
-              "ruby",
-              "rust"
-            ]
-          },
-          "default": [
-            "css",
-            "csharp",
-            "go",
-            "javascript",
-            "javascriptreact",
-            "python",
-            "shellscript",
-            "typescript",
-            "typescriptreact"
-          ],
-          "markdownDescription": "Tree-Sitter synced languages for code actions and completions."
-        },
-        "mvext.terminalLaunch.languages": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "default": [
-            "bat",
-            "csharp",
-            "dart",
-            "fsharp",
-            "go",
-            "javascript",
-            "javascriptreact",
-            "python",
-            "shellscript",
-            "typescript",
-            "typescriptreact"
-          ],
-          "markdownDescription": "Terminal launch languages to show launch menus."
-        },
         "mvext.terminalLaunch.languageMap": {
           "additionalProperties": {
             "description": "Language Id : Launch Config",
@@ -220,6 +174,26 @@
           },
           "markdownDescription": "Languages launch config definitions",
           "type": "object"
+        },
+        "mvext.terminalLaunch.languages": {
+          "default": [
+            "bat",
+            "csharp",
+            "dart",
+            "fsharp",
+            "go",
+            "javascript",
+            "javascriptreact",
+            "python",
+            "shellscript",
+            "typescript",
+            "typescriptreact"
+          ],
+          "items": {
+            "type": "string"
+          },
+          "markdownDescription": "Terminal launch languages to show launch menus.",
+          "type": "array"
         },
         "mvext.terminalRunCode.defaultLanguageId": {
           "default": "powershell",
@@ -254,6 +228,38 @@
           "markdownDescription": "Command `mvext.transformCaseDefault` use this as transform to target case",
           "scope": "language-overridable",
           "type": "string"
+        },
+        "mvext.treeSitter.syncedLanguages": {
+          "default": [
+            "css",
+            "csharp",
+            "go",
+            "javascript",
+            "javascriptreact",
+            "python",
+            "typescript",
+            "typescriptreact"
+          ],
+          "items": {
+            "enum": [
+              "csharp",
+              "cpp",
+              "css",
+              "go",
+              "ini",
+              "java",
+              "javascript",
+              "javascriptreact",
+              "typescript",
+              "typescriptreact",
+              "python",
+              "ruby",
+              "rust"
+            ],
+            "type": "string"
+          },
+          "markdownDescription": "Tree-sitter synced languages for code actions and completions.",
+          "type": "array"
         }
       },
       "title": "Ready Go!"
@@ -295,79 +301,79 @@
         "when": "editorTextFocus && editorLangId != powershell"
       },
       {
-        "command": "mvext.invokeComplete",
         "args": "css",
+        "command": "mvext.invokeComplete",
         "key": "alt+c ctrl+space",
         "when": "editorTextFocus"
       },
       {
-        "command": "mvext.invokeComplete",
         "args": "dict",
+        "command": "mvext.invokeComplete",
         "key": "alt+d ctrl+space",
         "when": "editorTextFocus"
       },
       {
-        "command": "mvext.invokeComplete",
         "args": "line",
+        "command": "mvext.invokeComplete",
         "key": "alt+l ctrl+space",
         "when": "editorTextFocus"
       },
       {
-        "command": "mvext.invokeComplete",
         "args": "path",
+        "command": "mvext.invokeComplete",
         "key": "alt+p ctrl+space",
         "when": "editorTextFocus"
       },
       {
-        "command": "mvext.invokeComplete",
         "args": "user",
+        "command": "mvext.invokeComplete",
         "key": "alt+u ctrl+space",
         "when": "editorTextFocus"
       },
       {
-        "command": "mvext.refreshComplete",
         "args": "css",
+        "command": "mvext.refreshComplete",
         "key": "alt+c",
         "when": "editorTextFocus && suggestWidgetVisible"
       },
       {
-        "command": "mvext.refreshComplete",
         "args": "dict",
+        "command": "mvext.refreshComplete",
         "key": "alt+d",
         "when": "editorTextFocus && suggestWidgetVisible"
       },
       {
-        "command": "mvext.refreshComplete",
         "args": "line",
+        "command": "mvext.refreshComplete",
         "key": "alt+l",
         "when": "editorTextFocus && suggestWidgetVisible"
       },
       {
-        "command": "mvext.refreshComplete",
         "args": "path",
+        "command": "mvext.refreshComplete",
         "key": "alt+p",
         "when": "editorTextFocus && suggestWidgetVisible"
       },
       {
-        "command": "mvext.refreshComplete",
         "args": "user",
+        "command": "mvext.refreshComplete",
         "key": "alt+u",
         "when": "editorTextFocus && suggestWidgetVisible"
       }
     ],
     "menus": {
-      "editor/title/run": [
-        {
-          "alt": "mvext.terminalLaunchArgs",
-          "command": "mvext.terminalLaunch",
-          "when": "editorLangId in config.mvext.terminalLaunch.languages"
-        }
-      ],
       "editor/title/context": [
         {
           "command": "mvext.refreshTsTreeView",
           "group": "navigation",
           "when": "editorLangId in config.mvext.treeSitter.syncedLanguages"
+        }
+      ],
+      "editor/title/run": [
+        {
+          "alt": "mvext.terminalLaunchArgs",
+          "command": "mvext.terminalLaunch",
+          "when": "editorLangId in config.mvext.terminalLaunch.languages"
         }
       ],
       "explorer/context": [
@@ -460,63 +466,80 @@
     "views": {
       "explorer": [
         {
+          "contextualTitle": "Tree-sitter Tree View",
           "icon": "$(list-tree)",
           "id": "mvext.tsTreeView",
-          "contextualTitle": "Tree-sitter Tree View",
           "name": "Tree-sitter Tree View"
         }
       ]
     }
   },
+  "dependencies": {
+    "@vscode/tree-sitter-wasm": "^0.1.4",
+    "os-browserify": "^0.3.0",
+    "path-browserify": "^1.0.1",
+    "process": "^0.11.10",
+    "strip-ansi": "^7.1.0",
+    "web-tree-sitter": "^0.25.8",
+    "which": "^5.0.0"
+  },
   "description": "Invoke terminal commands, eval selections and invoke complete.",
   "devDependencies": {
-    "@eslint/js": "^9.31.0",
+    "@eslint/js": "^9.32.0",
+    "@rollup/plugin-alias": "^5.1.1",
     "@rollup/plugin-commonjs": "^28.0.6",
     "@rollup/plugin-node-resolve": "^16.0.1",
     "@rollup/plugin-replace": "^6.0.2",
     "@rollup/plugin-terser": "^0.4.4",
     "@rollup/plugin-typescript": "^12.1.4",
     "@swc-node/register": "^1.10.10",
+    "@types/emscripten": "^1.40.1",
     "@types/mocha": "^10.0.10",
     "@types/node": "^22.16.5",
     "@types/vscode": "^1.102.0",
     "@types/which": "^3.0.4",
-    "@vscode/tree-sitter-wasm": "^0.1.4",
-    "eslint": "^9.31.0",
+    "eslint": "^9.32.0",
     "lint-staged": "^16.1.2",
     "mocha": "^11.7.1",
     "prettier": "^3.6.2",
-    "rollup": "^4.45.1",
+    "rollup": "^4.46.0",
     "simple-git-hooks": "^2.13.0",
-    "strip-ansi": "^7.1.0",
     "tslib": "^2.8.1",
     "typescript": "^5.8.3",
-    "typescript-eslint": "^8.37.0",
-    "web-tree-sitter": "^0.25.8",
-    "which": "^5.0.0"
+    "typescript-eslint": "^8.38.0"
   },
   "displayName": "Ready Go!",
   "engines": {
     "vscode": "^1.102.0"
   },
-  "license": "MIT",
-  "lint-staged": {
-    "*.{js,ts,json,md}": "prettier -w",
-    "*.{js,ts}": "eslint --fix --cache"
-  },
-  "main": "./out/extension.js",
-  "name": "mvext",
-  "packageManager": "pnpm@10.13.1",
-  "prettier": {
-    "semi": false,
-    "singleQuote": true
-  },
+  "extensionKind": [
+    "ui",
+    "workspace"
+  ],
   "keywords": [
     "tree-sitter",
     "refactor",
     "highlights",
     "markdown"
   ],
+  "license": "MIT",
+  "lint-staged": {
+    "*.{mjs,js,ts,json,md}": "prettier -w",
+    "*.{js,ts}": "eslint --fix --cache"
+  },
+  "main": "./dist/extension.mjs",
+  "mocha": {
+    "extension": "ts",
+    "require": "@swc-node/register/esm-register",
+    "spec": "src/test/unit/**/*.test.ts",
+    "watch-files": "src/**"
+  },
+  "name": "mvext",
+  "packageManager": "pnpm@10.13.1",
+  "prettier": {
+    "semi": false,
+    "singleQuote": true
+  },
   "private": true,
   "publisher": "xingqingxyz",
   "repository": {
@@ -524,15 +547,17 @@
     "url": "https://github.com/xingqingxyz/mvext"
   },
   "scripts": {
-    "ext-install": "vsce pack -o out/mvext.vsix && code --install-extension out/mvext.vsix",
-    "lint": "eslint --fix --cache src",
-    "test": "mocha -r @swc-node/register/esm-register --extension ts src/test/**/*.test.ts",
+    "lint": "tsc && eslint --fix --cache src",
+    "test": "mocha",
     "vscode:prepublish": "rollup -c --environment NODE_ENV:production",
-    "watch": "rollup -c -w"
+    "watch": "rollup -c -w",
+    "watch-web": "rollup -c -w --environment NODE_ENV:web"
   },
   "simple-git-hooks": {
-    "pre-commit": "pnpm exec lint-staged"
+    "pre-commit": "pnpm exec lint-staged && pnpm test"
   },
-  "type": "module",
-  "version": "0.17.0"
+  "version": "0.18.0",
+  "vsce": {
+    "dependencies": false
+  }
 }

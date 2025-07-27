@@ -22,7 +22,7 @@ export class PathCompleteProvider implements CompletionItemProvider {
   static readonly triggerCharacters = isWin32 ? '\\/' : '/'
   static readonly rePath = /(?:[-\w\\/.+,#$%{}[\]@!~=]|[^\x00-\xff])+/
   static readonly reEnvVar = /\$\{(\w+)\}|\$(\w+)/g
-  static readonly kindMap = Object.freeze({
+  static readonly kindMap = /* @__PURE__ */ Object.freeze({
     [FileType.Directory]: CompletionItemKind.Folder,
     [FileType.SymbolicLink]: CompletionItemKind.Reference,
     [FileType.File]: CompletionItemKind.File,

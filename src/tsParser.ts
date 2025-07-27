@@ -1,13 +1,19 @@
-import path from 'path'
 import {
   Range,
   Selection,
+  Uri,
   workspace,
   type ExtensionContext,
   type Position,
   type TextDocument,
 } from 'vscode'
-import { Language, Parser, Tree, type Node, type Point } from 'web-tree-sitter'
+import {
+  Language,
+  Parser,
+  type Node,
+  type Point,
+  type Tree,
+} from 'web-tree-sitter'
 import { getExtConfig } from './config'
 
 export type TSLanguageId =
@@ -59,7 +65,7 @@ const tsLanguageIdMap = Object.freeze({
 const parsers = {} as Record<TSLanguageId, Parser>
 const parserActiveDocumentMap = new Map<Parser, TextDocument>()
 const treeMap = new Map<TextDocument, Tree>()
-let extensionPath: string
+let extensionUri: Uri
 
 export async function getParser(
   languageId: TSLanguageId,
@@ -68,9 +74,11 @@ export async function getParser(
     parsers[languageId] ??
     (parsers[languageId] = new Parser().setLanguage(
       await Language.load(
-        path.join(
-          extensionPath,
-          `resources/wasm/tree-sitter-${tsLanguageIdMap[languageId]}.wasm`,
+        await workspace.fs.readFile(
+          Uri.joinPath(
+            extensionUri,
+            `dist/tree-sitter-${tsLanguageIdMap[languageId]}.wasm`,
+          ),
         ),
       ),
     ))
@@ -154,9 +162,14 @@ async function setSyncedLanguages(languages: TSLanguageId[]) {
 }
 
 export async function initTSParser(context: ExtensionContext) {
+  void ({ extensionUri } = context)
   let syncedLanguages: TSLanguageId[]
-  void ({ extensionPath } = context)
-  await Parser.init()
+  // @ts-expect-error not well typed library
+  await Parser.init({
+    wasmBinary: await workspace.fs.readFile(
+      Uri.joinPath(extensionUri, 'dist/tree-sitter.wasm'),
+    ),
+  })
   await setSyncedLanguages(
     (syncedLanguages = getExtConfig('treeSitter.syncedLanguages')),
   )
