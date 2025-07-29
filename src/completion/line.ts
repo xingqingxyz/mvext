@@ -4,7 +4,6 @@ import {
   window,
   workspace,
   type CancellationToken,
-  type CompletionContext,
   type CompletionItem,
   type CompletionItemProvider,
   type Position,
@@ -34,8 +33,6 @@ export class LineCompleteProvider implements CompletionItemProvider {
     document: TextDocument,
     position: Position,
     token: CancellationToken,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    context: CompletionContext,
   ) {
     const { selection } = window.activeTextEditor!
     const range = selection.isEmpty

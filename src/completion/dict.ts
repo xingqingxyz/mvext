@@ -4,7 +4,6 @@ import {
   CompletionItemKind,
   Range,
   type CancellationToken,
-  type CompletionContext,
   type CompletionItem,
   type CompletionItemProvider,
   type ExtensionContext,
@@ -23,8 +22,6 @@ export class DictCompleteProvider implements CompletionItemProvider {
     document: TextDocument,
     position: Position,
     token: CancellationToken,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    context: CompletionContext,
   ) {
     const word = document.getText(
       document.getWordRangeAtPosition(position) ??

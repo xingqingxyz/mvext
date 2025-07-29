@@ -59,8 +59,11 @@ const baseConfig = defineConfig({
       terser({
         maxWorkers: os.availableParallelism(),
         ecma: isWeb ? undefined : 2023,
-        compress: { booleans_as_integers: true },
-        mangle: { eval: true /* for web-tree-sitter */ },
+        mangle: {
+          eval: true /* for web-tree-sitter */,
+          keep_fnames:
+            /^(?:templateToConcat|concatToTemplate|ifToBinary|ifToTernary|ifToSwitch|ifToSwitchLeft|binaryToIf|ternaryToIf|ternaryToSwitch|ternaryToSwitchLeft|whileToDoWhile|doWhileToWhile|swapTernary|swapIf|arrowToFunctionExpression|arrowToFunction|functionExpressionToArrow|functionToArrow|splitDeclaration|cast|callWrap)$/,
+        },
       }),
     {
       async buildStart() {

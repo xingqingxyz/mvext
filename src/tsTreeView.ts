@@ -7,40 +7,49 @@ import {
   TreeItem,
   TreeItemCollapsibleState,
   window,
-  type CancellationToken,
   type Event,
   type ExtensionContext,
   type ProviderResult,
+  type Range,
   type TreeDataProvider,
 } from 'vscode'
-import type { Node, Tree } from 'web-tree-sitter'
-import { getExtConfig } from './config'
+import { Node, type Tree } from 'web-tree-sitter'
 import {
   getParsedTree,
   nodeRangeToString,
   nodeToRange,
+  positionToPoint,
   type TSLanguageId,
 } from './tsParser'
 
 class TSTreeDataProvier implements TreeDataProvider<Node> {
   private tree?: Tree | null
+  private root?: Node // ts use .equals() rather object equality
   private languageId?: TSLanguageId
   private _onDidChangeTreeData = new EventEmitter<Node[] | undefined>()
-  async refresh() {
+  refresh() {
     const { document } = window.activeTextEditor!
     this.tree = getParsedTree(document)
+    this.root = this.tree?.rootNode
     this.languageId = document.languageId as TSLanguageId
-    if (!getExtConfig('treeSitter.syncedLanguages').includes(this.languageId)) {
-      return
-    }
     this._onDidChangeTreeData.fire(undefined)
+  }
+  getNodeAtRange(range: Range) {
+    return this.tree!.rootNode.descendantForPosition(
+      positionToPoint(range.start),
+      positionToPoint(range.end),
+    )!
   }
   onDidChangeTreeData: Event<Node | Node[] | null | undefined> | undefined =
     this._onDidChangeTreeData.event
   getTreeItem(element: Node): TreeItem | Thenable<TreeItem> {
     const item = new TreeItem(
       element.type,
-      element.childCount && TreeItemCollapsibleState.Expanded,
+      element.childCount
+        ? element === this.root
+          ? TreeItemCollapsibleState.Expanded
+          : TreeItemCollapsibleState.Collapsed
+        : TreeItemCollapsibleState.None,
     )
     item.id = '' + element.id
     item.iconPath = new ThemeIcon(
@@ -50,26 +59,23 @@ class TSTreeDataProvier implements TreeDataProvider<Node> {
           ? 'symbol-field'
           : 'symbol-text',
     )
-    item.description = element.grammarType + ' ' + nodeRangeToString(element)
+    item.description = nodeRangeToString(element)
     return item
   }
   getChildren(element?: Node): ProviderResult<Node[]> {
-    return this.tree
-      ? element
-        ? (element.children as Node[])
-        : [this.tree.rootNode]
-      : []
+    return element ? (element.children as Node[]) : this.root ? [this.root] : []
   }
-  resolveTreeItem(
-    item: TreeItem,
-    element: Node,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    token: CancellationToken,
-  ): ProviderResult<TreeItem> {
-    item.tooltip = new MarkdownString().appendCodeblock(
-      element.text,
-      this.languageId,
-    )
+  getParent(element: Node): ProviderResult<Node> {
+    return element.parent
+  }
+  resolveTreeItem(item: TreeItem, element: Node): ProviderResult<TreeItem> {
+    item.tooltip = new MarkdownString()
+      .appendMarkdown(
+        `**${element.parent?.fieldNameForChild(
+          element.parent?.children.findIndex((n) => n!.equals(element)),
+        )}**: \`${element.grammarType}\``,
+      )
+      .appendCodeblock(element.text, this.languageId)
     return item
   }
 }
@@ -86,6 +92,18 @@ export function registerTSTreeView(context: ExtensionContext) {
   })
   context.subscriptions.push(
     commands.registerCommand(
+      'mvext.revealInTsTreeView',
+      () => (
+        view.visible || provider.refresh(),
+        view.reveal(
+          provider.getNodeAtRange(window.activeTextEditor!.selection),
+          {
+            expand: true,
+          },
+        )
+      ),
+    ),
+    commands.registerCommand(
       'mvext.refreshTsTreeView',
       provider.refresh.bind(provider),
     ),
@@ -98,8 +116,9 @@ export function registerTSTreeView(context: ExtensionContext) {
     view.onDidChangeSelection(async ({ selection: [node] }) => {
       if (node) {
         const range = nodeToRange(node)
-        window.activeTextEditor!.revealRange(range)
-        window.activeTextEditor!.setDecorations(tsTreeViewDT, [{ range }])
+        const editor = window.activeTextEditor!
+        editor.revealRange(range)
+        editor.setDecorations(tsTreeViewDT, [{ range }])
       }
     }),
   )

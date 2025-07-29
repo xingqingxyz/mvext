@@ -1,4 +1,5 @@
 import {
+  commands,
   type ExtensionContext,
   type Terminal,
   type Uri,
@@ -6,7 +7,7 @@ import {
   workspace,
 } from 'vscode'
 import { getExtConfig } from './config'
-import { WStateKey } from './context'
+import { ContextKey, WStateKey } from './context'
 
 /**
  * Resolves python,(java|type)script(react)?,shellscript,powershell,csharp,
@@ -110,4 +111,27 @@ export async function terminalLaunchArgs(context: ExtensionContext, uri: Uri) {
   }
   context.workspaceState.update(WStateKey.terminalLaunchLastArgs, argStr)
   return terminalLaunch(uri, undefined, argStr)
+}
+
+export async function registerTerminalLaunch(context: ExtensionContext) {
+  await commands.executeCommand(
+    'setContext',
+    ContextKey.terminalLaunchLanguages,
+    Object.keys(getExtConfig('terminalLaunch.languageMap')),
+  )
+  context.subscriptions.push(
+    commands.registerCommand('mvext.terminalLaunch', terminalLaunch),
+    commands.registerCommand('mvext.terminalLaunchArgs', (uri) =>
+      terminalLaunchArgs(context, uri),
+    ),
+    workspace.onDidChangeConfiguration(
+      (e) =>
+        e.affectsConfiguration('mvext.') &&
+        commands.executeCommand(
+          'setContext',
+          ContextKey.terminalLaunchLanguages,
+          Object.keys(getExtConfig('terminalLaunch.languageMap')),
+        ),
+    ),
+  )
 }

@@ -1,4 +1,9 @@
-import { getParsedTree, nodeToRange, positionToPoint } from '@/tsParser'
+import {
+  getDescendantPath,
+  getParsedTree,
+  nodeToRange,
+  positionToPoint,
+} from '@/tsParser'
 import {
   CodeActionKind,
   CodeActionTriggerKind,
@@ -6,7 +11,6 @@ import {
   languages,
   SnippetTextEdit,
   WorkspaceEdit,
-  type CancellationToken,
   type CodeAction,
   type CodeActionContext,
   type CodeActionProvider,
@@ -33,6 +37,7 @@ import {
   ifToSwitchLeft,
   ifToTernary,
   splitDeclaration,
+  swapIf,
   swapTernary,
   templateToConcat,
   ternaryToIf,
@@ -49,14 +54,6 @@ interface CodeActionData extends CodeAction {
     node: Node
     callback: (root: Node) => string | SnippetString | undefined
   }
-}
-
-function getDescendantPath(root: Node, descendant: Node) {
-  const nodePath = []
-  do {
-    nodePath.push(root)
-  } while ((root = root.childWithDescendant(descendant)!))
-  return nodePath
 }
 
 function getOrderedTypePath(nodePath: Node[]) {
@@ -105,6 +102,7 @@ export class TransformCodeActionProvider implements CodeActionProvider {
             [ifToSwitch, node],
             [ifToTernary, node],
             [ifToBinary, node],
+            [swapIf, node],
           )
           break
         case 'binary_expression':
@@ -166,8 +164,6 @@ export class TransformCodeActionProvider implements CodeActionProvider {
     document: TextDocument,
     range: Range | Selection,
     context: CodeActionContext,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    token: CancellationToken,
   ): ProviderResult<(CodeAction | Command)[]> {
     if (
       context.triggerKind !== CodeActionTriggerKind.Invoke ||
@@ -182,11 +178,7 @@ export class TransformCodeActionProvider implements CodeActionProvider {
     const orderedTypePath = getOrderedTypePathFromRange(tree, range)
     return orderedTypePath && this.getActions(orderedTypePath, document.uri)
   }
-  resolveCodeAction(
-    codeAction: CodeAction,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    token: CancellationToken,
-  ): ProviderResult<CodeAction> {
+  resolveCodeAction(codeAction: CodeAction): ProviderResult<CodeAction> {
     const { data } = codeAction as CodeActionData
     const newText = data.callback(data.node)
     if (!newText) {

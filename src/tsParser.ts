@@ -1,10 +1,11 @@
 import {
+  commands,
+  Position,
   Range,
   Selection,
   Uri,
   workspace,
   type ExtensionContext,
-  type Position,
   type TextDocument,
 } from 'vscode'
 import {
@@ -15,6 +16,7 @@ import {
   type Tree,
 } from 'web-tree-sitter'
 import { getExtConfig } from './config'
+import { ContextKey } from './context'
 
 export type TSLanguageId =
   | 'csharp'
@@ -86,12 +88,13 @@ export async function getParser(
 }
 
 export function getParseCallback(document: TextDocument) {
-  return (index: number, position: Point) =>
-    position.row < document.lineCount
-      ? document
-          .getText(document.lineAt(position.row).rangeIncludingLineBreak)
-          .slice(position.column)
-      : undefined
+  // arg point is untrusted
+  return (index: number) => {
+    const position = document.positionAt(index)
+    return document.getText(
+      new Range(position, position.with(position.line + 1)),
+    )
+  }
 }
 
 export function positionToPoint(position: Position): Point {
@@ -99,6 +102,10 @@ export function positionToPoint(position: Position): Point {
     row: position.line,
     column: position.character,
   }
+}
+
+export function pointToPosition(point: Point) {
+  return new Position(point.row, point.column)
 }
 
 export function nodeToRange<const T extends boolean>(
@@ -117,6 +124,14 @@ export function nodeRangeToString(node: Node) {
   return `[${node.startPosition.row}, ${node.startPosition.column}] - [${node.endPosition.row}, ${node.endPosition.column}]`
 }
 
+export function getDescendantPath(root: Node, descendant: Node) {
+  const nodePath = []
+  do {
+    nodePath.push(root)
+  } while ((root = root.childWithDescendant(descendant)!))
+  return nodePath
+}
+
 export function getParsedTree(document: TextDocument) {
   const parser = parsers[document.languageId as TSLanguageId]
   if (!parser) {
@@ -132,9 +147,13 @@ export function getParsedTree(document: TextDocument) {
 }
 
 async function setSyncedLanguages(languages: TSLanguageId[]) {
-  const languageIds = new Set(languages)
+  await commands.executeCommand(
+    'setContext',
+    ContextKey.tsSyncedLanguages,
+    languages,
+  )
   for (const languageId of Object.keys(parsers) as TSLanguageId[]) {
-    if (languageIds.has(languageId)) {
+    if (languages.includes(languageId)) {
       continue
     }
     for (const document of Array.from(treeMap.keys())) {
@@ -147,7 +166,7 @@ async function setSyncedLanguages(languages: TSLanguageId[]) {
   }
   for (const document of workspace.textDocuments) {
     if (
-      !languageIds.has(document.languageId as TSLanguageId) ||
+      !languages.includes(document.languageId as TSLanguageId) ||
       treeMap.has(document)
     ) {
       continue

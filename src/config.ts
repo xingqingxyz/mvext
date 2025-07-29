@@ -4,17 +4,15 @@ import type { TerminalRunLanguageIds } from './util/terminalRunCode'
 import type { WordCase } from './util/transformCaseHelper'
 
 export type MvextConfig = {
-  'evalSelection.languages': Record<string, string>
-  'pathComplete.prefixMap': Record<string, string>
+  'evalSelection.languageMap': Record<string, string>
   'terminalLaunch.languageMap': Record<string, string>
-  'terminalLaunch.languages': string[]
+  'pathComplete.prefixMap': Record<string, string>
   'treeSitter.syncedLanguages': TSLanguageId[]
   'pathComplete.debounceTimeMs': number
   'terminalRunCode.defaultLanguageId': TerminalRunLanguageIds
   'transformCase.defaultCase': WordCase
   'shfmt.extraArgs': string[]
   'stylua.extraArgs': string[]
-  'invokeComplete.enabled': boolean
 }
 
 type ScopedConfigKey =

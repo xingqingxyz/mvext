@@ -10,5 +10,6 @@ export const enum WStateKey {
  * All extension setContext call keys
  */
 export const enum ContextKey {
-  terminalLaunchLanguages = 'mvext.terminalLaunch.languages',
+  tsSyncedLanguages = 'mvext.tsSyncedLanguages',
+  terminalLaunchLanguages = 'mvext.terminalLaunchLanguages',
 }

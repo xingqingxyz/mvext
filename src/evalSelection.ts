@@ -39,7 +39,7 @@ export async function evalSelection() {
   }
 
   const { document, selections } = editor
-  const config = getExtConfig('evalSelection.languages')
+  const config = getExtConfig('evalSelection.languageMap')
   let { languageId } = document
   if (!Object.hasOwn(config, languageId)) {
     languageId = getTerminalRunLanguageId(languageId)

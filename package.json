@@ -81,6 +81,16 @@
       },
       {
         "category": "mvext",
+        "command": "mvext.copyJsonPath",
+        "title": "Copy JSON Path at Selection"
+      },
+      {
+        "category": "mvext",
+        "command": "mvext.revealInTsTreeView",
+        "title": "Reveal Selection in Tree-sitter Tree View"
+      },
+      {
+        "category": "mvext",
         "command": "mvext.invokeComplete",
         "shortTitle": "Invoke Special Complete",
         "title": "Invoke Complete (css,dict,line,path,user)"
@@ -100,7 +110,7 @@
     ],
     "configuration": {
       "properties": {
-        "mvext.evalSelection.languages": {
+        "mvext.evalSelection.languageMap": {
           "additionalProperties": {
             "type": "string"
           },
@@ -174,26 +184,6 @@
           },
           "markdownDescription": "Languages launch config definitions",
           "type": "object"
-        },
-        "mvext.terminalLaunch.languages": {
-          "default": [
-            "bat",
-            "csharp",
-            "dart",
-            "fsharp",
-            "go",
-            "javascript",
-            "javascriptreact",
-            "python",
-            "shellscript",
-            "typescript",
-            "typescriptreact"
-          ],
-          "items": {
-            "type": "string"
-          },
-          "markdownDescription": "Terminal launch languages to show launch menus.",
-          "type": "array"
         },
         "mvext.terminalRunCode.defaultLanguageId": {
           "default": "powershell",
@@ -296,11 +286,6 @@
         "when": "editorTextFocus && !editorReadonly"
       },
       {
-        "command": "workbench.action.terminal.runSelectedText",
-        "key": "f8",
-        "when": "editorTextFocus && editorLangId != powershell"
-      },
-      {
         "args": "css",
         "command": "mvext.invokeComplete",
         "key": "alt+c ctrl+space",
@@ -362,28 +347,27 @@
       }
     ],
     "menus": {
-      "editor/title/context": [
-        {
-          "command": "mvext.refreshTsTreeView",
-          "group": "navigation",
-          "when": "editorLangId in config.mvext.treeSitter.syncedLanguages"
-        }
-      ],
       "editor/title/run": [
         {
           "alt": "mvext.terminalLaunchArgs",
           "command": "mvext.terminalLaunch",
-          "when": "editorLangId in config.mvext.terminalLaunch.languages"
+          "when": "editorLangId in mvext.terminalLaunchLanguages"
+        }
+      ],
+      "editor/context": [
+        {
+          "command": "mvext.revealInTsTreeView",
+          "when": "mvext.tsTreeView.visible && editorLangId in mvext.tsSyncedLanguages"
         }
       ],
       "explorer/context": [
         {
           "command": "mvext.terminalLaunch",
-          "when": "!listMultiSelection && resourceLangId in config.mvext.terminalLaunch.languages"
+          "when": "!listMultiSelection && resourceLangId in mvext.terminalLaunchLanguages"
         },
         {
           "command": "mvext.terminalLaunchArgs",
-          "when": "!listMultiSelection && resourceLangId in config.mvext.terminalLaunch.languages"
+          "when": "!listMultiSelection && resourceLangId in mvext.terminalLaunchLanguages"
         }
       ],
       "view/title": [
@@ -472,10 +456,17 @@
           "name": "Tree-sitter Tree View"
         }
       ]
-    }
+    },
+    "viewsWelcome": [
+      {
+        "view": "mvext.tsTreeView",
+        "contents": "This document language is not synced becase of the setting `mvext.treeSitter.syncedLanguages`."
+      }
+    ]
   },
   "dependencies": {
     "@vscode/tree-sitter-wasm": "^0.1.4",
+    "jsonc-parser": "^3.3.1",
     "os-browserify": "^0.3.0",
     "path-browserify": "^1.0.1",
     "process": "^0.11.10",

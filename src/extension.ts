@@ -8,8 +8,9 @@ import {
 import { ShfmtFormatter } from './formatter/shfmt'
 import { StyluaFormatter } from './formatter/stylua'
 import { HexColorProvider } from './hexColor'
+import { copyJsonPath } from './jsonPath'
 import { MarkdownBlockRunProvider } from './markdownBlockRun'
-import { terminalLaunch, terminalLaunchArgs } from './terminalLaunch'
+import { registerTerminalLaunch } from './terminalLaunch'
 import {
   renameWithCase,
   transformCaseDefault,
@@ -24,6 +25,7 @@ import { terminalRunCode } from './util/terminalRunCode'
 export async function activate(context: ExtensionContext) {
   await initTSParser(context)
   registerTSTreeView(context)
+  registerTerminalLaunch(context)
   HexColorProvider.init(context)
   new InvokeCompleteProvider(context)
   new TransformCodeActionProvider(context)
@@ -54,10 +56,7 @@ export async function activate(context: ExtensionContext) {
       'mvext.terminalFilterSelection',
       terminalFilterSelection,
     ),
-    commands.registerCommand('mvext.terminalLaunch', terminalLaunch),
-    commands.registerCommand('mvext.terminalLaunchArgs', (uri) =>
-      terminalLaunchArgs(context, uri),
-    ),
+    commands.registerCommand('mvext.copyJsonPath', copyJsonPath),
     ...(isWeb
       ? []
       : [commands.registerCommand('mvext.evalSelection', evalSelection)]),

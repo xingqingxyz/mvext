@@ -10,9 +10,9 @@ function unpackParentheses(node: Node) {
 export function templateToConcat(root: Node) {
   return (root.namedChildren as Node[])
     .map((n) =>
-      n.type === 'string_fragment'
-        ? JSON.stringify(n.text)
-        : `(${n.firstNamedChild!.text})`,
+      n.type === 'template_substitution'
+        ? `(${n.firstNamedChild!.text})`
+        : JSON.stringify(n.text),
     )
     .join(' + ')
 }
@@ -282,6 +282,10 @@ export function swapTernary(root: Node) {
   return `${root.childForFieldName('condition')!.text} ? ${root.childForFieldName('alternative')!.text} : ${root.childForFieldName('consequence')!.text}`
 }
 
+export function swapIf(root: Node) {
+  return `if ${root.childForFieldName('condition')!.text} ${root.childForFieldName('alternative')!.text} else ${root.childForFieldName('consequence')!.text}`
+}
+
 export function arrowToFunctionExpression(root: Node, name = '') {
   const asyncPrefix = root.firstChild!.type === 'async' ? 'async ' : ''
   let body
@@ -304,7 +308,7 @@ export function arrowToFunctionExpression(root: Node, name = '') {
   return `${asyncPrefix}function ${name}${
     root.childForFieldName('parameters')?.text ??
     `(${root.childForFieldName('parameter')!.text})`
-  } ${body}`
+  }${root.childForFieldName('return_type')?.text ?? ''} ${body}`
 }
 
 export function arrowToFunction(root: Node) {
@@ -342,7 +346,9 @@ export function functionExpressionToArrow(root: Node) {
   const asyncPrefix = root.firstChild!.type === 'async' ? 'async ' : ''
   const body = root.childForFieldName('body')!
   const children = shouldJoinStatementBlock(body.namedChildren as Node[])
-  return `${asyncPrefix}${root.childForFieldName('parameters')!.text} => ${
+  return `${asyncPrefix}${root.childForFieldName('parameters')!.text}${
+    root.childForFieldName('return_type')?.text ?? ''
+  } => ${
     children
       ? children.length > 1
         ? `((${children.map((n) => n.text).join('), (')}))`
