@@ -16,33 +16,38 @@ const isWeb = isProd || process.env.NODE_ENV === 'web'
 const baseConfig = defineConfig({
   input: 'src/extension.ts',
   output: {
-    file: `dist/extension${isWeb ? '.web.' : '.m'}js`,
+    file: `dist/extension.${isWeb ? '' : 'm'}js`,
     format: isWeb ? 'cjs' : 'es',
     sourcemap: !isProd,
   },
   shimMissingExports: true,
-  external: ['vscode'],
+  external: ['vscode', 'crypto?commonjs-external'],
   plugins: [
-    isWeb &&
-      alias({
-        entries: {
-          os: 'os-browserify',
-          path: 'path-browserify',
-          which: '@/shims/web/which.ts',
-          'web-tree-sitter': path.join(
-            fileURLToPath(import.meta.resolve('web-tree-sitter')),
-            '../tree-sitter.cjs',
+    alias({
+      entries: isWeb
+        ? {
+            os: 'os-browserify',
+            path: 'path-browserify',
+            which: '@/shims/web/which.ts',
+            'web-tree-sitter': path.join(
+              fileURLToPath(import.meta.resolve('web-tree-sitter')),
+              '../tree-sitter.cjs',
+            ),
+            ...[
+              'child_process',
+              'fs/promises',
+              'fs',
+              'module',
+              'url',
+              'util',
+              'crypto',
+            ].reduce((o, k) => ((o[k] = '@/shims/empty'), o), {}),
+          }
+        : ['sh-syntax', '@johnnymorganz/stylua/web', '@/shims/web'].reduce(
+            (o, k) => ((o[k] = '@/shims/empty'), o),
+            {},
           ),
-          ...[
-            'child_process',
-            'fs/promises',
-            'fs',
-            'module',
-            'url',
-            'util',
-          ].reduce((o, k) => ((o[k] = '@/shims/web'), o), {}),
-        },
-      }),
+    }),
     typescript(),
     nodeResolve({
       browser: isWeb,
@@ -84,7 +89,10 @@ const baseConfig = defineConfig({
               }),
             )
           )
-            .concat('node_modules/web-tree-sitter/tree-sitter.wasm')
+            .concat(
+              'node_modules/web-tree-sitter/tree-sitter.wasm',
+              'node_modules/tree-sitter-bash/tree-sitter-bash.wasm',
+            )
             .map((file) =>
               fs
                 .symlink(
@@ -93,6 +101,26 @@ const baseConfig = defineConfig({
                   'file',
                 )
                 .catch(console.error),
+            )
+            .concat(
+              isWeb
+                ? [
+                    fs
+                      .symlink(
+                        '../node_modules/@johnnymorganz/stylua/stylua.web/stylua_lib_bg.wasm',
+                        'dist/stylua.wasm',
+                        'file',
+                      )
+                      .catch(console.error),
+                    fs
+                      .symlink(
+                        '../node_modules/sh-syntax/main.wasm',
+                        'dist/shfmt.wasm',
+                        'file',
+                      )
+                      .catch(console.error),
+                  ]
+                : [],
             ),
         )
       },
@@ -110,7 +138,15 @@ export default isProd
           file: 'dist/extension.mjs',
           format: 'es',
         },
-        plugins: baseConfig.plugins.slice(1, -1),
+        plugins: [
+          alias({
+            entries: [
+              'sh-syntax',
+              '@johnnymorganz/stylua/web',
+              '@/shims/web',
+            ].reduce((o, k) => ((o[k] = '@/shims/empty'), o), {}),
+          }),
+        ].concat(baseConfig.plugins.slice(1, -1)),
       },
     ])
   : baseConfig

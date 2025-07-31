@@ -1,3 +1,4 @@
+import { javascript } from '@/tsLanguage/javascript'
 import {
   getDescendantPath,
   getParsedTree,
@@ -9,7 +10,9 @@ import {
   CodeActionTriggerKind,
   CompletionItemKind,
   languages,
+  SnippetString,
   SnippetTextEdit,
+  TextEdit,
   WorkspaceEdit,
   type CodeAction,
   type CodeActionContext,
@@ -19,7 +22,6 @@ import {
   type ProviderResult,
   type Range,
   type Selection,
-  type SnippetString,
   type TextDocument,
   type Uri,
 } from 'vscode'
@@ -81,22 +83,27 @@ export class TransformCodeActionProvider implements CodeActionProvider {
   constructor(context: ExtensionContext) {
     context.subscriptions.push(
       languages.registerCodeActionsProvider(
-        ['javascript', 'typescript', 'javascriptreact', 'typescriptreact'].map(
-          (language) => ({ language, scheme: 'file' }),
-        ),
+        [
+          'javascript',
+          'typescript',
+          'javascriptreact',
+          'typescriptreact',
+        ].flatMap((language) => [
+          { language, scheme: 'file' },
+          { language, scheme: 'vscode-vfs' },
+        ]),
         this,
       ),
     )
   }
   getActions(orderedTypePath: Node[], uri: Uri) {
-    const actions: [typeof ifToBinary, Node][] = []
-    const snippetsActions: [typeof cast, Node][] = []
+    const actions: [typeof ifToBinary | typeof cast, Node][] = []
     for (const node of orderedTypePath) {
-      switch (node.type) {
-        case 'arrow_function':
+      switch (node.typeId) {
+        case javascript.arrow_function:
           actions.push([arrowToFunctionExpression, node])
           break
-        case 'if_statement':
+        case javascript.if_statement:
           actions.push(
             [ifToSwitchLeft, node],
             [ifToSwitch, node],
@@ -105,10 +112,10 @@ export class TransformCodeActionProvider implements CodeActionProvider {
             [swapIf, node],
           )
           break
-        case 'binary_expression':
+        case javascript.binary_expression:
           actions.push([binaryToIf, node], [concatToTemplate, node])
           break
-        case 'ternary_expression':
+        case javascript.ternary_expression:
           actions.push(
             [ternaryToSwitchLeft, node],
             [ternaryToSwitch, node],
@@ -116,49 +123,38 @@ export class TransformCodeActionProvider implements CodeActionProvider {
             [swapTernary, node],
           )
           break
-        case 'template_string':
+        case javascript.template_string:
           actions.push([templateToConcat, node])
           break
-        case 'while_statement':
+        case javascript.while_statement:
           actions.push([whileToDoWhile, node])
           break
-        case 'do_statement':
+        case javascript.do_statement:
           actions.push([doWhileToWhile, node])
           break
-        case 'lexical_declaration':
-        case 'variable_declaration':
+        case javascript.lexical_declaration:
+        case javascript.variable_declaration:
           actions.push([arrowToFunction, node], [splitDeclaration, node])
           break
-        case 'function_expression':
+        case javascript.function_expression:
           actions.push([functionExpressionToArrow, node])
           break
-        case 'function_declaration':
+        case javascript.function_declaration:
           actions.push([functionToArrow, node])
           break
       }
       if (node.type.includes('expression')) {
-        snippetsActions.push([cast, node], [callWrap, node])
+        actions.push([cast, node], [callWrap, node])
       }
     }
-    return actions
-      .map(
-        ([callback, node]) =>
-          ({
-            title: `${callback.name}(${node.type})`,
-            kind: CodeActionKind.RefactorRewrite,
-            data: { kind: CompletionItemKind.Text, uri, node, callback },
-          }) as CodeAction,
-      )
-      .concat(
-        snippetsActions.map(
-          ([callback, node]) =>
-            ({
-              title: `${callback.name}(${node.type})`,
-              kind: CodeActionKind.RefactorRewrite,
-              data: { kind: CompletionItemKind.Snippet, uri, node, callback },
-            }) as CodeAction,
-        ),
-      )
+    return actions.map(
+      ([callback, node]) =>
+        ({
+          title: `${callback.name}(${node.type})`,
+          kind: CodeActionKind.RefactorRewrite,
+          data: { uri, node, callback },
+        }) as CodeAction,
+    )
   }
   provideCodeActions(
     document: TextDocument,
@@ -185,17 +181,13 @@ export class TransformCodeActionProvider implements CodeActionProvider {
       return
     }
     codeAction.edit = new WorkspaceEdit()
-    if (data.kind === CompletionItemKind.Snippet) {
-      codeAction.edit.set(data.uri, [
-        new SnippetTextEdit(nodeToRange(data.node), newText as SnippetString),
-      ])
-    } else {
-      codeAction.edit.replace(
-        data.uri,
+    codeAction.edit.set(data.uri, [
+      new (typeof newText === 'string' ? TextEdit : SnippetTextEdit)(
         nodeToRange(data.node),
-        newText as string,
-      )
-    }
+        // @ts-expect-error stupid
+        newText,
+      ),
+    ])
     return codeAction
   }
 }

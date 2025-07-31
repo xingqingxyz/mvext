@@ -39,7 +39,7 @@ function colorToHex(color: Color): string {
 }
 
 export class HexColorProvider implements DocumentColorProvider, Disposable {
-  static readonly reColor = /#(?:[\da-f]{8}|[\da-f]{6}|[\da-f]{3,4})/gi
+  static readonly reColor = /#(?:[\da-f]{3,4}\b|[\da-f]{6}(?:[\da-f]{2})?\b)/gi
   static readonly providersMap = new Map<string, HexColorProvider>()
   private static context: ExtensionContext
   static init(context: ExtensionContext) {
@@ -72,34 +72,38 @@ export class HexColorProvider implements DocumentColorProvider, Disposable {
     }
   }
 
-  dispose: () => void
-  constructor(languageId: string) {
-    const provider = languages.registerColorProvider([languageId], this)
+  dispose: () => unknown
+  constructor(language: string) {
+    const provider = languages.registerColorProvider(
+      [
+        { scheme: 'file', language },
+        { scheme: 'vscode-vfs', language },
+      ],
+      this,
+    )
     this.dispose = provider.dispose.bind(provider)
   }
   provideDocumentColors(
     document: TextDocument,
     token: CancellationToken,
   ): ProviderResult<ColorInformation[]> {
-    const text = document.getText()
     const colors: ColorInformation[] = []
-    for (const matches of text.matchAll(HexColorProvider.reColor)) {
+    for (const matches of document
+      .getText()
+      .matchAll(HexColorProvider.reColor)) {
       if (token.isCancellationRequested) {
         return
       }
-      const s = matches.index
-      const e = s + matches[0].length
-      const range = new Range(document.positionAt(s), document.positionAt(e))
+      const start = document.positionAt(matches.index)
+      const range = new Range(
+        start,
+        start.with(undefined, start.character + matches[0].length),
+      )
       colors.push(new ColorInformation(range, hexToColor(matches[0])))
     }
     return colors
   }
-  /* eslint-disable @typescript-eslint/no-unused-vars */
-  provideColorPresentations(
-    color: Color,
-    context: { readonly document: TextDocument; readonly range: Range },
-    token: CancellationToken,
-  ): ProviderResult<ColorPresentation[]> {
+  provideColorPresentations(color: Color): ProviderResult<ColorPresentation[]> {
     return [new ColorPresentation(colorToHex(color))]
   }
 }

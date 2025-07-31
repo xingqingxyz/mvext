@@ -9,9 +9,9 @@ export class SearchDict {
     )
   }
   async search(word: string) {
-    const words = new TextDecoder('utf-8', { fatal: true })
-      .decode(await workspace.fs.readFile(this.dictUri))
-      .split('\n')
+    const words = (
+      await workspace.decode(await workspace.fs.readFile(this.dictUri))
+    ).split('\n')
     let i = 0,
       j = words.length
     while (i < j) {

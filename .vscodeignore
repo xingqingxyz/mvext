@@ -1,6 +1,7 @@
 **
 !resources
-!dist/extension.web.js
+!dist/extension.js
+!dist/extension.js.map
 !dist/extension.mjs
 !dist/*.wasm
 !CHANGELOG.md

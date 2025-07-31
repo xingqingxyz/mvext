@@ -167,11 +167,13 @@ export async function terminalRunCode(
       break
   }
   const terminal =
-    window.terminals.find(
-      (t) =>
-        shellToLanguageId[t.state.shell as 'pwsh'] === languageId ||
-        t.name.toLowerCase().includes(languageId),
-    ) ?? (await createTerminal(languageId))
+    window.terminals
+      .concat(window.activeTerminal ?? [])
+      .findLast(
+        (t) =>
+          shellToLanguageId[t.state.shell as 'pwsh'] === languageId ||
+          t.name.toLowerCase().includes(languageId),
+      ) ?? (await createTerminal(languageId))
   terminal.show()
   if (!terminal.shellIntegration) {
     terminal.sendText(code, false)

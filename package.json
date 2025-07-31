@@ -3,7 +3,7 @@
     "onStartupFinished"
   ],
   "author": "Ming Chen",
-  "browser": "./dist/extension.web.js",
+  "browser": "./dist/extension.js",
   "bugs": {
     "url": "https://github.com/xingqingxyz/mvext/issues"
   },
@@ -130,7 +130,6 @@
         "mvext.pathComplete.debounceTimeMs": {
           "default": 200,
           "markdownDescription": "Path completion debounceTimeMs",
-          "scope": "resource",
           "type": "integer"
         },
         "mvext.pathComplete.prefixMap": {
@@ -144,6 +143,11 @@
           "scope": "resource",
           "type": "object"
         },
+        "mvext.shfmt.enabled": {
+          "default": true,
+          "markdownDescription": "Enable shfmt formatter for `shellscript`, requires reload.",
+          "type": "boolean"
+        },
         "mvext.shfmt.extraArgs": {
           "default": [
             "-bn",
@@ -155,6 +159,22 @@
           },
           "markdownDescription": "Formatter shfmt's extra command line args",
           "type": "array"
+        },
+        "mvext.shfmt.optionsOnWeb": {
+          "default": {
+            "binaryNextLine": true,
+            "functionNextLine": true,
+            "indent": 2,
+            "spaceRedirects": true,
+            "switchCaseIndent": true
+          },
+          "markdownDescription": "The `ShOptions` passed to the `sh-syntax` wasm method `processor` on Web.",
+          "type": "object"
+        },
+        "mvext.stylua.enabled": {
+          "default": true,
+          "markdownDescription": "Enable stylua formatter for `lua`, requires reload.",
+          "type": "boolean"
         },
         "mvext.stylua.extraArgs": {
           "default": [],
@@ -222,7 +242,6 @@
         "mvext.treeSitter.syncedLanguages": {
           "default": [
             "css",
-            "csharp",
             "go",
             "javascript",
             "javascriptreact",
@@ -232,7 +251,6 @@
           ],
           "items": {
             "enum": [
-              "csharp",
               "cpp",
               "css",
               "go",
@@ -243,8 +261,8 @@
               "typescript",
               "typescriptreact",
               "python",
-              "ruby",
-              "rust"
+              "rust",
+              "shellscript"
             ],
             "type": "string"
           },
@@ -347,17 +365,17 @@
       }
     ],
     "menus": {
+      "editor/context": [
+        {
+          "command": "mvext.revealInTsTreeView",
+          "when": "mvext.tsTreeView.visible && editorLangId in mvext.tsSyncedLanguages"
+        }
+      ],
       "editor/title/run": [
         {
           "alt": "mvext.terminalLaunchArgs",
           "command": "mvext.terminalLaunch",
           "when": "editorLangId in mvext.terminalLaunchLanguages"
-        }
-      ],
-      "editor/context": [
-        {
-          "command": "mvext.revealInTsTreeView",
-          "when": "mvext.tsTreeView.visible && editorLangId in mvext.tsSyncedLanguages"
         }
       ],
       "explorer/context": [
@@ -459,18 +477,21 @@
     },
     "viewsWelcome": [
       {
-        "view": "mvext.tsTreeView",
-        "contents": "This document language is not synced becase of the setting `mvext.treeSitter.syncedLanguages`."
+        "contents": "This document language is not synced becase of the setting `mvext.treeSitter.syncedLanguages`.",
+        "view": "mvext.tsTreeView"
       }
     ]
   },
   "dependencies": {
+    "@johnnymorganz/stylua": "^2.1.0",
     "@vscode/tree-sitter-wasm": "^0.1.4",
     "jsonc-parser": "^3.3.1",
     "os-browserify": "^0.3.0",
     "path-browserify": "^1.0.1",
     "process": "^0.11.10",
+    "sh-syntax": "^0.5.8",
     "strip-ansi": "^7.1.0",
+    "tree-sitter-bash": "^0.25.0",
     "web-tree-sitter": "^0.25.8",
     "which": "^5.0.0"
   },
@@ -486,14 +507,14 @@
     "@swc-node/register": "^1.10.10",
     "@types/emscripten": "^1.40.1",
     "@types/mocha": "^10.0.10",
-    "@types/node": "^22.16.5",
+    "@types/node": "^22.17.0",
     "@types/vscode": "^1.102.0",
     "@types/which": "^3.0.4",
     "eslint": "^9.32.0",
     "lint-staged": "^16.1.2",
     "mocha": "^11.7.1",
     "prettier": "^3.6.2",
-    "rollup": "^4.46.0",
+    "rollup": "^4.46.2",
     "simple-git-hooks": "^2.13.0",
     "tslib": "^2.8.1",
     "typescript": "^5.8.3",
@@ -510,13 +531,12 @@
   "keywords": [
     "tree-sitter",
     "refactor",
-    "highlights",
     "markdown"
   ],
   "license": "MIT",
   "lint-staged": {
-    "*.{mjs,js,ts,json,md}": "prettier -w",
-    "*.{js,ts}": "eslint --fix --cache"
+    "*.{js,ts}": "eslint --fix --cache",
+    "*.{mjs,js,ts,json,md}": "prettier -w"
   },
   "main": "./dist/extension.mjs",
   "mocha": {
@@ -547,7 +567,7 @@
   "simple-git-hooks": {
     "pre-commit": "pnpm exec lint-staged && pnpm test"
   },
-  "version": "0.18.0",
+  "version": "0.18.2",
   "vsce": {
     "dependencies": false
   }

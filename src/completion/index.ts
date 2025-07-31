@@ -50,7 +50,10 @@ export class InvokeCompleteProvider implements CompletionItemProvider {
         ),
       ),
       languages.registerCompletionItemProvider(
-        { scheme: 'file', pattern: '**' },
+        [
+          { scheme: 'file', pattern: '**' },
+          { scheme: 'vscode-vfs', pattern: '**' },
+        ],
         this,
       ),
     )

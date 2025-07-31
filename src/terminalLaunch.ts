@@ -126,7 +126,7 @@ export async function registerTerminalLaunch(context: ExtensionContext) {
     ),
     workspace.onDidChangeConfiguration(
       (e) =>
-        e.affectsConfiguration('mvext.') &&
+        e.affectsConfiguration('mvext.terminalLaunch.languageMap') &&
         commands.executeCommand(
           'setContext',
           ContextKey.terminalLaunchLanguages,

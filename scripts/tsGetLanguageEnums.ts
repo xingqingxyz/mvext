@@ -1,30 +1,42 @@
-import { fileURLToPath } from 'url'
+import { readFile, writeFile } from 'fs/promises'
+import path from 'path'
 import { Language, Parser } from 'web-tree-sitter'
 
-const languageId = process.argv[2]
+const languageIds = process.argv.slice(2)
+const reWord = /^\w+$/
 await Parser.init()
-const language = await Language.load(
-  fileURLToPath(
-    import.meta.resolve(
-      `@vscode/tree-sitter-wasm/wasm/tree-sitter-${languageId}.wasm`,
-    ),
-  ),
-)
-console.log(
-  `export const enum ${languageId} {\n${Array.from(
-    new Set(language.types),
-    (type) =>
-      type &&
-      `  ${JSON.stringify(type)} = ${language.idForNodeType(type, false)},`,
-  ).join(
-    '\n',
-  )}\n}\n\nexport const enum ${languageId}Super {\n${language.supertypes
-    .map((id) => `  ${JSON.stringify(language.nodeTypeForId(id))} = ${id},`)
-    .join('\n')}\n}${language.supertypes.map((id) => {
-    const superTypeName = JSON.stringify(language.nodeTypeForId(id))
-    return `\n\nexport const enum ${superTypeName} {\n${language
-      .subtypes(id)
-      .map((id) => `  ${JSON.stringify(language.nodeTypeForId(id))} = ${id},`)
-      .join('\n')}\n}`
-  })}`,
+await Promise.all(
+  languageIds.map(async (languageId) => {
+    const language = await Language.load(
+      await readFile(
+        path.join(
+          import.meta.dirname,
+          `../dist/tree-sitter-${languageId}.wasm`,
+        ),
+      ),
+    )
+    console.log(language.name, language.abiVersion)
+    const content = `export const enum ${languageId} {\n${Array.from(
+      new Set(language.types),
+      (type) =>
+        type &&
+        `  ${JSON.stringify(type)} = ${
+          language.idForNodeType(type, reWord.test(type)) ??
+          language.idForNodeType(type, false)
+        },`,
+    ).join('\n')}\n}\n\n${language.supertypes
+      .map((id) => {
+        const superTypeName = language.nodeTypeForId(id) // assert named
+        return `export const enum ${superTypeName} {\n${language
+          .subtypes(id)
+          .map((id) => `  ${language.nodeTypeForId(id)} = ${id},`)
+          .join('\n')}\n}\n`
+      })
+      .join('\n')}`
+    await writeFile(
+      path.join(import.meta.dirname, `../src/tsLanguage/${languageId}.ts`),
+      content,
+      'utf-8',
+    )
+  }),
 )

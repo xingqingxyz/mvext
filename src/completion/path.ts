@@ -59,7 +59,10 @@ export class PathCompleteProvider implements CompletionItemProvider {
   constructor(context: ExtensionContext) {
     context.subscriptions.push(
       languages.registerCompletionItemProvider(
-        { scheme: 'file', pattern: '**' },
+        [
+          { scheme: 'file', pattern: '**' },
+          { scheme: 'vscode-vfs', pattern: '**' },
+        ],
         this,
         ...PathCompleteProvider.triggerCharacters.split(''),
       ),

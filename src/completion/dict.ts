@@ -2,7 +2,6 @@ import { execFilePm, isWeb, isWin32, tokenToSignal } from '@/util'
 import { SearchDict } from '@/util/searchDict'
 import {
   CompletionItemKind,
-  Range,
   type CancellationToken,
   type CompletionItem,
   type CompletionItemProvider,
@@ -14,7 +13,7 @@ import {
 export class DictCompleteProvider implements CompletionItemProvider {
   private searchDict?: SearchDict
   constructor(context: ExtensionContext) {
-    if (isWin32) {
+    if (isWeb || isWin32) {
       this.searchDict = new SearchDict(context)
     }
   }
@@ -23,17 +22,14 @@ export class DictCompleteProvider implements CompletionItemProvider {
     position: Position,
     token: CancellationToken,
   ) {
-    const word = document.getText(
-      document.getWordRangeAtPosition(position) ??
-        new Range(position, position),
-    )
-    if (word.length < 2) {
+    const range = document.getWordRangeAtPosition(position)
+    if (!range || range.end.character - range.start.character < 2) {
       return
     }
     return (
       isWeb || isWin32
-        ? await this.searchDict!.search(word)
-        : await execFilePm('/usr/bin/look', [word], {
+        ? await this.searchDict!.search(document.getText(range))
+        : await execFilePm('/usr/bin/look', [document.getText(range)], {
             signal: tokenToSignal(token),
           }).then(
             (r) => r.stdout.split('\n'),

@@ -32,8 +32,10 @@ export type TSLanguageId =
   | 'python'
   | 'ruby'
   | 'rust'
+  | 'shellscript'
 
 type TSLanguageWasmId =
+  | 'bash'
   | 'c-sharp'
   | 'cpp'
   | 'css'
@@ -62,6 +64,7 @@ const tsLanguageIdMap = Object.freeze({
   python: 'python',
   ruby: 'ruby',
   rust: 'rust',
+  shellscript: 'bash',
 } as Record<TSLanguageId, TSLanguageWasmId>)
 
 const parsers = {} as Record<TSLanguageId, Parser>

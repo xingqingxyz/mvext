@@ -80,15 +80,14 @@ class TSTreeDataProvier implements TreeDataProvider<Node> {
   }
 }
 
-const tsTreeViewDT = window.createTextEditorDecorationType({
-  border: '1px solid yellow',
-  backgroundColor: new ThemeColor('editor.selectionBackground'),
-})
-
 export function registerTSTreeView(context: ExtensionContext) {
   const provider = new TSTreeDataProvier()
   const view = window.createTreeView('mvext.tsTreeView', {
     treeDataProvider: provider,
+  })
+  const tsTreeViewDT = window.createTextEditorDecorationType({
+    border: '1px solid yellow',
+    backgroundColor: new ThemeColor('editor.selectionBackground'),
   })
   context.subscriptions.push(
     commands.registerCommand(
@@ -121,5 +120,6 @@ export function registerTSTreeView(context: ExtensionContext) {
         editor.setDecorations(tsTreeViewDT, [{ range }])
       }
     }),
+    tsTreeViewDT,
   )
 }

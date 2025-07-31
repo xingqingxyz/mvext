@@ -1,12 +1,14 @@
+import '@/shims/web'
 import { commands, env, type ExtensionContext } from 'vscode'
 import { InvokeCompleteProvider } from './completion'
+import { getExtConfig } from './config'
 import {
   evalSelection,
   terminalEvalSelection,
   terminalFilterSelection,
 } from './evalSelection'
-import { ShfmtFormatter } from './formatter/shfmt'
-import { StyluaFormatter } from './formatter/stylua'
+import { ShfmtFormatter, ShfmtFormatterWasm } from './formatter/shfmt'
+import { StyluaFormatter, StyluaFormatterWasm } from './formatter/stylua'
 import { HexColorProvider } from './hexColor'
 import { copyJsonPath } from './jsonPath'
 import { MarkdownBlockRunProvider } from './markdownBlockRun'
@@ -29,11 +31,22 @@ export async function activate(context: ExtensionContext) {
   HexColorProvider.init(context)
   new InvokeCompleteProvider(context)
   new TransformCodeActionProvider(context)
-  if (!isWeb) {
-    new StyluaFormatter(context)
-    new ShfmtFormatter(context)
-  }
   new MarkdownBlockRunProvider(context)
+  if (isWeb) {
+    if (getExtConfig('shfmt.enabled')) {
+      new ShfmtFormatterWasm(context)
+    }
+    if (getExtConfig('stylua.enabled')) {
+      new StyluaFormatterWasm(context)
+    }
+  } else {
+    if (getExtConfig('shfmt.enabled')) {
+      new ShfmtFormatter(context)
+    }
+    if (getExtConfig('stylua.enabled')) {
+      new StyluaFormatter(context)
+    }
+  }
   context.subscriptions.push(
     commands.registerCommand('mvext.terminalRunCode', terminalRunCode),
     commands.registerCommand('mvext._copyCodeBlock', (text: string) =>

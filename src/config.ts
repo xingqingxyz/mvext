@@ -1,3 +1,4 @@
+import type { ShOptions } from 'sh-syntax'
 import { workspace, type ConfigurationScope } from 'vscode'
 import type { TSLanguageId } from './tsParser'
 import type { TerminalRunLanguageIds } from './util/terminalRunCode'
@@ -11,7 +12,10 @@ export type MvextConfig = {
   'pathComplete.debounceTimeMs': number
   'terminalRunCode.defaultLanguageId': TerminalRunLanguageIds
   'transformCase.defaultCase': WordCase
+  'shfmt.enabled': boolean
+  'stylua.enabled': boolean
   'shfmt.extraArgs': string[]
+  'shfmt.optionsOnWeb': ShOptions
   'stylua.extraArgs': string[]
 }
 
@@ -33,7 +37,5 @@ export function getExtConfig<const T extends keyof MvextConfig>(
   key: T,
   scope?: ConfigurationScope,
 ) {
-  return workspace
-    .getConfiguration('mvext', scope)
-    .get<MvextConfig[typeof key]>(key)!
+  return workspace.getConfiguration('mvext', scope).get<MvextConfig[T]>(key)!
 }

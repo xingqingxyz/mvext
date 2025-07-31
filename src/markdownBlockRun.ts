@@ -16,7 +16,13 @@ export class MarkdownBlockRunProvider implements CodeLensProvider {
     /(?<=^\s*|\n\s*)```([^\n]*)\n(.*?)\n\s*```\s*(?:\n|$)/gs
   constructor(context: ExtensionContext) {
     context.subscriptions.push(
-      languages.registerCodeLensProvider('markdown', this),
+      languages.registerCodeLensProvider(
+        [
+          { scheme: 'file', language: 'markdown' },
+          { scheme: 'vscode-vfs', language: 'markdown' },
+        ],
+        this,
+      ),
     )
   }
   onDidChangeCodeLenses?: Event<void> | undefined

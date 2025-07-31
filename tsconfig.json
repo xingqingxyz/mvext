@@ -11,6 +11,8 @@
     "paths": {
       "@/*": ["src/*"]
     },
+    "allowJs": true,
+    "outDir": "dist",
     "verbatimModuleSyntax": true,
     "strict": true,
     "noImplicitAny": true,

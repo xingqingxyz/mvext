@@ -1,5 +1,8 @@
 import process from 'process'
-declare const self: typeof globalThis
+import { Go } from './go'
+
+declare const self: typeof globalThis & { Go: typeof Go }
+
 // vscode web worker
 self.process = process
-export default {}
+self.Go = Go

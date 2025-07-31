@@ -1,11 +1,27 @@
 import { getExtConfig } from '@/config'
 import { tokenToSignal } from '@/util'
+import {
+  CallParenType,
+  CollapseSimpleStatement,
+  Config,
+  formatCode,
+  IndentType,
+  initSync,
+  LineEndings,
+  LuaVersion,
+  OutputVerification,
+  QuoteStyle,
+  SortRequiresConfig,
+  SpaceAfterFunctionNames,
+  Range as StyluaRange,
+} from '@johnnymorganz/stylua/web'
 import { execFile } from 'child_process'
 import {
   languages,
-  Position,
   Range,
   TextEdit,
+  Uri,
+  workspace,
   type CancellationToken,
   type DocumentFormattingEditProvider,
   type DocumentRangeFormattingEditProvider,
@@ -20,11 +36,17 @@ export class StyluaFormatter
   constructor(context: ExtensionContext) {
     context.subscriptions.push(
       languages.registerDocumentFormattingEditProvider(
-        { scheme: 'file', language: 'lua' },
+        [
+          { scheme: 'file', language: 'lua' },
+          { scheme: 'vscode-vfs', language: 'lua' },
+        ],
         this,
       ),
       languages.registerDocumentRangeFormattingEditProvider(
-        { scheme: 'file', language: 'lua' },
+        [
+          { scheme: 'file', language: 'lua' },
+          { scheme: 'vscode-vfs', language: 'lua' },
+        ],
         this,
       ),
     )
@@ -59,15 +81,7 @@ export class StyluaFormatter
       p.stdin!.write(document.getText())
       p.stdin!.end()
     })
-    return [
-      new TextEdit(
-        new Range(
-          new Position(0, 0),
-          document.lineAt(document.lineCount - 1).range.end,
-        ),
-        output,
-      ),
-    ]
+    return [new TextEdit(new Range(0, 0, document.lineCount, 0), output)]
   }
   async provideDocumentRangeFormattingEdits(
     document: TextDocument,
@@ -105,5 +119,85 @@ export class StyluaFormatter
       p.stdin!.end()
     })
     return [new TextEdit(range, output)]
+  }
+}
+
+export class StyluaFormatterWasm
+  implements DocumentRangeFormattingEditProvider, DocumentFormattingEditProvider
+{
+  private static makeConfig(options: FormattingOptions) {
+    const config = Config.new()
+    config.call_parentheses = CallParenType.None
+    config.collapse_simple_statement = CollapseSimpleStatement.Always
+    config.column_width = 80
+    config.indent_type = options.insertSpaces
+      ? IndentType.Spaces
+      : IndentType.Tabs
+    config.indent_width = options.tabSize
+    config.line_endings = LineEndings.Unix
+    config.quote_style = QuoteStyle.AutoPreferSingle
+    config.sort_requires = SortRequiresConfig.new()
+    config.sort_requires.enabled = true
+    config.space_after_function_names = SpaceAfterFunctionNames.Never
+    config.syntax = LuaVersion.All
+    return config
+  }
+  constructor(context: ExtensionContext) {
+    void workspace.fs
+      .readFile(Uri.joinPath(context.extensionUri, 'dist/stylua.wasm'))
+      .then(initSync)
+    context.subscriptions.push(
+      languages.registerDocumentFormattingEditProvider(
+        [
+          { scheme: 'file', language: 'lua' },
+          { scheme: 'vscode-vfs', language: 'lua' },
+        ],
+        this,
+      ),
+      languages.registerDocumentRangeFormattingEditProvider(
+        [
+          { scheme: 'file', language: 'lua' },
+          { scheme: 'vscode-vfs', language: 'lua' },
+        ],
+        this,
+      ),
+    )
+  }
+  async provideDocumentFormattingEdits(
+    document: TextDocument,
+    options: FormattingOptions,
+  ): Promise<TextEdit[]> {
+    return [
+      new TextEdit(
+        new Range(0, 0, document.lineCount, 0),
+        formatCode(
+          document.getText(),
+          StyluaFormatterWasm.makeConfig(options),
+          undefined,
+          OutputVerification.None,
+        ),
+      ),
+    ]
+  }
+  async provideDocumentRangeFormattingEdits(
+    document: TextDocument,
+    range: Range,
+    options: FormattingOptions,
+  ): Promise<TextEdit[] | null | undefined> {
+    const sRange = StyluaRange.from_values(
+      document.offsetAt(range.start),
+      document.offsetAt(range.end) - 1, // inclusive
+    )
+    return [
+      new TextEdit(
+        new Range(0, 0, document.lineCount, 0),
+        formatCode(
+          document.getText(),
+          StyluaFormatterWasm.makeConfig(options),
+          sRange,
+          OutputVerification.None,
+        ),
+      ),
+    ]
   }
 }

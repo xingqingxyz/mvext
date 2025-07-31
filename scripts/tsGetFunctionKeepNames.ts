@@ -2,7 +2,7 @@ import { readFile } from 'fs/promises'
 import { fileURLToPath } from 'url'
 import { Language, Parser } from 'web-tree-sitter'
 
-const file = process.argv[2]
+const files = process.argv.slice(2)
 await Parser.init()
 const parser = new Parser().setLanguage(
   await Language.load(
@@ -13,16 +13,16 @@ const parser = new Parser().setLanguage(
     ),
   ),
 )
-const content = await readFile(file, 'utf-8')
-const tree = parser.parse(content)!
-console.log(
-  tree.rootNode.namedChildren
-    .map(
-      (n) =>
-        n!.type === 'export_statement' &&
-        n!.firstNamedChild!.type === 'function_declaration' &&
-        n!.firstNamedChild!.childForFieldName('name')!.text,
-    )
-    .filter(Boolean)
-    .join('|'),
-)
+await Promise.all(
+  files.flatMap(async (file) =>
+    parser
+      .parse(await readFile(file, 'utf-8'))!
+      .rootNode.namedChildren.map(
+        (n) =>
+          n!.type === 'export_statement' &&
+          n!.firstNamedChild!.type === 'function_declaration' &&
+          n!.firstNamedChild!.childForFieldName('name')!.text,
+      )
+      .filter(Boolean),
+  ),
+).then((r) => console.log(r.join('|')))

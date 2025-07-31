@@ -1,11 +1,13 @@
 import { getExtConfig } from '@/config'
 import { tokenToSignal } from '@/util'
 import { execFile } from 'child_process'
+import { getProcessor } from 'sh-syntax'
 import {
   languages,
-  Position,
   Range,
   TextEdit,
+  Uri,
+  workspace,
   type CancellationToken,
   type DocumentFormattingEditProvider,
   type ExtensionContext,
@@ -17,7 +19,10 @@ export class ShfmtFormatter implements DocumentFormattingEditProvider {
   constructor(context: ExtensionContext) {
     context.subscriptions.push(
       languages.registerDocumentFormattingEditProvider(
-        { scheme: 'file', language: 'shellscript' },
+        [
+          { scheme: 'file', language: 'shellscript' },
+          { scheme: 'vscode-vfs', language: 'shellscript' },
+        ],
         this,
       ),
     )
@@ -49,13 +54,42 @@ export class ShfmtFormatter implements DocumentFormattingEditProvider {
       p.stdin!.write(document.getText())
       p.stdin!.end()
     })
+    return [new TextEdit(new Range(0, 0, document.lineCount, 0), output)]
+  }
+}
+
+export class ShfmtFormatterWasm implements DocumentFormattingEditProvider {
+  private processor: ReturnType<typeof getProcessor>
+  constructor(context: ExtensionContext) {
+    // non disposable processor, so prevent to leak wasm memory
+    this.processor ??= getProcessor(() =>
+      workspace.fs.readFile(
+        Uri.joinPath(context.extensionUri, 'dist/shfmt.wasm'),
+      ),
+    )
+    context.subscriptions.push(
+      languages.registerDocumentFormattingEditProvider(
+        [
+          { scheme: 'file', language: 'shellscript' },
+          { scheme: 'vscode-vfs', language: 'shellscript' },
+        ],
+        this,
+      ),
+    )
+  }
+  async provideDocumentFormattingEdits(
+    document: TextDocument,
+    options: FormattingOptions,
+  ) {
     return [
       new TextEdit(
-        new Range(
-          new Position(0, 0),
-          document.lineAt(document.lineCount - 1).range.end,
-        ),
-        output,
+        new Range(0, 0, document.lineCount, 0),
+        await this.processor(document.getText(), {
+          ...getExtConfig('shfmt.optionsOnWeb'),
+          indent: options.insertSpaces ? options.tabSize : 0,
+          filepath: document.fileName,
+          print: true,
+        }),
       ),
     ]
   }
