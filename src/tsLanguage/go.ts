@@ -1,7 +1,6 @@
 export const enum go {
   'identifier' = 1,
   ';' = 3,
-
   'package' = 5,
   'import' = 6,
   '.' = 7,
@@ -178,4 +177,5 @@ export const enum go {
   'package_identifier' = 214,
   'type_constraint' = 215,
   'type_identifier' = 216,
+  '' = 65535,
 }

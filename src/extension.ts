@@ -21,7 +21,6 @@ import {
 import { TransformCodeActionProvider } from './tsCodeAction/provider'
 import { initTSParser } from './tsParser'
 import { registerTSTreeView } from './tsTreeView'
-import { isWeb } from './util'
 import { terminalRunCode } from './util/terminalRunCode'
 
 export async function activate(context: ExtensionContext) {
@@ -32,7 +31,7 @@ export async function activate(context: ExtensionContext) {
   new InvokeCompleteProvider(context)
   new TransformCodeActionProvider(context)
   new MarkdownBlockRunProvider(context)
-  if (isWeb) {
+  if (__WEB__) {
     if (getExtConfig('shfmt.enabled')) {
       new ShfmtFormatterWasm(context)
     }
@@ -70,7 +69,7 @@ export async function activate(context: ExtensionContext) {
       terminalFilterSelection,
     ),
     commands.registerCommand('mvext.copyJsonPath', copyJsonPath),
-    ...(isWeb
+    ...(__WEB__
       ? []
       : [commands.registerCommand('mvext.evalSelection', evalSelection)]),
   )

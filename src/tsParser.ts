@@ -186,12 +186,11 @@ async function setSyncedLanguages(languages: TSLanguageId[]) {
 export async function initTSParser(context: ExtensionContext) {
   void ({ extensionUri } = context)
   let syncedLanguages: TSLanguageId[]
-  // @ts-expect-error not well typed library
   await Parser.init({
     wasmBinary: await workspace.fs.readFile(
       Uri.joinPath(extensionUri, 'dist/tree-sitter.wasm'),
     ),
-  })
+  } as unknown as EmscriptenModule)
   await setSyncedLanguages(
     (syncedLanguages = getExtConfig('treeSitter.syncedLanguages')),
   )

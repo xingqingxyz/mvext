@@ -59,11 +59,11 @@ interface CodeActionData extends CodeAction {
 }
 
 function getOrderedTypePath(nodePath: Node[]) {
-  const grammerIds: number[] = []
+  const typeIds: number[] = []
   const newPath = []
   for (let i = nodePath.length - 1; i >= 0; i--) {
-    if (!grammerIds.includes(nodePath[i].grammarId)) {
-      grammerIds.push(nodePath[i].grammarId)
+    if (!typeIds.includes(nodePath[i].typeId)) {
+      typeIds.push(nodePath[i].typeId)
       newPath.push(nodePath[i])
     }
   }

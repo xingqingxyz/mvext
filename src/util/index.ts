@@ -2,8 +2,6 @@ import { execFile } from 'child_process'
 import { promisify } from 'util'
 import type { CancellationToken } from 'vscode'
 
-export const isProd = process.env.NODE_ENV === 'production'
-export const isWeb = isProd || process.env.NODE_ENV === 'web'
 export const isWin32 = process.platform === 'win32'
 export const execFilePm = /* @__PURE__ */ promisify(execFile)
 

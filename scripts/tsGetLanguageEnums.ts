@@ -16,19 +16,26 @@ await Promise.all(
       ),
     )
     console.log(language.name, language.abiVersion)
-    const content = `export const enum ${languageId} {\n${Array.from(
-      new Set(language.types),
+    const typeSet = new Set(language.types)
+    // @ts-ignore
+    typeSet.delete(undefined)
+    const types = Array.from(
+      typeSet,
       (type) =>
-        type &&
-        `  ${JSON.stringify(type)} = ${
+        [
           language.idForNodeType(type, reWord.test(type)) ??
-          language.idForNodeType(type, false)
-        },`,
-    ).join('\n')}\n}\n\n${language.supertypes
+            language.idForNodeType(type, false)!,
+          type,
+        ] as const,
+    ).sort(([a], [b]) => a - b)
+    const content = `export const enum ${languageId} {\n${types
+      .map(([id, type]) => `  ${JSON.stringify(type)} = ${id},`)
+      .join('\n')}\n}\n\n${language.supertypes
       .map((id) => {
         const superTypeName = language.nodeTypeForId(id) // assert named
         return `export const enum ${superTypeName} {\n${language
           .subtypes(id)
+          .sort((a, b) => a - b)
           .map((id) => `  ${language.nodeTypeForId(id)} = ${id},`)
           .join('\n')}\n}\n`
       })
