@@ -54,13 +54,6 @@
         "xingqingxyz.mvext",
         "${workspaceFolder}/testdir"
       ]
-    },
-    {
-      "name": "Attach to vscode.dev",
-      "type": "msedge",
-      "request": "attach",
-      "url": "https://vscode.dev/?vscode-lang=zh-cn",
-      "preLaunchTask": "npm: watch-web"
     }
   ]
 }

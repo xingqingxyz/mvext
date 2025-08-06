@@ -439,12 +439,10 @@
         "fileLocation": "relative",
         "label": "Rollup problem matcher",
         "name": "rollup",
+        "severity": "error",
         "pattern": {
-          "column": 3,
-          "file": 1,
-          "line": 2,
-          "message": 4,
-          "regexp": "^\\(!\\) (?:\\[plugin [^\\]]+\\]|RollupError:) (\\S+) \\((\\d+):(\\d+)\\): (.*)$"
+          "message": 1,
+          "regexp": "^\\[!\\] (.+)$"
         },
         "source": "rollup"
       },
@@ -482,22 +480,10 @@
       }
     ]
   },
-  "dependencies": {
-    "@johnnymorganz/stylua": "^2.1.0",
-    "@vscode/tree-sitter-wasm": "^0.1.4",
-    "jsonc-parser": "^3.3.1",
-    "os-browserify": "^0.3.0",
-    "path-browserify": "^1.0.1",
-    "process": "^0.11.10",
-    "sh-syntax": "^0.5.8",
-    "strip-ansi": "^7.1.0",
-    "tree-sitter-bash": "^0.25.0",
-    "web-tree-sitter": "^0.25.8",
-    "which": "^5.0.0"
-  },
   "description": "Invoke terminal commands, eval selections and invoke complete.",
   "devDependencies": {
     "@eslint/js": "^9.32.0",
+    "@johnnymorganz/stylua": "^2.1.0",
     "@rollup/plugin-alias": "^5.1.1",
     "@rollup/plugin-commonjs": "^28.0.6",
     "@rollup/plugin-node-resolve": "^16.0.1",
@@ -510,15 +496,25 @@
     "@types/node": "^22.17.0",
     "@types/vscode": "^1.102.0",
     "@types/which": "^3.0.4",
+    "@vscode/tree-sitter-wasm": "^0.1.4",
     "eslint": "^9.32.0",
+    "jsonc-parser": "^3.3.1",
     "lint-staged": "^16.1.4",
     "mocha": "^11.7.1",
+    "os-browserify": "^0.3.0",
+    "path-browserify": "^1.0.1",
     "prettier": "^3.6.2",
+    "process": "^0.11.10",
     "rollup": "^4.46.2",
+    "sh-syntax": "^0.5.8",
     "simple-git-hooks": "^2.13.1",
+    "strip-ansi": "^7.1.0",
+    "tree-sitter-bash": "^0.25.0",
     "tslib": "^2.8.1",
     "typescript": "^5.9.2",
-    "typescript-eslint": "^8.39.0"
+    "typescript-eslint": "^8.39.0",
+    "web-tree-sitter": "^0.25.8",
+    "which": "^5.0.0"
   },
   "displayName": "Make VSCode Extension",
   "engines": {
@@ -560,9 +556,9 @@
   "scripts": {
     "lint": "tsc --noEmit && eslint --fix --cache src",
     "test": "mocha",
-    "vscode:prepublish": "rollup -c --environment NODE_ENV:production",
+    "vscode:prepublish": "rollup -c --environment NODE_ENV:production,PLATFORM:all",
     "watch": "rollup -c -w",
-    "watch-web": "rollup -c -w --environment NODE_ENV:web"
+    "watch-web": "rollup -c -w --environment PLATFORM:web"
   },
   "simple-git-hooks": {
     "pre-commit": "pnpm exec lint-staged && pnpm test"

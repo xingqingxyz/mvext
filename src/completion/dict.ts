@@ -1,4 +1,4 @@
-import { execFilePm, isWeb, isWin32, tokenToSignal } from '@/util'
+import { execFilePm, isWin32, tokenToSignal } from '@/util'
 import { SearchDict } from '@/util/searchDict'
 import {
   CompletionItemKind,
@@ -13,7 +13,7 @@ import {
 export class DictCompleteProvider implements CompletionItemProvider {
   private searchDict?: SearchDict
   constructor(context: ExtensionContext) {
-    if (isWeb || isWin32) {
+    if (__WEB__ || isWin32) {
       this.searchDict = new SearchDict(context)
     }
   }
@@ -27,7 +27,7 @@ export class DictCompleteProvider implements CompletionItemProvider {
       return
     }
     return (
-      isWeb || isWin32
+      __WEB__ || isWin32
         ? await this.searchDict!.search(document.getText(range))
         : await execFilePm('/usr/bin/look', [document.getText(range)], {
             signal: tokenToSignal(token),

@@ -184,17 +184,16 @@ export class StyluaFormatterWasm
     range: Range,
     options: FormattingOptions,
   ): Promise<TextEdit[] | null | undefined> {
-    const sRange = StyluaRange.from_values(
-      document.offsetAt(range.start),
-      document.offsetAt(range.end) - 1, // inclusive
-    )
     return [
       new TextEdit(
         new Range(0, 0, document.lineCount, 0),
         formatCode(
           document.getText(),
           StyluaFormatterWasm.makeConfig(options),
-          sRange,
+          StyluaRange.from_values(
+            document.offsetAt(range.start),
+            document.offsetAt(range.end) - 1, // inclusive
+          ),
           OutputVerification.None,
         ),
       ),

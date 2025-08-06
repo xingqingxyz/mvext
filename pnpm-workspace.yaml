@@ -1,4 +1,3 @@
 onlyBuiltDependencies:
-  - '@swc/core'
   - simple-git-hooks
   - tree-sitter-bash

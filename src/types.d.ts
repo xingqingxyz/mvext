@@ -1,5 +1,2 @@
-namespace NodeJS {
-  interface ProcessEnv {
-    NODE_ENV: 'production' | 'dev' | 'web'
-  }
-}
+const __DEV__: boolean
+const __WEB__: boolean
