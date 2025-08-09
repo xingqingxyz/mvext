@@ -40,7 +40,7 @@ describe(templateToConcat.name, function () {
     expr: '`abc${a + 3}cde`',
   }
   const afterCode = {
-    expr: `"abc" + (a + 3) + "cde"`,
+    expr: `'abc' + (a + 3) + 'cde'`,
   }
   for (const [key, value] of Object.entries(beforeCode)) {
     it('should handle ' + key, function () {

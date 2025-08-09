@@ -17,53 +17,50 @@ export type TerminalRunLanguageIds =
   | 'javascript'
   | 'typescript'
 
-export function getTerminalRunLanguageId(
+export function getTerminalLaunchLanguageId(
   languageId: string,
 ): TerminalRunLanguageIds {
   switch (languageId) {
     case 'bat':
-    case 'shellscript':
+    case 'javascript':
     case 'powershell':
     case 'python':
-    case 'javascript':
+    case 'shellscript':
     case 'typescript':
       return languageId
     case 'html':
+    case 'javascriptreact':
     case 'json':
     case 'jsonc':
     case 'toml':
       return 'javascript'
     case 'mdx':
-    case 'vue':
     case 'svelte':
+    case 'typescriptreact':
+    case 'vue':
       return 'typescript'
     default:
       return getExtConfig('terminalRunCode.defaultLanguageId')
   }
 }
 
-async function getTerminalCommand(
+async function createLanguageTerminal(
   languageId: TerminalRunLanguageIds,
-): Promise<Pick<TerminalOptions, 'shellPath' | 'shellArgs'>> {
-  let config = getExtConfig('terminalLaunch.languageMap')[languageId]
-  switch (languageId) {
-    case 'python':
-      config ??= 'uv run python'
-      break
-    case 'javascript':
-      config ??= 'node'
-      break
-    case 'typescript':
-      config ??= 'bun x tsx'
-      break
-    default:
-      throw 'not implemented'
-  }
-  const shellArgs = config.split(' ')
-  return {
-    shellPath: await which(shellArgs.shift()!),
-    shellArgs,
-  }
+  options: Partial<TerminalOptions> = {},
+) {
+  const shellArgs = (
+    getExtConfig('terminalLaunch.languageMap')[languageId] ?? 'pwsh'
+  ).split(' ')
+  return setTimeoutPm(
+    300,
+    window.createTerminal({
+      name: languageId,
+      isTransient: false,
+      shellPath: await which(shellArgs.shift()!),
+      shellArgs,
+      ...options,
+    }),
+  )
 }
 
 async function createShellIntegratedTerminal(profileName: string) {
@@ -97,39 +94,18 @@ async function createTerminal(languageId: TerminalRunLanguageIds) {
           profileName: 'Command Prompt',
         },
       )
-      return setTimeoutPm(90, window.activeTerminal!)
+      return setTimeoutPm(99, window.activeTerminal!)
     case 'shellscript':
       return createShellIntegratedTerminal(isWin32 ? 'Git Bash' : 'bash')
     case 'powershell':
       return createShellIntegratedTerminal(isWin32 ? 'PowerShell' : 'pwsh')
     case 'python':
-      return setTimeoutPm(
-        300,
-        window.createTerminal({
-          name: languageId,
-          iconPath: new ThemeIcon('python'),
-          isTransient: false,
-          ...(await getTerminalCommand(languageId)),
-        }),
-      )
+      return createLanguageTerminal('python', {
+        iconPath: new ThemeIcon('python'),
+      })
     case 'javascript':
-      return setTimeoutPm(
-        300,
-        window.createTerminal({
-          name: languageId,
-          isTransient: false,
-          ...(await getTerminalCommand(languageId)),
-        }),
-      )
     case 'typescript':
-      return setTimeoutPm(
-        780,
-        window.createTerminal({
-          name: languageId,
-          isTransient: false,
-          ...(await getTerminalCommand(languageId)),
-        }),
-      )
+      return createLanguageTerminal(languageId)
   }
 }
 
@@ -152,6 +128,7 @@ export async function terminalRunCode(
   languageId: TerminalRunLanguageIds,
 ) {
   code = code.trim()
+  languageId = getTerminalLaunchLanguageId(languageId)
   switch (languageId) {
     case 'shellscript':
     case 'powershell':

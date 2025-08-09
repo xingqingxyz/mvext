@@ -37,7 +37,7 @@ export const caseShortMap = Object.freeze({
   dot: '.',
   header: 'h',
   kebab: '-',
-  normal: ' ',
+  normal: 'n',
   pascal: 'p',
   path: '/',
   sentence: 's',

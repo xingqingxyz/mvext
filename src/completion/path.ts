@@ -108,7 +108,7 @@ export class PathCompleteProvider implements CompletionItemProvider {
       dirname =
         workspace.getWorkspaceFolder(document.uri)?.uri.fsPath ?? process.cwd()
     }
-    await setTimeoutPm(getExtConfig('pathComplete.debounceTimeMs', document))
+    await setTimeoutPm(getExtConfig('pathComplete.debounceTimeMs'))
     if (token.isCancellationRequested) {
       return
     }

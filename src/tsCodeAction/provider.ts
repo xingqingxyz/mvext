@@ -1,4 +1,4 @@
-import { javascript } from '@/tsLanguage/javascript'
+import { _javascript as $ } from '@/tsLanguage/javascript'
 import {
   getDescendantPath,
   getParsedTree,
@@ -99,11 +99,11 @@ export class TransformCodeActionProvider implements CodeActionProvider {
   getActions(orderedTypePath: Node[], uri: Uri) {
     const actions: [typeof ifToBinary | typeof cast, Node][] = []
     for (const node of orderedTypePath) {
-      switch (node.typeId) {
-        case javascript.arrow_function:
+      switch (node.type) {
+        case $.arrow_function:
           actions.push([arrowToFunctionExpression, node])
           break
-        case javascript.if_statement:
+        case $.if_statement:
           actions.push(
             [ifToSwitchLeft, node],
             [ifToSwitch, node],
@@ -112,10 +112,10 @@ export class TransformCodeActionProvider implements CodeActionProvider {
             [swapIf, node],
           )
           break
-        case javascript.binary_expression:
+        case $.binary_expression:
           actions.push([binaryToIf, node], [concatToTemplate, node])
           break
-        case javascript.ternary_expression:
+        case $.ternary_expression:
           actions.push(
             [ternaryToSwitchLeft, node],
             [ternaryToSwitch, node],
@@ -123,23 +123,23 @@ export class TransformCodeActionProvider implements CodeActionProvider {
             [swapTernary, node],
           )
           break
-        case javascript.template_string:
+        case $.template_string:
           actions.push([templateToConcat, node])
           break
-        case javascript.while_statement:
+        case $.while_statement:
           actions.push([whileToDoWhile, node])
           break
-        case javascript.do_statement:
+        case $.do_statement:
           actions.push([doWhileToWhile, node])
           break
-        case javascript.lexical_declaration:
-        case javascript.variable_declaration:
+        case $.lexical_declaration:
+        case $.variable_declaration:
           actions.push([arrowToFunction, node], [splitDeclaration, node])
           break
-        case javascript.function_expression:
+        case $.function_expression:
           actions.push([functionExpressionToArrow, node])
           break
-        case javascript.function_declaration:
+        case $.function_declaration:
           actions.push([functionToArrow, node])
           break
       }

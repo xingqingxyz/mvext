@@ -19,10 +19,7 @@ export type MvextConfig = {
   'stylua.extraArgs': string[]
 }
 
-type ScopedConfigKey =
-  | 'pathComplete.prefixMap'
-  | 'pathComplete.debounceTimeMs'
-  | 'transformCase.defaultCase'
+type ScopedConfigKey = 'pathComplete.prefixMap' | 'transformCase.defaultCase'
 
 export function getExtConfig<const T extends ScopedConfigKey>(
   key: T,

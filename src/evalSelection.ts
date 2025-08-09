@@ -5,7 +5,7 @@ import { window, type Range } from 'vscode'
 import { getExtConfig } from './config'
 import { execFilePm, setTimeoutPm } from './util'
 import {
-  getTerminalRunLanguageId,
+  getTerminalLaunchLanguageId,
   terminalRunCode,
 } from './util/terminalRunCode'
 
@@ -42,7 +42,7 @@ export async function evalSelection() {
   const config = getExtConfig('evalSelection.languageMap')
   let { languageId } = document
   if (!Object.hasOwn(config, languageId)) {
-    languageId = getTerminalRunLanguageId(languageId)
+    languageId = getTerminalLaunchLanguageId(languageId)
     if (!Object.hasOwn(config, languageId)) {
       await window.showWarningMessage('no eval config found for ' + languageId)
       return
@@ -89,7 +89,7 @@ export async function terminalEvalSelection() {
   }
 
   const { document } = editor
-  const languageId = getTerminalRunLanguageId(document.languageId)
+  const languageId = getTerminalLaunchLanguageId(document.languageId)
   const selectMap = new Map<Range, string>()
 
   for (let range of editor.selections as readonly Range[]) {

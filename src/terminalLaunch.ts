@@ -65,10 +65,11 @@ export async function terminalLaunch(
   if (!(await workspace.saveAll())) {
     return
   }
+  const shells = ['bash', 'gitbash', 'pwsh', 'sh', 'wsl', 'zsh']
   const terminal =
     window.terminals
       .concat(window.activeTerminal ?? [])
-      .findLast((t) => t.shellIntegration) ??
+      .findLast((t) => shells.includes(t.state.shell ?? '')) ??
     (await new Promise<Terminal>((resolve, reject) => {
       const terminal = window.createTerminal()
       const timeout = setTimeout(() => {
@@ -97,7 +98,12 @@ export async function terminalLaunch(
       return
     }
   }
-  terminal.sendText(`${config[languageId]} '${uri.fsPath}' ${argstr}`)
+  terminal.sendText(
+    `${config[languageId]} '${uri.fsPath.replaceAll(
+      "'",
+      terminal.state.shell === 'pwsh' ? "''" : "'\"'\"'",
+    )}' ${argstr}`,
+  )
 }
 
 export async function terminalLaunchArgs(context: ExtensionContext, uri: Uri) {

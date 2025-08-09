@@ -61,7 +61,7 @@ export async function transformCaseWithPicker() {
       (wc) =>
         ({
           label: caseShortMap[wc],
-          description: transformCaseHelper(word, wc),
+          description: wc + ' : ' + transformCaseHelper(word, wc),
         }) satisfies QuickPickItem,
     ),
     {

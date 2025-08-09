@@ -1,17 +1,24 @@
-import { type ExtensionContext, Uri, workspace } from 'vscode'
+import { type ExtensionContext, Uri } from 'vscode'
 
 export class SearchDict {
-  private readonly dictUri: Uri
+  private readonly dictUrl: string
   constructor(context: ExtensionContext) {
-    this.dictUri = Uri.joinPath(
+    this.dictUrl = Uri.joinPath(
       context.extensionUri,
-      'resources/words-js-sorted.txt',
-    )
+      'resources/words-js-sorted.txt.gz',
+    ).toString()
+  }
+  private async getWords() {
+    return (
+      await new Response(
+        (await fetch(this.dictUrl)).body!.pipeThrough(
+          new DecompressionStream('gzip'),
+        ),
+      ).text()
+    ).split('\n')
   }
   async search(word: string) {
-    const words = (
-      await workspace.decode(await workspace.fs.readFile(this.dictUri))
-    ).split('\n')
+    const words = await this.getWords()
     let i = 0,
       j = words.length
     while (i < j) {

@@ -19,7 +19,6 @@ import { getExtConfig } from './config'
 import { ContextKey } from './context'
 
 export type TSLanguageId =
-  | 'csharp'
   | 'cpp'
   | 'css'
   | 'go'
@@ -30,42 +29,8 @@ export type TSLanguageId =
   | 'typescript'
   | 'typescriptreact'
   | 'python'
-  | 'ruby'
   | 'rust'
   | 'shellscript'
-
-type TSLanguageWasmId =
-  | 'bash'
-  | 'c-sharp'
-  | 'cpp'
-  | 'css'
-  | 'go'
-  | 'ini'
-  | 'java'
-  | 'javascript'
-  | 'python'
-  | 'regex'
-  | 'ruby'
-  | 'rust'
-  | 'tsx'
-  | 'typescript'
-
-const tsLanguageIdMap = Object.freeze({
-  csharp: 'c-sharp',
-  cpp: 'cpp',
-  css: 'css',
-  go: 'go',
-  ini: 'ini',
-  java: 'java',
-  javascript: 'javascript',
-  javascriptreact: 'javascript',
-  typescript: 'typescript',
-  typescriptreact: 'tsx',
-  python: 'python',
-  ruby: 'ruby',
-  rust: 'rust',
-  shellscript: 'bash',
-} as Record<TSLanguageId, TSLanguageWasmId>)
 
 const parsers = {} as Record<TSLanguageId, Parser>
 const parserActiveDocumentMap = new Map<Parser, TextDocument>()
@@ -75,15 +40,15 @@ let extensionUri: Uri
 export async function getParser(
   languageId: TSLanguageId,
 ): Promise<Parser | undefined> {
+  if (languageId === 'javascriptreact') {
+    languageId = 'javascript'
+  }
   return (
     parsers[languageId] ??
     (parsers[languageId] = new Parser().setLanguage(
       await Language.load(
         await workspace.fs.readFile(
-          Uri.joinPath(
-            extensionUri,
-            `dist/tree-sitter-${tsLanguageIdMap[languageId]}.wasm`,
-          ),
+          Uri.joinPath(extensionUri, `dist/tree-sitter-${languageId}.wasm`),
         ),
       ),
     ))
