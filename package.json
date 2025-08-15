@@ -182,19 +182,19 @@
   },
   "description": "Bring benefits from Vim to VSCode.",
   "devDependencies": {
-    "@eslint/js": "^9.31.0",
+    "@eslint/js": "^9.33.0",
     "@types/mocha": "^10.0.10",
     "@types/node": "~22.15.35",
     "@types/vscode": "^1.102.0",
     "@vscode/test-cli": "^0.0.11",
     "@vscode/test-electron": "^2.5.2",
-    "esbuild": "^0.25.8",
-    "eslint": "^9.31.0",
-    "lint-staged": "^16.1.2",
+    "esbuild": "^0.25.9",
+    "eslint": "^9.33.0",
+    "lint-staged": "^16.1.5",
     "prettier": "^3.6.2",
-    "simple-git-hooks": "^2.13.0",
-    "typescript": "^5.8.3",
-    "typescript-eslint": "^8.37.0"
+    "simple-git-hooks": "^2.13.1",
+    "typescript": "^5.9.2",
+    "typescript-eslint": "^8.39.1"
   },
   "displayName": "Morden Vim in VSCode",
   "engines": {
@@ -205,7 +205,7 @@
   ],
   "license": "MIT",
   "lint-staged": {
-    "*.{js,ts,json,md}": "prettier -w",
+    "*.{js,ts,json,md}": "prettier --cache -w",
     "*.{js,ts}": "eslint --cache --fix"
   },
   "main": "./dist/extension.js",
@@ -225,14 +225,14 @@
     "_esbuild": "esbuild --define:__DEV__=true --bundle --external:vscode --format=esm --outfile=dist/extension.js --platform=node --target=node22 src/extension.ts",
     "build:test": "esbuild --format=cjs --outdir=out/test --platform=node --target=node22 src/test/**/*.ts",
     "ext-install": "vsce pack -o out/vincode.vsix && code --install-extension out/vincode.vsix",
-    "lint": "eslint --cache --fix src",
+    "lint": "tsc --noEmit && eslint --cache --fix src",
     "pretest": "pnpm _esbuild --format=cjs --outfile=out/extension.js && pnpm build:test && node -e \"var obj = require('./package.json'); delete obj.type; obj.main = 'extension.js'; fs.writeFileSync('out/package.json', JSON.stringify(obj), 'utf8')\"",
     "test": "vscode-test",
     "vscode:prepublish": "pnpm _esbuild --define:__DEV__=false --minify",
     "watch": "pnpm _esbuild --sourcemap --watch"
   },
   "simple-git-hooks": {
-    "pre-commit": "pnpx lint-staged"
+    "pre-commit": "pnpm exec lint-staged"
   },
   "type": "module",
   "version": "0.1.0"

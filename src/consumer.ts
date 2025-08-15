@@ -50,8 +50,7 @@ export class Consumer {
           case 'less':
             return
           case 'leap':
-            leap.nextChar(arg.text)
-            return
+            return leap.nextChar(arg.text)
           case 'insert':
             return commands.executeCommand('default:type', arg)
           default:
