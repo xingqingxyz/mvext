@@ -4,14 +4,21 @@
     {
       "type": "npm",
       "script": "watch",
-      "isBackground": true,
       "group": {
         "kind": "build",
         "isDefault": true
       },
-      "problemMatcher": "$esbuild-watch",
-      "label": "npm: watch",
-      "detail": "pnpm _esbuild --sourcemap --watch"
+      "isBackground": true,
+      "problemMatcher": ["$rollup-watch"]
+    },
+    {
+      "type": "npm",
+      "script": "watch-web",
+      "group": {
+        "kind": "build"
+      },
+      "isBackground": true,
+      "problemMatcher": ["$rollup-watch"]
     }
   ]
 }

@@ -15,36 +15,83 @@
     "Formatters"
   ],
   "contributes": {
+    "commands": [
+      {
+        "category": "TOML",
+        "command": "toml.selectSchema",
+        "enablement": "editorLangId == toml",
+        "title": "Select Schema"
+      },
+      {
+        "category": "TOML",
+        "command": "toml.copyAsJson",
+        "enablement": "editorHasSelection",
+        "title": "Copy as JSON"
+      },
+      {
+        "category": "TOML",
+        "command": "toml.copyAsToml",
+        "enablement": "editorHasSelection",
+        "title": "Copy as TOML"
+      },
+      {
+        "category": "TOML",
+        "command": "toml.pasteAsJson",
+        "title": "Paste as JSON"
+      },
+      {
+        "category": "TOML",
+        "command": "toml.pasteAsToml",
+        "title": "Paste as TOML"
+      }
+    ],
+    "configuration": {
+      "properties": {
+        "toml.taplo.extraArgs": {
+          "default": [],
+          "description": "Additional arguments for Taplo. Has no effect for the bundled LSP.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "toml.taplo.path": {
+          "description": "An absolute path to the `taplo` executable.",
+          "type": "string"
+        }
+      },
+      "title": "TOML"
+    },
     "grammars": [
       {
         "language": "toml",
-        "scopeName": "source.toml",
-        "path": "./syntax/toml.tmLanguage.json"
+        "path": "./syntax/toml.tmLanguage.json",
+        "scopeName": "source.toml"
       },
       {
-        "scopeName": "markdown.toml.frontmatter.codeblock",
-        "path": "./syntax/toml.frontmatter.tmLanguage.json",
-        "injectTo": [
-          "text.html.markdown"
-        ]
-      },
-      {
-        "scopeName": "markdown.toml.codeblock",
-        "path": "./syntax/toml.markdown.tmLanguage.json",
         "injectTo": [
           "text.html.markdown"
         ],
+        "path": "./syntax/toml.frontmatter.tmLanguage.json",
+        "scopeName": "markdown.toml.frontmatter.codeblock"
+      },
+      {
         "embeddedLanguages": {
           "meta.embedded.block.toml": "toml"
-        }
+        },
+        "injectTo": [
+          "text.html.markdown"
+        ],
+        "path": "./syntax/toml.markdown.tmLanguage.json",
+        "scopeName": "markdown.toml.codeblock"
       }
     ],
     "languages": [
       {
-        "id": "toml",
         "aliases": [
           "TOML"
         ],
+        "configuration": "./language-configuration.json",
         "extensions": [
           ".toml"
         ],
@@ -52,63 +99,7 @@
           "Cargo.lock",
           "uv.lock"
         ],
-        "configuration": "./language-configuration.json"
-      }
-    ],
-    "menus": {
-      "commandPalette": [
-        {
-          "command": "toml.selectSchema",
-          "when": "editorLangId == toml"
-        },
-        {
-          "command": "toml.copyAsJson"
-        },
-        {
-          "command": "toml.copyAsToml"
-        },
-        {
-          "command": "toml.pasteAsJson"
-        },
-        {
-          "command": "toml.pasteAsToml"
-        }
-      ]
-    },
-    "commands": [
-      {
-        "command": "toml.selectSchema",
-        "title": "TOML: Select Schema"
-      },
-      {
-        "command": "toml.copyAsJson",
-        "title": "TOML: Copy as JSON",
-        "enablement": "editorHasSelection"
-      },
-      {
-        "command": "toml.copyAsToml",
-        "title": "TOML: Copy as TOML",
-        "enablement": "editorHasSelection"
-      },
-      {
-        "command": "toml.pasteAsJson",
-        "title": "TOML: Paste as JSON"
-      },
-      {
-        "command": "toml.pasteAsToml",
-        "title": "TOML: Paste as TOML"
-      }
-    ],
-    "semanticTokenTypes": [
-      {
-        "id": "tomlArrayKey",
-        "superType": "variable",
-        "description": "Keys of regular arrays."
-      },
-      {
-        "id": "tomlTableKey",
-        "superType": "variable",
-        "description": "Keys of inline tables."
+        "id": "toml"
       }
     ],
     "semanticTokenScopes": [
@@ -123,260 +114,35 @@
         }
       }
     ],
-    "configuration": {
-      "title": "TOML",
-      "properties": {
-        "toml.taplo.bundled": {
-          "description": "Use the bundled taplo language server. If set to `false`, the `taplo` executable must be found in PATH or must be set in `toml.taplo.path`.",
-          "type": "boolean",
-          "scope": "resource",
-          "default": true
-        },
-        "toml.taplo.path": {
-          "description": "An absolute path to the `taplo` executable. `toml.taplo.bundled` needs to be set to `false` for this to have any effect.",
-          "type": [
-            "string",
-            "null"
-          ],
-          "scope": "resource",
-          "default": null
-        },
-        "toml.taplo.environment": {
-          "type": [
-            "object"
-          ],
-          "scope": "resource",
-          "description": "Environment variables for Taplo.",
-          "additionalProperties": {
-            "type": "string"
-          },
-          "default": {}
-        },
-        "toml.taplo.extraArgs": {
-          "type": [
-            "array",
-            "null"
-          ],
-          "scope": "resource",
-          "description": "Additional arguments for Taplo. Has no effect for the bundled LSP.",
-          "items": {
-            "type": "string"
-          },
-          "default": []
-        },
-        "toml.taplo.configFile.path": {
-          "description": "An absolute, or workspace relative path to the Taplo configuration file.",
-          "type": "string",
-          "default": null,
-          "scope": "resource"
-        },
-        "toml.taplo.configFile.enabled": {
-          "description": "Whether to enable the usage of a Taplo configuration file.",
-          "type": "boolean",
-          "scope": "resource",
-          "default": true
-        },
-        "toml.semanticTokens": {
-          "description": "Enable semantic tokens for inline table and array keys.",
-          "type": "boolean",
-          "scope": "resource",
-          "default": false
-        },
-        "toml.schema.enabled": {
-          "description": "Enable completion and validation based on JSON schemas.",
-          "type": "boolean",
-          "scope": "resource",
-          "default": true
-        },
-        "toml.schema.links": {
-          "description": "Whether to show clickable links for keys in the editor.",
-          "type": "boolean",
-          "scope": "resource",
-          "default": false
-        },
-        "toml.schema.catalogs": {
-          "description": "A list of URLs to schema catalogs where schemas and associations can be fetched from",
-          "type": "array",
-          "scope": "resource",
-          "items": {
-            "type": "string"
-          },
-          "default": [
-            "https://json.schemastore.org/api/json/catalog.json"
-          ]
-        },
-        "toml.schema.associations": {
-          "description": "Document and schema associations.",
-          "markdownDescription": "Additional document and schema associations. \n\n The key must be a regular expression, this pattern is used to associate schemas with absolute document URIs. Overlapping patterns result in undefined behaviour and either matching schema can be used. \n\n The value must be an absolute URI to the JSON schema, for supported values and more information [read here](https://taplo.tamasfe.dev/configuration#visual-studio-code).",
-          "type": "object",
-          "scope": "resource",
-          "default": {}
-        },
-        "toml.schema.cache.memoryExpiration": {
-          "description": "The amount of seconds after which schemas will be invalidated from memory.",
-          "markdownDescription": "The amount of seconds after which schemas will be invalidated from memory. \n**NOTE**: setting too low values will cause performance issues and validation of some schemas will fail.",
-          "type": "integer",
-          "scope": "resource",
-          "minimum": 0,
-          "default": 60
-        },
-        "toml.schema.cache.diskExpiration": {
-          "description": "The amount of seconds after which cached catalogs and schemas expire and will be attempted to be fetched again.",
-          "type": "integer",
-          "scope": "resource",
-          "minimum": 0,
-          "default": 600
-        },
-        "toml.completion.maxKeys": {
-          "description": "The maximum amount of keys in a dotted key to display during completion, 0 effectively disables key completions.",
-          "type": "integer",
-          "scope": "resource",
-          "minimum": 0,
-          "default": 5
-        },
-        "toml.syntax.semanticTokens": {
-          "description": "Whether to enable semantic tokens for tables and arrays.",
-          "type": "boolean",
-          "scope": "resource",
-          "default": true
-        },
-        "toml.formatter.alignEntries": {
-          "scope": "resource",
-          "type": "boolean",
-          "default": null,
-          "description": "Align entries vertically. Entries that have table headers, comments, or blank lines between them are not aligned."
-        },
-        "toml.formatter.alignComments": {
-          "scope": "resource",
-          "type": "boolean",
-          "default": null,
-          "description": "Align consecutive comments after entries and items vertically. This applies to comments that are after entries or array items"
-        },
-        "toml.formatter.arrayTrailingComma": {
-          "scope": "resource",
-          "type": "boolean",
-          "default": null,
-          "description": "Put trailing commas for multiline arrays."
-        },
-        "toml.formatter.arrayAutoExpand": {
-          "scope": "resource",
-          "type": "boolean",
-          "default": null,
-          "description": "Automatically expand arrays to multiple lines."
-        },
-        "toml.formatter.inlineTableExpand": {
-          "scope": "resource",
-          "type": "boolean",
-          "default": null,
-          "description": "Expand values inside in line tables."
-        },
-        "toml.formatter.arrayAutoCollapse": {
-          "scope": "resource",
-          "type": "boolean",
-          "default": null,
-          "description": "Automatically collapse arrays if they fit in one line."
-        },
-        "toml.formatter.compactArrays": {
-          "scope": "resource",
-          "type": "boolean",
-          "default": null,
-          "description": "Omit whitespace padding inside single-line arrays."
-        },
-        "toml.formatter.compactInlineTables": {
-          "scope": "resource",
-          "type": "boolean",
-          "default": null,
-          "description": "Omit whitespace padding inside inline tables."
-        },
-        "toml.formatter.compactEntries": {
-          "scope": "resource",
-          "type": "boolean",
-          "default": null,
-          "description": "Omit whitespace around `=`."
-        },
-        "toml.formatter.columnWidth": {
-          "scope": "resource",
-          "type": "number",
-          "default": null,
-          "description": "Target maximum column width after which arrays are expanded into new lines."
-        },
-        "toml.formatter.indentTables": {
-          "scope": "resource",
-          "type": "boolean",
-          "default": null,
-          "description": "Indent subtables if they come in order."
-        },
-        "toml.formatter.indentEntries": {
-          "scope": "resource",
-          "type": "boolean",
-          "default": null,
-          "description": "Indent entries under tables."
-        },
-        "toml.formatter.indentString": {
-          "scope": "resource",
-          "type": "string",
-          "default": null,
-          "description": "Indentation to use, should be tabs or spaces but technically could be anything."
-        },
-        "toml.formatter.trailingNewline": {
-          "scope": "resource",
-          "type": "boolean",
-          "default": null,
-          "description": "Add trailing newline to the source."
-        },
-        "toml.formatter.reorderKeys": {
-          "scope": "resource",
-          "type": "boolean",
-          "default": null,
-          "description": "Alphabetically reorder keys that are not separated by blank lines."
-        },
-        "toml.formatter.reorderArrays": {
-          "scope": "resource",
-          "type": "boolean",
-          "default": null,
-          "description": "Alphabetically reorder array values that are not separated by blank lines."
-        },
-        "toml.formatter.reorderInlineTables": {
-          "scope": "resource",
-          "type": "boolean",
-          "default": null,
-          "description": "Alphabetically reorder inline tables."
-        },
-        "toml.formatter.allowedBlankLines": {
-          "scope": "resource",
-          "type": "number",
-          "default": null,
-          "description": "The maximum amount of consecutive blank lines allowed."
-        },
-        "toml.formatter.crlf": {
-          "scope": "resource",
-          "type": "boolean",
-          "default": null,
-          "description": "Use CRLF line endings."
-        },
-        "toml.rules": {
-          "scope": "resource",
-          "type": "array",
-          "default": [],
-          "markdownDescription": "Array of Taplo rules in JSON format, see [Configuration File - Rules](https://taplo.tamasfe.dev/configuration/file.html#rules). The rules given here are appended to existing rules from config files, if any. There is no conversion done, all object keys must be snake_case, including formatting rules."
-        }
+    "semanticTokenTypes": [
+      {
+        "description": "Array keys.",
+        "id": "tomlArrayKey",
+        "superType": "variable"
+      },
+      {
+        "description": "Inline table keys.",
+        "id": "tomlTableKey",
+        "superType": "variable"
       }
-    }
+    ]
   },
-  "main": "./dist/extension.js",
-  "browser": "./dist/browser-extension.js",
   "description": "TOML language server based on taplo.",
   "devDependencies": {
-    "@taplo/lsp": "^0.8.0",
+    "@rollup/plugin-commonjs": "^28.0.6",
+    "@rollup/plugin-node-resolve": "^16.0.1",
+    "@rollup/plugin-replace": "^6.0.2",
+    "@rollup/plugin-terser": "^0.4.4",
+    "@rollup/plugin-typescript": "^12.1.4",
     "@types/mocha": "^10.0.10",
     "@types/node": "~22.17.2",
     "@types/vscode": "^1.103.0",
     "@types/which": "^3.0.4",
-    "esbuild": "^0.25.9",
     "oxlint": "^1.12.0",
+    "rollup": "^4.47.0",
+    "tslib": "^2.8.1",
     "typescript": "^5.9.2",
     "vscode-languageclient": "^9.0.1",
-    "vscode-languageserver-protocol": "^3.17.5",
     "which": "^5.0.0"
   },
   "displayName": "TOML",
@@ -384,12 +150,12 @@
     "vscode": "^1.103.0"
   },
   "extensionKind": [
-    "ui",
     "workspace"
   ],
   "license": "MIT",
+  "main": "./dist/extension.js",
   "name": "toml",
-  "packageManager": "pnpm@10.14.0",
+  "packageManager": "pnpm@10.15.0",
   "prettier": {
     "semi": false,
     "singleQuote": true
@@ -401,11 +167,11 @@
     "url": "https://github.com/xingqingxyz/toml"
   },
   "scripts": {
-    "_esbuild": "esbuild --define:__DEV__=true --bundle --external:vscode --format=esm --outfile=dist/extension.js --platform=node --target=node22 src/extension.ts",
-    "build:test": "esbuild --format=cjs --outdir=out/test --platform=node --target=node22 src/test/**/*.ts",
-    "test": "vscode-test",
-    "vscode:prepublish": "pnpm _esbuild --define:__DEV__=false --minify",
-    "watch": "pnpm _esbuild --sourcemap --watch"
+    "ext-install": "vsce pack -o xingqingxyz.toml.vsix && code --install-extension xingqingxyz.toml.vsix",
+    "lint": "tsc --noEmit && oxlint --fix src",
+    "vscode:prepublish": "rollup -c --environment NODE_ENV:production,PLATFORM:all",
+    "watch": "rollup -c -w",
+    "watch-web": "rollup -c -w --environment PLATFORM:web"
   },
   "type": "module",
   "version": "0.1.0"

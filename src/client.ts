@@ -1,116 +1,72 @@
-import { type ExtensionContext, Uri, workspace } from 'vscode'
-import { BaseLanguageClient } from 'vscode-languageclient'
-import { LanguageClient as BrowserLanguageClient } from 'vscode-languageclient/browser'
-import {
-  Executable,
-  LanguageClient,
-  NodeModule,
-  ServerOptions,
-  TransportKind,
-} from 'vscode-languageclient/node'
+import fs from 'fs/promises'
+import { type ExtensionContext, languages, window, workspace } from 'vscode'
+import { LanguageClient } from 'vscode-languageclient/node'
 import which from 'which'
-import { getOutput } from './util'
+import { getExtConfig } from './config'
+import { showMessage } from './logger'
 
-export function createClient(
-  context: ExtensionContext
-): Promise<BaseLanguageClient> {
-  return (__WEB__ ? createBrowserClient : createNodeClient)(context)
-}
+export let client: LanguageClient
 
-async function createBrowserClient(context: ExtensionContext) {
-  const serverMain = Uri.joinPath(context.extensionUri, 'dist/server-worker.js')
-  // @ts-ignore
-  const worker = new Worker(serverMain.toString(true))
-  return new BrowserLanguageClient(
-    'taplo-lsp',
-    'Taplo LSP',
-    await clientOpts(context),
-    worker
-  )
-}
-
-async function createNodeClient(context: ExtensionContext) {
-  const out = getOutput()
-
-  const bundled = !!workspace.getConfiguration().get('toml.taplo.bundled')
-
-  let serverOpts: ServerOptions
-  if (bundled) {
-    const taploPath = Uri.joinPath(
-      context.extensionUri,
-      'dist/server.js'
-    ).fsPath
-
-    const run: NodeModule = {
-      module: taploPath,
-      transport: TransportKind.ipc,
-      options: {
-        env:
-          workspace.getConfiguration().get('toml.taplo.environment') ??
-          undefined,
-      },
-    }
-
-    serverOpts = {
-      run,
-      debug: run,
-    }
-  } else {
-    const taploPath =
-      workspace.getConfiguration().get('toml.taplo.path') ??
-      which.sync('taplo', { nothrow: true })
-
-    if (typeof taploPath !== 'string') {
-      out.appendLine('failed to locate Taplo LSP')
-      throw new Error('failed to locate Taplo LSP')
-    }
-
-    let extraArgs = workspace.getConfiguration().get('toml.taplo.extraArgs')
-
-    if (!Array.isArray(extraArgs)) {
-      extraArgs = []
-    }
-
-    const args: string[] = (extraArgs as any[]).filter(
-      (a) => typeof a === 'string'
-    )
-
-    const run: Executable = {
-      command: taploPath,
-      args: ['lsp', 'stdio', ...args],
-      options: {
-        env:
-          workspace.getConfiguration().get('toml.taplo.environment') ??
-          undefined,
-      },
-    }
-
-    serverOpts = {
-      run,
-      debug: run,
-    }
-  }
-
-  return new LanguageClient(
-    'toml',
-    'Even Better TOML LSP',
-    serverOpts,
-    await clientOpts(context)
-  )
-}
-
-async function clientOpts(context: ExtensionContext): Promise<any> {
+export async function createClient(context: ExtensionContext) {
   await workspace.fs.createDirectory(context.globalStorageUri)
-
-  return {
-    documentSelector: [
-      { scheme: 'file', language: 'toml' },
-      { scheme: 'file', language: 'cargoLock' },
-    ],
-
-    initializationOptions: {
-      configurationSection: 'toml',
-      cachePath: context.globalStorageUri.fsPath,
-    },
+  const clientStatusBarItem = languages.createLanguageStatusItem(
+    'toml-schema',
+    {
+      language: 'toml',
+      scheme: 'file',
+    }
+  )
+  clientStatusBarItem.name = 'TOML schema'
+  clientStatusBarItem.text = 'no schema selected'
+  clientStatusBarItem.command = {
+    command: 'toml.selectSchema',
+    title: 'Select Schema',
   }
+  let taploPath = getExtConfig('taplo.path')
+  try {
+    await fs.access(taploPath, fs.constants.X_OK)
+  } catch {
+    taploPath = await which('taplo')
+  }
+  client = new LanguageClient(
+    'toml',
+    'TOML',
+    {
+      command: taploPath,
+      args: ['lsp', 'stdio', ...getExtConfig('taplo.extraArgs')],
+    },
+    {
+      documentSelector: [{ scheme: 'file', language: 'toml' }],
+      initializationOptions: {
+        configurationSection: 'toml',
+        cachePath: context.globalStorageUri.fsPath,
+      },
+    }
+  )
+  console.log(client.state)
+  await client.start()
+  console.log(client.state)
+  context.subscriptions.push(
+    client,
+    clientStatusBarItem,
+    client.onNotification('taplo/messageWithOutput', (params) =>
+      showMessage(params.kind, params.message)
+    ),
+    client.onNotification(
+      'taplo/didChangeSchemaAssociation',
+      (params: {
+        documentUri: string
+        schemaUri?: string
+        meta?: Record<string, any>
+      }) => {
+        if (
+          params.documentUri ===
+          window.activeTextEditor!.document.uri.toString()
+        ) {
+          clientStatusBarItem.text =
+            params.meta?.name ?? params.schemaUri ?? 'no schema selected'
+        }
+      }
+    )
+  )
 }

@@ -5,7 +5,7 @@ const localTime = {
 
 const localDate = {
   name: "constant.other.time.date.toml",
-  match: /\d{4}\-\d{2}\-\d{2}/.source,
+  match: /\d{4}-\d{2}-\d{2}/.source,
 };
 
 const localDateTime = {

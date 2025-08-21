@@ -1,10 +1,12 @@
 import { workspace, type ConfigurationScope } from 'vscode'
 
 export type ExtConfig = {
-  'formatter.enabled': boolean
+  _: boolean
+  'taplo.path': string
+  'taplo.extraArgs': string[]
 }
 
-type ScopedConfigKey = 'formatter.enabled'
+type ScopedConfigKey = '_'
 
 export function getExtConfig<const T extends ScopedConfigKey>(
   key: T,
