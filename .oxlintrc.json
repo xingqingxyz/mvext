@@ -6,7 +6,8 @@
     "oxc",
     "import",
     "promise",
-    "node"
+    "node",
+    "regex"
   ],
   "categories": {},
   "rules": {
@@ -82,7 +83,6 @@
     "typescript/await-thenable": "warn",
     "typescript/no-array-delete": "warn",
     "typescript/no-base-to-string": "warn",
-    "typescript/no-confusing-void-expression": "warn",
     "typescript/no-duplicate-enum-values": "warn",
     "typescript/no-duplicate-type-constituents": "warn",
     "typescript/no-extra-non-null-assertion": "warn",
