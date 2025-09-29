@@ -1,0 +1,5 @@
+**
+!resources/words-js-sorted.txt.gz
+!dist/web/*
+!CHANGELOG.md
+!LICENSE

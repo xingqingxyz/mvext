@@ -1,4 +1,3 @@
-import type { ExecFileOptions } from 'child_process'
 import path from 'path'
 import stripAnsi from 'strip-ansi'
 import { window, type Range } from 'vscode'
@@ -48,22 +47,18 @@ export async function evalSelection() {
       return
     }
   }
-  const [cmd, ...args] = config[languageId].split(' ')
-  const options: ExecFileOptions = {
-    cwd: path.dirname(document.fileName),
-  }
 
+  const [cmd, ...args] = config[languageId].split(' ')
   const results = await Promise.all(
     (function* () {
       for (let range of selections as readonly Range[]) {
         if (range.isEmpty) {
           range = document.lineAt(range.start).range
         }
-        yield execFilePm(
-          cmd,
-          args.concat(document.getText(range)),
-          options,
-        ).then(
+        yield execFilePm(cmd, args.concat(document.getText(range)), {
+          cwd: path.dirname(document.fileName),
+          encoding: 'utf8',
+        }).then(
           (r) => ({
             text: r.stdout.includes('\x1b[') ? stripAnsi(r.stdout) : r.stdout,
             range,

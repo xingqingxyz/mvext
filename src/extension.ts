@@ -12,6 +12,7 @@ import { StyluaFormatter, StyluaFormatterWasm } from './formatter/stylua'
 import { HexColorProvider } from './hexColor'
 import { copyJsonPath } from './jsonPath'
 import { MarkdownBlockRunProvider } from './markdownBlockRun'
+import { registerPwshAstTreeView } from './pwshAstTreeView'
 import { registerTerminalLaunch } from './terminalLaunch'
 import {
   renameWithCase,
@@ -44,6 +45,9 @@ export async function activate(context: ExtensionContext) {
     }
     if (getExtConfig('stylua.enabled')) {
       new StyluaFormatter(context)
+    }
+    if (getExtConfig('pwshAstTreeView.enabled')) {
+      registerPwshAstTreeView(context)
     }
   }
   context.subscriptions.push(

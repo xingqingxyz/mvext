@@ -12,6 +12,8 @@ export type MvextConfig = {
   'pathComplete.debounceTimeMs': number
   'terminalRunCode.defaultLanguageId': TerminalRunLanguageIds
   'transformCase.defaultCase': WordCase
+  'pwshAstTreeView.enabled': boolean
+  'treeSitterTreeView.enabled': boolean
   'shfmt.enabled': boolean
   'stylua.enabled': boolean
   'shfmt.extraArgs': string[]

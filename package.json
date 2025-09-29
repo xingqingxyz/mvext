@@ -3,7 +3,7 @@
     "onStartupFinished"
   ],
   "author": "Ming Chen <cm.email@qq.com> (https://github.com/xingqingxyz)",
-  "browser": "./dist/extension.js",
+  "browser": "./dist/web/extension.cjs",
   "bugs": {
     "url": "https://github.com/xingqingxyz/mvext/issues"
   },
@@ -86,11 +86,6 @@
       },
       {
         "category": "mvext",
-        "command": "mvext.revealInTsTreeView",
-        "title": "Reveal Selection in Tree-sitter Tree View"
-      },
-      {
-        "category": "mvext",
         "command": "mvext.invokeComplete",
         "shortTitle": "Invoke Special Complete",
         "title": "Invoke Complete (css,dict,line,path,user)"
@@ -103,9 +98,48 @@
       },
       {
         "category": "mvext",
+        "command": "mvext.copyTreeItemLabel",
+        "icon": "$(copy)",
+        "title": "Copy Label"
+      },
+      {
+        "category": "mvext",
+        "command": "mvext.revealInTsTreeView",
+        "title": "Reveal Selection in Tree-sitter Tree View"
+      },
+      {
+        "category": "mvext",
         "command": "mvext.refreshTsTreeView",
         "icon": "$(refresh)",
         "title": "Refresh Tree-sitter Tree View"
+      },
+      {
+        "category": "mvext",
+        "command": "mvext.revealInPwshAstTreeView",
+        "title": "Reveal Selection in PowerShell Ast Tree View"
+      },
+      {
+        "category": "mvext",
+        "command": "mvext.refreshPwshAstTreeView",
+        "icon": "$(refresh)",
+        "title": "Refresh PowerShell Ast Tree View"
+      },
+      {
+        "category": "mvext",
+        "command": "mvext.copyTreeItemLabel",
+        "icon": "$(copy)",
+        "title": "Copy Label"
+      },
+      {
+        "category": "mvext",
+        "command": "mvext.revealInPwshAstTreeView",
+        "title": "Reveal Selection in PowerShell Ast Tree View"
+      },
+      {
+        "category": "mvext",
+        "command": "mvext.refreshPwshAstTreeView",
+        "icon": "$(refresh)",
+        "title": "Refresh PowerShell Ast Tree View"
       }
     ],
     "configuration": {
@@ -143,6 +177,11 @@
           "scope": "resource",
           "type": "object"
         },
+        "mvext.pwshAstTreeView.enabled": {
+          "default": true,
+          "markdownDescription": "Enable pwshAstTreeView, has no effect on web.",
+          "type": "boolean"
+        },
         "mvext.shfmt.enabled": {
           "default": true,
           "markdownDescription": "Enable shfmt formatter for `shellscript`, requires reload.",
@@ -163,8 +202,6 @@
         "mvext.shfmt.optionsOnWeb": {
           "default": {
             "binaryNextLine": true,
-            "functionNextLine": true,
-            "indent": 2,
             "spaceRedirects": true,
             "switchCaseIndent": true
           },
@@ -214,7 +251,7 @@
             "javascript",
             "typescript"
           ],
-          "markdownDescription": "Command `mvext.terminalRunCode` use this when command timeout.",
+          "markdownDescription": "The default language fallback for command `mvext.terminalRunCode`.",
           "type": "string"
         },
         "mvext.transformCase.defaultCase": {
@@ -368,6 +405,10 @@
         {
           "command": "mvext.revealInTsTreeView",
           "when": "mvext.tsTreeView.visible && editorLangId in mvext.tsSyncedLanguages"
+        },
+        {
+          "command": "mvext.revealInPwshAstTreeView",
+          "when": "mvext.pwshAstTreeView.visible && editorLangId == powershell"
         }
       ],
       "editor/title/run": [
@@ -387,11 +428,22 @@
           "when": "!listMultiSelection && resourceLangId in mvext.terminalLaunchLanguages"
         }
       ],
+      "view/item/context": [
+        {
+          "command": "mvext.copyTreeItemLabel",
+          "group": "inline"
+        }
+      ],
       "view/title": [
         {
           "command": "mvext.refreshTsTreeView",
           "group": "navigation",
           "when": "view == mvext.tsTreeView"
+        },
+        {
+          "command": "mvext.refreshPwshAstTreeView",
+          "group": "navigation",
+          "when": "view == mvext.pwshAstTreeView"
         }
       ]
     },
@@ -469,71 +521,83 @@
           "icon": "$(list-tree)",
           "id": "mvext.tsTreeView",
           "name": "Tree-sitter Tree View"
+        },
+        {
+          "contextualTitle": "PowerShell Ast Tree View",
+          "icon": "$(terminal-powershell)",
+          "id": "mvext.pwshAstTreeView",
+          "name": "PowerShell Ast Tree View"
         }
       ]
     },
     "viewsWelcome": [
       {
-        "contents": "This document language is not synced becase of the setting `mvext.treeSitter.syncedLanguages`.",
+        "contents": "This document language is not synced. ${command:workbench.action.openSettings}",
         "view": "mvext.tsTreeView"
+      },
+      {
+        "contents": "This document language is not powershell.",
+        "view": "mvext.pwshAstTreeView"
       }
     ]
   },
   "description": "Invoke terminal commands, eval selections and invoke complete.",
   "devDependencies": {
-    "@eslint/js": "^9.33.0",
-    "@johnnymorganz/stylua": "^2.1.0",
+    "@eslint/js": "^9.36.0",
+    "@johnnymorganz/stylua": "^2.3.0",
     "@rollup/plugin-alias": "^5.1.1",
     "@rollup/plugin-commonjs": "^28.0.6",
     "@rollup/plugin-node-resolve": "^16.0.1",
     "@rollup/plugin-replace": "^6.0.2",
     "@rollup/plugin-terser": "^0.4.4",
     "@rollup/plugin-typescript": "^12.1.4",
-    "@swc-node/register": "^1.10.10",
-    "@types/emscripten": "^1.40.1",
+    "@swc-node/register": "^1.11.1",
+    "@types/emscripten": "^1.41.2",
     "@types/mocha": "^10.0.10",
-    "@types/node": "^22.17.1",
-    "@types/vscode": "^1.102.0",
+    "@types/node": "^22.18.6",
+    "@types/vscode": "^1.104.0",
     "@types/which": "^3.0.4",
-    "@vscode/tree-sitter-wasm": "^0.1.4",
-    "eslint": "^9.33.0",
+    "@vscode/tree-sitter-wasm": "^0.1.5",
+    "eslint": "^9.36.0",
     "jsonc-parser": "^3.3.1",
-    "lint-staged": "^16.1.5",
-    "mocha": "^11.7.1",
+    "lint-staged": "^16.2.3",
+    "mocha": "^11.7.2",
     "os-browserify": "^0.3.0",
     "path-browserify": "^1.0.1",
     "prettier": "^3.6.2",
     "process": "^0.11.10",
-    "rollup": "^4.46.2",
+    "rollup": "^4.52.3",
     "sh-syntax": "^0.5.8",
     "simple-git-hooks": "^2.13.1",
-    "strip-ansi": "^7.1.0",
+    "strip-ansi": "^7.1.2",
     "tree-sitter-bash": "^0.25.0",
     "tslib": "^2.8.1",
     "typescript": "^5.9.2",
-    "typescript-eslint": "^8.39.0",
-    "web-tree-sitter": "^0.25.8",
+    "typescript-eslint": "^8.44.1",
+    "web-tree-sitter": "^0.25.10",
     "which": "^5.0.0"
   },
   "displayName": "Make VSCode Extension",
   "engines": {
-    "vscode": "^1.102.0"
+    "vscode": "^1.104.0"
   },
   "extensionKind": [
     "ui",
     "workspace"
   ],
   "keywords": [
+    "ast",
     "tree-sitter",
     "refactor",
-    "markdown"
+    "markdown",
+    "powershell"
   ],
   "license": "MIT",
   "lint-staged": {
-    "*.{js,ts}": "eslint --fix --cache",
-    "*.{mjs,js,ts,json,md}": "prettier -w --cache"
+    "*.{js,ts,json,md}": "prettier -w --cache",
+    "*.{js,ts}": "eslint --fix --cache"
   },
-  "main": "./dist/extension.mjs",
+  "main": "./dist/extension.js",
   "mocha": {
     "extension": "ts",
     "require": "@swc-node/register/esm-register",
@@ -541,7 +605,7 @@
     "watch-files": "src/**"
   },
   "name": "mvext",
-  "packageManager": "pnpm@10.14.0",
+  "packageManager": "pnpm@10.17.1",
   "prettier": {
     "semi": false,
     "singleQuote": true
@@ -557,10 +621,12 @@
     "test": "mocha",
     "vscode:prepublish": "rollup -c --environment NODE_ENV:production,PLATFORM:all",
     "watch": "rollup -c -w",
-    "watch-web": "rollup -c -w --environment PLATFORM:web"
+    "watch-web": "rollup -c -w --environment PLATFORM:web",
+    "install-extension": "vsce pack -o mvext.vsix && code --install-extension mvext.vsix"
   },
   "simple-git-hooks": {
     "pre-commit": "pnpm exec lint-staged && pnpm test"
   },
-  "version": "0.19.0"
+  "type": "module",
+  "version": "0.20.0"
 }

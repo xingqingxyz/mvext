@@ -1,7 +1,6 @@
 **
 !resources
-!dist/extension.js
-!dist/extension.mjs
-!dist/*.wasm
+!dist/*
+dist/web
 !CHANGELOG.md
 !LICENSE

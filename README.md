@@ -1,4 +1,4 @@
-# Ready Go!
+# Make VSCode Extension
 
 This extension ships a set of useful tools:
 

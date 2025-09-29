@@ -24,7 +24,7 @@ import {
 
 class TSTreeDataProvier implements TreeDataProvider<Node> {
   private tree?: Tree | null
-  private root?: Node // ts use .equals() rather object equality
+  private root?: Node // tree.rootNode is not memorized
   private languageId?: TSLanguageId
   private _onDidChangeTreeData = new EventEmitter<Node[] | undefined>()
   refresh() {

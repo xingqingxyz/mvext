@@ -12,7 +12,7 @@ import { fileURLToPath } from 'url'
 
 async function symlinkWasm() {
   await fs.rm('dist', { recursive: true, force: true })
-  await fs.mkdir('dist')
+  await fs.mkdir('dist/web', { recursive: true })
   const excludeLanguages = ['cpp', 'c-sharp', 'regex', 'ruby']
   const baseNameMap = {
     stylua_lib_bg: 'stylua',
@@ -54,7 +54,7 @@ function buildExtension(isWeb, isProd) {
   return defineConfig({
     input: 'src/extension.ts',
     output: {
-      file: `dist/extension.${isWeb ? '' : 'm'}js`,
+      file: isWeb ? 'dist/web/extension.cjs' : 'dist/extension.js',
       format: isWeb ? 'cjs' : 'es',
       sourcemap: !isProd,
     },
