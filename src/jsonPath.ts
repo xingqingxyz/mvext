@@ -1,7 +1,7 @@
 import { getLocation, type JSONPath } from 'jsonc-parser'
 import { env, window } from 'vscode'
 
-export function concatJsonPath(path: JSONPath) {
+export function concatJsonPathJs(path: JSONPath) {
   const reIdentifier = /^[a-z_$][\w$]*$/i
   return path
     .map((key) =>
@@ -15,15 +15,18 @@ export function concatJsonPath(path: JSONPath) {
 }
 
 export function concatJsonPathJq(path: JSONPath) {
+  if (!path.length) {
+    return '.'
+  }
   const reIdentifier = /^[a-z_]\w*$/i
-  path = path.map((key) =>
-    typeof key === 'string'
-      ? '.' + (reIdentifier.test(key) ? key : JSON.stringify(key))
-      : `[${key}]`,
-  )
-  // @ts-expect-error stupid
-  path[0] = '.' + (path[0] ??= '').slice(path[0].indexOf('.') + 1)
-  return path.join('')
+  const s = path
+    .map((key) =>
+      typeof key === 'string'
+        ? '.' + (reIdentifier.test(key) ? key : JSON.stringify(key))
+        : `[${key}]`,
+    )
+    .join('')
+  return s.startsWith('[') ? '.' + s : s
 }
 
 export async function copyJsonPath() {
@@ -35,5 +38,5 @@ export async function copyJsonPath() {
     editor.document.getText(),
     editor.document.offsetAt(editor.selection.active),
   )
-  await env.clipboard.writeText(concatJsonPath(path))
+  await env.clipboard.writeText(concatJsonPathJq(path))
 }

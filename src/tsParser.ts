@@ -88,10 +88,6 @@ export function nodeToRange<const T extends boolean>(
   ) as Selection
 }
 
-export function nodeRangeToString(node: Node) {
-  return `[${node.startPosition.row}, ${node.startPosition.column}] - [${node.endPosition.row}, ${node.endPosition.column}]`
-}
-
 export function getDescendantPath(root: Node, descendant: Node) {
   const nodePath = []
   do {

@@ -1,8 +1,9 @@
+import path from 'path'
 import {
   commands,
   type ExtensionContext,
   type Terminal,
-  type Uri,
+  Uri,
   window,
   workspace,
 } from 'vscode'
@@ -13,8 +14,8 @@ import { ContextKey, WStateKey } from './context'
  * Resolves python,(java|type)script(react)?,shellscript,powershell,csharp,
  * fsharp,bat,
  */
-function getLangIdByExt(ext: string) {
-  ext = ext.toLowerCase()
+function getLangIdFromUri(uri: Uri) {
+  const ext = path.extname(uri.path).slice(1).toLowerCase()
   switch (ext) {
     case 'js':
     case 'cjs':
@@ -55,15 +56,26 @@ function getLangIdByExt(ext: string) {
 
 export async function terminalLaunch(
   uri: Uri,
-  arg2: Uri[] | undefined | object,
+  arg1: Uri[] | undefined | object,
   argstr = '',
 ) {
-  if (uri.scheme !== 'file') {
-    await window.showWarningMessage('Please save or download the file first.')
-    return
-  }
-  if (!(await workspace.saveAll())) {
-    return
+  switch (uri.scheme) {
+    case 'file':
+      break
+    case 'untitled':
+      if (!(await workspace.saveAll())) {
+        return
+      }
+      break
+    case 'vscode-vfs':
+      await window.showWarningMessage('Please download the file first.')
+      return
+    case 'vscode-userdata':
+      uri = Uri.file(uri.fsPath)
+      break
+    default:
+      await window.showWarningMessage('Cannot handle uri scheme: ' + uri.scheme)
+      return
   }
   const shells = ['bash', 'gitbash', 'pwsh', 'sh', 'wsl', 'zsh']
   const terminal =
@@ -86,8 +98,8 @@ export async function terminalLaunch(
     }))
   terminal.show()
   let languageId
-  languageId = Array.isArray(arg2)
-    ? getLangIdByExt(uri.path.split('.').at(-1)!)
+  languageId = Array.isArray(arg1)
+    ? getLangIdFromUri(uri)
     : window.activeTextEditor!.document.languageId
   const config = getExtConfig('terminalLaunch.languageMap')
   if (!Object.hasOwn(config, languageId)) {

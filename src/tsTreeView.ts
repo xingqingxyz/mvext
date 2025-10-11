@@ -11,35 +11,24 @@ import {
   type ExtensionContext,
   type ProviderResult,
   type Range,
+  type TextDocument,
   type TreeDataProvider,
 } from 'vscode'
 import { Node, type Tree } from 'web-tree-sitter'
 import {
   getParsedTree,
-  nodeRangeToString,
   nodeToRange,
   positionToPoint,
   type TSLanguageId,
 } from './tsParser'
 
 class TSTreeDataProvier implements TreeDataProvider<Node> {
+  private document?: TextDocument
   private tree?: Tree | null
   private root?: Node // tree.rootNode is not memorized
   private languageId?: TSLanguageId
+  //#region api
   private _onDidChangeTreeData = new EventEmitter<Node[] | undefined>()
-  refresh() {
-    const { document } = window.activeTextEditor!
-    this.tree = getParsedTree(document)
-    this.root = this.tree?.rootNode
-    this.languageId = document.languageId as TSLanguageId
-    this._onDidChangeTreeData.fire(undefined)
-  }
-  getNodeAtRange(range: Range) {
-    return this.tree!.rootNode.descendantForPosition(
-      positionToPoint(range.start),
-      positionToPoint(range.end),
-    )!
-  }
   onDidChangeTreeData: Event<Node | Node[] | null | undefined> | undefined =
     this._onDidChangeTreeData.event
   getTreeItem(element: Node): TreeItem | Thenable<TreeItem> {
@@ -59,24 +48,46 @@ class TSTreeDataProvier implements TreeDataProvider<Node> {
           ? 'symbol-field'
           : 'symbol-text',
     )
-    item.description = nodeRangeToString(element)
     return item
   }
   getChildren(element?: Node): ProviderResult<Node[]> {
-    return element ? (element.children as Node[]) : this.root ? [this.root] : []
+    return element ? (element.children as Node[]) : this.root && [this.root]
   }
   getParent(element: Node): ProviderResult<Node> {
     return element.parent
   }
   resolveTreeItem(item: TreeItem, element: Node): ProviderResult<TreeItem> {
     item.tooltip = new MarkdownString()
+      .appendCodeblock(element.text, this.languageId)
       .appendMarkdown(
-        `**${element.parent?.fieldNameForChild(
+        `---\n**${element.parent?.fieldNameForChild(
           element.parent?.children.findIndex((n) => n!.equals(element)),
         )}**: \`${element.grammarType}\``,
       )
-      .appendCodeblock(element.text, this.languageId)
     return item
+  }
+  //#endregion
+  async showDocument() {
+    if (this.document) {
+      await window.showTextDocument(this.document)
+    }
+  }
+  refresh() {
+    const document = window.activeTextEditor?.document
+    if (!document) {
+      return
+    }
+    this.document = document
+    this.tree = getParsedTree(document)
+    this.root = this.tree?.rootNode
+    this.languageId = document.languageId as TSLanguageId
+    this._onDidChangeTreeData.fire(undefined)
+  }
+  getNodeAtRange(range: Range) {
+    return this.tree!.rootNode.descendantForPosition(
+      positionToPoint(range.start),
+      positionToPoint(range.end),
+    )!
   }
 }
 
@@ -90,8 +101,11 @@ export function registerTSTreeView(context: ExtensionContext) {
     backgroundColor: new ThemeColor('editor.selectionBackground'),
   })
   context.subscriptions.push(
+    commands.registerCommand('mvext.tsTreeViewShowDocument', () =>
+      provider.showDocument(),
+    ),
     commands.registerCommand(
-      'mvext.revealInTsTreeView',
+      'mvext.tsTreeViewReveal',
       () => (
         view.visible || provider.refresh(),
         view.reveal(
@@ -102,11 +116,11 @@ export function registerTSTreeView(context: ExtensionContext) {
         )
       ),
     ),
-    commands.registerCommand(
-      'mvext.refreshTsTreeView',
-      provider.refresh.bind(provider),
+    commands.registerCommand('mvext.tsTreeViewRefresh', () =>
+      provider.refresh(),
     ),
     view,
+    tsTreeViewDT,
     view.onDidChangeVisibility((e) =>
       e.visible
         ? provider.refresh()
@@ -120,6 +134,5 @@ export function registerTSTreeView(context: ExtensionContext) {
         editor.setDecorations(tsTreeViewDT, [{ range }])
       }
     }),
-    tsTreeViewDT,
   )
 }

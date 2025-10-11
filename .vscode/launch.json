@@ -10,7 +10,7 @@
         "--disable-extensions",
         "--enable-proposed-api",
         "xingqingxyz.mvext",
-        "${workspaceFolder}/testdir"
+        "${workspaceFolder}/fixtures"
       ],
       "preLaunchTask": "${defaultBuildTask}"
     },
@@ -24,7 +24,7 @@
         "--disable-extensions",
         "--enable-proposed-api",
         "xingqingxyz.mvext",
-        "${workspaceFolder}/testdir"
+        "${workspaceFolder}/fixtures"
       ]
     },
     {
@@ -37,7 +37,7 @@
         "--disable-extensions",
         "--enable-proposed-api",
         "xingqingxyz.mvext",
-        "${workspaceFolder}/testdir"
+        "${workspaceFolder}/fixtures"
       ],
       "preLaunchTask": "npm: watch-web"
     },
@@ -52,7 +52,7 @@
         "--disable-extensions",
         "--enable-proposed-api",
         "xingqingxyz.mvext",
-        "${workspaceFolder}/testdir"
+        "${workspaceFolder}/fixtures"
       ]
     }
   ]

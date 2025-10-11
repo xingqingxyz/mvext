@@ -1,6 +1,5 @@
 **
 !resources
 !dist/*
-dist/web
 !CHANGELOG.md
 !LICENSE

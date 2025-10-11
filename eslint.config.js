@@ -6,7 +6,7 @@ export default defineConfig(
   eslint.configs.recommended,
   tseslint.configs.recommended,
   {
-    ignores: ['*.*', '**/*.js', 'dist', 'testdir', 'scripts'],
+    ignores: ['*.*', '**/*.js', 'dist', 'fixtures', 'scripts'],
   },
   {
     files: ['src/**/*.ts'],

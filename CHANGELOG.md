@@ -2,6 +2,10 @@
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## [0.20.0]
+
+- Feature: [`pwshAstTreeView`](src/pwshAstTreeView.ts) PowerShell ast tree view.
+
 ## [0.18.0]
 
 - Fixed some tsCodeAction bugs.
