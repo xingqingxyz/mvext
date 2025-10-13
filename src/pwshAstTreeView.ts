@@ -3,6 +3,7 @@ import {
   commands,
   EventEmitter,
   MarkdownString,
+  Position,
   Range,
   ThemeColor,
   ThemeIcon,
@@ -15,70 +16,56 @@ import {
   type TextDocument,
   type TreeDataProvider,
 } from 'vscode'
+import { getExtConfig } from './config'
 import { noop } from './util'
 
 const enum NodeType {
-  AstNode,
+  Ast,
   Token,
-  AstNodeChild,
   TokensChild,
 }
 
-interface AstNode {
-  nodeType: NodeType.AstNode
-  id: number
-  name: string
-  parent?: AstNode
-  children?: (AstNode | AstNodeChild | TokensChild)[]
-  readonly type: string
+interface Ast {
+  parent?: Ast
+  readonly id: string
+  readonly type: NodeType.Ast
+  readonly children: Ast[]
+  readonly fieldName: string
+  readonly typeName: string
+  readonly meta: Readonly<Record<string, unknown>>
   readonly range: [number, number, number, number]
-  readonly meta?: Readonly<Record<string, unknown>>
-  readonly tokens: Token[]
-  readonly A: AstNode[]
-}
-
-interface AstNodeChild {
-  nodeType: NodeType.AstNodeChild
-  id: number
-  readonly children: undefined
-  readonly name: string
-}
-
-interface TokensChild {
-  nodeType: NodeType.TokensChild
-  id: number
-  children?: Token[]
-  readonly name: string
-  readonly parent: AstNode
+  readonly tokens: TokensChild
 }
 
 interface Token {
-  nodeType: NodeType.Token
-  id: number
-  readonly children: undefined
-  readonly name: string
+  readonly type: NodeType.Token
+  readonly range: [number, number, number, number]
+  readonly Kind: string
   readonly TokenFlags: string
   readonly HasError: boolean
-  readonly range: [number, number, number, number]
 }
 
-type Node = AstNode | Token | AstNodeChild | TokensChild
+interface TokensChild {
+  readonly id: string
+  readonly type: NodeType.TokensChild
+  readonly indexes: number[]
+}
+
+type Node = Ast | Token | TokensChild
 
 class AstNodeGrabber implements Disposable {
   private shell!: ChildProcessWithoutNullStreams
   private running = false
   private cancel: () => void = noop
   private startServer() {
-    this.shell = spawn('pwsh', [
-      extContext.asAbsolutePath('resources/serveAstNode.ps1'),
-    ])
+    this.shell = spawn('pwsh', [this.scriptPath])
   }
   restartServer() {
     this.shell.kill()
     this.startServer()
   }
   dispose = () => this.shell.kill()
-  constructor() {
+  constructor(private scriptPath: string) {
     this.startServer()
     this.shell.stdout.setEncoding('utf8')
     this.shell.on('exit', () =>
@@ -118,7 +105,7 @@ class AstNodeGrabber implements Disposable {
       }
       this.shell.stdout.on('data', collect)
       const timer = setTimeout(() => {
-        reject('ast parse timeout')
+        reject('pwsh ast parse timeout')
       }, 60000)
       this.cancel = () => {
         reject('canceled')
@@ -148,11 +135,9 @@ function rangeContains(
   )
 }
 
-class PwshAstTreeDataProvier implements TreeDataProvider<Node>, Disposable {
-  private nodeId = 0
-  private sender = new AstNodeGrabber()
-  private root?: AstNode
-  private document?: TextDocument
+export class PwshAstTreeDataProvier
+  implements TreeDataProvider<Node>, Disposable
+{
   //#region api
   private _onDidChangeTreeData = new EventEmitter<Node[] | undefined>()
   onDidChangeTreeData = this._onDidChangeTreeData.event
@@ -160,86 +145,52 @@ class PwshAstTreeDataProvier implements TreeDataProvider<Node>, Disposable {
     this.sender.dispose()
   }
   getTreeItem(element: Node): TreeItem | Thenable<TreeItem> {
-    const item = new TreeItem(element.name)
-    item.id = element.id + ''
-    switch (element.nodeType) {
-      case NodeType.AstNode:
-        item.description = element.type
-        item.collapsibleState =
+    let item
+    switch (element.type) {
+      case NodeType.Ast:
+        item = new TreeItem(
+          element.fieldName,
           element === this.root
             ? TreeItemCollapsibleState.Expanded
-            : TreeItemCollapsibleState.Collapsed
+            : TreeItemCollapsibleState.Collapsed,
+        )
+        item.id = element.id
+        item.description = element.typeName
         item.iconPath = new ThemeIcon('symbol-field')
         break
       case NodeType.Token:
+        item = new TreeItem(element.Kind)
+        item.id = this.id++ + 't'
         item.description = element.TokenFlags
         item.iconPath = new ThemeIcon(
           element.HasError ? 'error' : 'symbol-value',
         )
         break
-      case NodeType.AstNodeChild:
-        item.iconPath = new ThemeIcon('list-tree')
-        break
       case NodeType.TokensChild:
-        item.collapsibleState = TreeItemCollapsibleState.Collapsed
+        item = new TreeItem('tokens', TreeItemCollapsibleState.Collapsed)
+        item.id = element.id
         item.iconPath = new ThemeIcon('symbol-parameter')
         break
     }
     return item
   }
-  getChildren(element?: Node): Node[] {
+  getChildren(element?: Node): ProviderResult<Node[]> {
     if (!element) {
       return this.root ? [this.root] : []
     }
-    if (element.children) {
-      return element.children
-    }
-    switch (element.nodeType) {
-      case NodeType.AstNode:
-        return (element.children = (Object.keys(element) as 'A'[])
-          .filter((k) => k[0] < 'a')
-          .sort()
-          .flatMap<AstNode | AstNodeChild | TokensChild>((k) => {
-            if (!element[k].length) {
-              return {
-                id: this.nodeId++,
-                name: k,
-                nodeType: NodeType.AstNodeChild,
-              } as AstNodeChild
-            }
-            for (const node of element[k]) {
-              if (node.id) {
-                continue
-              }
-              node.id = this.nodeId++
-              node.name = k
-              node.nodeType = NodeType.AstNode
-              node.parent = element
-            }
-            return element[k]
-          })
-          .concat({
-            id: this.nodeId++,
-            name: 'tokens',
-            nodeType: NodeType.TokensChild,
-            parent: element,
-          } as TokensChild))
+    switch (element.type) {
+      case NodeType.Ast:
+        return (element.children as Node[]).concat(element.tokens)
       case NodeType.TokensChild:
-        element.children = element.parent.tokens
-        for (const child of element.children) {
-          child.id = this.nodeId++
-          child.nodeType = NodeType.Token
-        }
-        return element.children
+        return element.indexes.map((i) => this.tokens[i])
     }
-    return []
   }
   getParent(element: Node): ProviderResult<Node> {
-    return (element as AstNode).parent
+    return (element as Ast).parent
   }
   resolveTreeItem(item: TreeItem, element: Node): ProviderResult<TreeItem> {
-    switch (element.nodeType) {
-      case NodeType.AstNode:
+    switch (element.type) {
+      case NodeType.Ast:
         item.tooltip = new MarkdownString().appendCodeblock(
           this.document!.getText(new Range(...element.range)),
           'powershell',
@@ -260,22 +211,58 @@ class PwshAstTreeDataProvier implements TreeDataProvider<Node>, Disposable {
     return item
   }
   //#endregion
-  async showDocument() {
-    if (this.document) {
-      await window.showTextDocument(this.document)
-    }
+  private id = 0
+  private sender: AstNodeGrabber
+  private document?: TextDocument
+  private root?: Ast
+  private tokens: Token[] = []
+  private view = window.createTreeView('mvext.pwshAstTreeView', {
+    treeDataProvider: this,
+  })
+  private treeViewDT = window.createTextEditorDecorationType({
+    border: '1px solid yellow',
+    backgroundColor: new ThemeColor('editor.selectionBackground'),
+  })
+  constructor(context: ExtensionContext) {
+    this.sender = new AstNodeGrabber(
+      context.asAbsolutePath('resources/serveAstNode.ps1'),
+    )
+    context.subscriptions.push(
+      this,
+      this.view,
+      this.treeViewDT,
+      commands.registerCommand('mvext.pwshAstTreeViewOpen', this.open),
+      commands.registerCommand('mvext.pwshAstTreeViewReveal', this.reveal),
+      commands.registerCommand('mvext.pwshAstTreeViewRefresh', this.refresh),
+      this.view.onDidChangeVisibility((e) =>
+        e.visible
+          ? this.refresh()
+          : window.activeTextEditor!.setDecorations(this.treeViewDT, []),
+      ),
+      this.view.onDidChangeSelection(async ({ selection }) => {
+        if (selection.length) {
+          switch (selection[0].type) {
+            case NodeType.TokensChild:
+              return
+          }
+          const editor = window.activeTextEditor!
+          const range = new Range(...selection[0].range)
+          editor.revealRange(range)
+          editor.setDecorations(this.treeViewDT, [{ range }])
+        }
+      }),
+    )
   }
-  getNodeAtRange(range: Range) {
+  private getNodeAtRange(range: Range) {
     const rv = rangeValues(range)
-    const dfs = (root: AstNode): AstNode | undefined => {
+    const dfs = (root: Ast): Ast | undefined => {
       if (!rangeContains(root.range, rv)) {
         return
       }
-      for (let node of this.getChildren(root)) {
-        if (node.nodeType !== NodeType.AstNode) {
-          continue
-        }
-        if ((node = dfs(node)!)) {
+      for (const child of root.children) {
+        const node = dfs(child)
+        if (node) {
+          child.parent = root
           return node
         }
       }
@@ -283,75 +270,39 @@ class PwshAstTreeDataProvier implements TreeDataProvider<Node>, Disposable {
     }
     return dfs(this.root!)!
   }
-  async refresh() {
+  open = () => this.document && window.showTextDocument(this.document)
+  refresh = async () => {
     const document = window.activeTextEditor?.document
     if (document?.languageId !== 'powershell') {
       return
     }
-    this.document = document
-    try {
-      const root = JSON.parse(await this.sender.send(document.getText()))
-      this.root = root
-      root.id = this.nodeId++
-      root.name = 'ScriptFile'
-      root.nodeType = NodeType.AstNode
-      this._onDidChangeTreeData.fire(undefined)
-    } catch (e) {
-      await window.showErrorMessage(e + '')
+    if (
+      document.offsetAt(new Position(document.lineCount, 0)) >
+      getExtConfig('pwshAstTreeView.noProcessSize')
+    ) {
+      return window.showWarningMessage(
+        'PowerShell ast tree view not processed: size exceeds.',
+      )
     }
+    this.document = document
+    await window
+      .withProgress({ location: { viewId: 'mvext.pwshAstTreeView' } }, () =>
+        this.sender.send(document.getText()).then((text) => {
+          const tree: {
+            root: Ast
+            tokens: Token[]
+          } = JSON.parse(text)
+          this.root = tree.root
+          this.tokens = tree.tokens
+          this._onDidChangeTreeData.fire(undefined)
+        }),
+      )
+      .then(undefined, (e) => window.showErrorMessage(e + ''))
   }
-}
-
-let extContext: ExtensionContext
-export function registerPwshAstTreeView(context: ExtensionContext) {
-  extContext = context
-  const treeViewDT = window.createTextEditorDecorationType({
-    border: '1px solid yellow',
-    backgroundColor: new ThemeColor('editor.selectionBackground'),
-  })
-  const provider = new PwshAstTreeDataProvier()
-  const view = window.createTreeView('mvext.pwshAstTreeView', {
-    treeDataProvider: provider,
-  })
-  extContext.subscriptions.push(
-    commands.registerCommand('mvext.pwshAstTreeViewShowDocument', () =>
-      provider.showDocument(),
-    ),
-    commands.registerCommand(
-      'mvext.pwshAstTreeViewReveal',
-      () => (
-        view.visible || provider.refresh(),
-        view.reveal(
-          provider.getNodeAtRange(window.activeTextEditor!.selection),
-          {
-            expand: true,
-          },
-        )
-      ),
-    ),
-    commands.registerCommand('mvext.pwshAstTreeViewRefresh', () =>
-      provider.refresh(),
-    ),
-    treeViewDT,
-    provider,
-    view,
-    view.onDidChangeVisibility((e) =>
-      e.visible
-        ? provider.refresh()
-        : window.activeTextEditor!.setDecorations(treeViewDT, []),
-    ),
-    view.onDidChangeSelection(async ({ selection }) => {
-      if (selection.length) {
-        switch (selection[0].nodeType) {
-          case NodeType.AstNodeChild:
-          case NodeType.TokensChild:
-            return
-        }
-        const editor = window.activeTextEditor!
-        const range = new Range(...selection[0].range)
-        editor.revealRange(range)
-        editor.setDecorations(treeViewDT, [{ range }])
-      }
-    }),
+  reveal = () => (
+    this.view.visible || this.refresh(),
+    this.view.reveal(this.getNodeAtRange(window.activeTextEditor!.selection), {
+      expand: true,
+    })
   )
 }

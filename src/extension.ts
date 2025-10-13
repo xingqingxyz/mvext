@@ -12,7 +12,7 @@ import { StyluaFormatter, StyluaFormatterWasm } from './formatter/stylua'
 import { HexColorProvider } from './hexColor'
 import { copyJsonPath } from './jsonPath'
 import { MarkdownBlockRunProvider } from './markdownBlockRun'
-import { registerPwshAstTreeView } from './pwshAstTreeView'
+import { PwshAstTreeDataProvier } from './pwshAstTreeView'
 import { registerTerminalLaunch } from './terminalLaunch'
 import {
   renameWithCase,
@@ -21,14 +21,14 @@ import {
 } from './transformCase'
 import { TransformCodeActionProvider } from './tsCodeAction/provider'
 import { initTSParser } from './tsParser'
-import { registerTSTreeView } from './tsTreeView'
+import { TSTreeDataProvier } from './tsTreeView'
 import { terminalRunCode } from './util/terminalRunCode'
 
 export async function activate(context: ExtensionContext) {
-  await initTSParser(context)
-  registerTSTreeView(context)
   registerTerminalLaunch(context)
   HexColorProvider.init(context)
+  await initTSParser(context)
+  new TSTreeDataProvier(context)
   new InvokeCompleteProvider(context)
   new TransformCodeActionProvider(context)
   new MarkdownBlockRunProvider(context)
@@ -47,7 +47,7 @@ export async function activate(context: ExtensionContext) {
       new StyluaFormatter(context)
     }
     if (getExtConfig('pwshAstTreeView.enabled')) {
-      registerPwshAstTreeView(context)
+      new PwshAstTreeDataProvier(context)
     }
   }
   context.subscriptions.push(

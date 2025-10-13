@@ -22,11 +22,7 @@ import {
   type TSLanguageId,
 } from './tsParser'
 
-class TSTreeDataProvier implements TreeDataProvider<Node> {
-  private document?: TextDocument
-  private tree?: Tree | null
-  private root?: Node // tree.rootNode is not memorized
-  private languageId?: TSLanguageId
+export class TSTreeDataProvier implements TreeDataProvider<Node> {
   //#region api
   private _onDidChangeTreeData = new EventEmitter<Node[] | undefined>()
   onDidChangeTreeData: Event<Node | Node[] | null | undefined> | undefined =
@@ -40,7 +36,7 @@ class TSTreeDataProvier implements TreeDataProvider<Node> {
           : TreeItemCollapsibleState.Collapsed
         : TreeItemCollapsibleState.None,
     )
-    item.id = '' + element.id
+    item.id = element.id + ''
     item.iconPath = new ThemeIcon(
       element.isError
         ? 'error'
@@ -67,12 +63,47 @@ class TSTreeDataProvier implements TreeDataProvider<Node> {
     return item
   }
   //#endregion
-  async showDocument() {
-    if (this.document) {
-      await window.showTextDocument(this.document)
-    }
+  private document?: TextDocument
+  private tree?: Tree | null
+  private root?: Node // tree.rootNode is not memorized
+  private languageId?: TSLanguageId
+  private view = window.createTreeView('mvext.tsTreeView', {
+    treeDataProvider: this,
+  })
+  private treeViewDT = window.createTextEditorDecorationType({
+    border: '1px solid yellow',
+    backgroundColor: new ThemeColor('editor.selectionBackground'),
+  })
+  constructor(context: ExtensionContext) {
+    context.subscriptions.push(
+      this.view,
+      this.treeViewDT,
+      commands.registerCommand('mvext.tsTreeViewOpen', this.open),
+      commands.registerCommand('mvext.tsTreeViewReveal', this.reveal),
+      commands.registerCommand('mvext.tsTreeViewRefresh', this.refresh),
+      this.view.onDidChangeVisibility((e) =>
+        e.visible
+          ? this.refresh()
+          : window.activeTextEditor!.setDecorations(this.treeViewDT, []),
+      ),
+      this.view.onDidChangeSelection(async ({ selection: [node] }) => {
+        if (node) {
+          const range = nodeToRange(node)
+          const editor = window.activeTextEditor!
+          editor.revealRange(range)
+          editor.setDecorations(this.treeViewDT, [{ range }])
+        }
+      }),
+    )
   }
-  refresh() {
+  private getNodeAtRange(range: Range) {
+    return this.tree!.rootNode.descendantForPosition(
+      positionToPoint(range.start),
+      positionToPoint(range.end),
+    )!
+  }
+  open = () => this.document && window.showTextDocument(this.document)
+  refresh = () => {
     const document = window.activeTextEditor?.document
     if (!document) {
       return
@@ -83,56 +114,10 @@ class TSTreeDataProvier implements TreeDataProvider<Node> {
     this.languageId = document.languageId as TSLanguageId
     this._onDidChangeTreeData.fire(undefined)
   }
-  getNodeAtRange(range: Range) {
-    return this.tree!.rootNode.descendantForPosition(
-      positionToPoint(range.start),
-      positionToPoint(range.end),
-    )!
-  }
-}
-
-export function registerTSTreeView(context: ExtensionContext) {
-  const provider = new TSTreeDataProvier()
-  const view = window.createTreeView('mvext.tsTreeView', {
-    treeDataProvider: provider,
-  })
-  const tsTreeViewDT = window.createTextEditorDecorationType({
-    border: '1px solid yellow',
-    backgroundColor: new ThemeColor('editor.selectionBackground'),
-  })
-  context.subscriptions.push(
-    commands.registerCommand('mvext.tsTreeViewShowDocument', () =>
-      provider.showDocument(),
-    ),
-    commands.registerCommand(
-      'mvext.tsTreeViewReveal',
-      () => (
-        view.visible || provider.refresh(),
-        view.reveal(
-          provider.getNodeAtRange(window.activeTextEditor!.selection),
-          {
-            expand: true,
-          },
-        )
-      ),
-    ),
-    commands.registerCommand('mvext.tsTreeViewRefresh', () =>
-      provider.refresh(),
-    ),
-    view,
-    tsTreeViewDT,
-    view.onDidChangeVisibility((e) =>
-      e.visible
-        ? provider.refresh()
-        : window.activeTextEditor!.setDecorations(tsTreeViewDT, []),
-    ),
-    view.onDidChangeSelection(async ({ selection: [node] }) => {
-      if (node) {
-        const range = nodeToRange(node)
-        const editor = window.activeTextEditor!
-        editor.revealRange(range)
-        editor.setDecorations(tsTreeViewDT, [{ range }])
-      }
-    }),
+  reveal = () => (
+    this.view.visible || this.refresh(),
+    this.view.reveal(this.getNodeAtRange(window.activeTextEditor!.selection), {
+      expand: true,
+    })
   )
 }

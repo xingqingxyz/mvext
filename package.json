@@ -109,9 +109,9 @@
       },
       {
         "category": "mvext",
-        "command": "mvext.tsTreeViewShowDocument",
+        "command": "mvext.tsTreeViewOpen",
         "icon": "$(symbol-reference)",
-        "title": "Show Tree-Sitter Tree View Document"
+        "title": "Open Tree-Sitter Tree View Document"
       },
       {
         "category": "mvext",
@@ -126,9 +126,9 @@
       },
       {
         "category": "mvext",
-        "command": "mvext.pwshAstTreeViewShowDocument",
+        "command": "mvext.pwshAstTreeViewOpen",
         "icon": "$(symbol-reference)",
-        "title": "Show PowerShell Ast Tree View Document"
+        "title": "Open PowerShell Ast Tree View Document"
       }
     ],
     "configuration": {
@@ -168,8 +168,13 @@
         },
         "mvext.pwshAstTreeView.enabled": {
           "default": true,
-          "markdownDescription": "Enable pwshAstTreeView, has no effect on web.",
+          "markdownDescription": "Enable pwshAstTreeView, requires reload.",
           "type": "boolean"
+        },
+        "mvext.pwshAstTreeView.noProcessSize": {
+          "default": 12000,
+          "markdownDescription": "When powershell document size `-gt` this, no process when refresh.",
+          "type": "integer"
         },
         "mvext.shfmt.enabled": {
           "default": true,
@@ -419,13 +424,13 @@
       ],
       "view/title": [
         {
-          "alt": "mvext.tsTreeViewShowDocument",
+          "alt": "mvext.tsTreeViewOpen",
           "command": "mvext.tsTreeViewRefresh",
           "group": "navigation",
           "when": "view == mvext.tsTreeView"
         },
         {
-          "alt": "mvext.pwshAstTreeViewShowDocument",
+          "alt": "mvext.pwshAstTreeViewOpen",
           "command": "mvext.pwshAstTreeViewRefresh",
           "group": "navigation",
           "when": "view == mvext.pwshAstTreeView"
@@ -512,7 +517,7 @@
           "icon": "$(terminal-powershell)",
           "id": "mvext.pwshAstTreeView",
           "name": "PowerShell Ast Tree View",
-          "when": "!isWeb"
+          "when": "!isWeb && config.mvext.pwshAstTreeView.enabled"
         }
       ]
     },
@@ -522,7 +527,7 @@
         "view": "mvext.tsTreeView"
       },
       {
-        "contents": "This document language is not powershell.",
+        "contents": "Please try to edit powershell scripts, then refresh to visit ast.",
         "view": "mvext.pwshAstTreeView"
       }
     ]
@@ -615,5 +620,5 @@
     "pre-commit": "pnpm exec lint-staged && pnpm test"
   },
   "type": "module",
-  "version": "0.20.0"
+  "version": "0.20.1"
 }

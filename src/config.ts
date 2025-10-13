@@ -13,6 +13,7 @@ export type MvextConfig = {
   'terminalRunCode.defaultLanguageId': TerminalRunLanguageIds
   'transformCase.defaultCase': WordCase
   'pwshAstTreeView.enabled': boolean
+  'pwshAstTreeView.noProcessSize': number
   'treeSitterTreeView.enabled': boolean
   'shfmt.enabled': boolean
   'stylua.enabled': boolean

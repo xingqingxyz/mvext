@@ -24,9 +24,11 @@ filter Show-AstNode ([int]$depth = 0) {
 }
 
 $ErrorActionPreference = 'Stop'
+Import-Module $PSScriptRoot/VisitAst.psm1
+$tree = VisitAst\Get-AstNode $ScriptInput
 $TAB = '  '
 $content = Get-Content -Raw -LiteralPath $PSScriptRoot/../fixtures/test.ps1
 . $PSScriptRoot/ConvertTo-AstNode.ps1 $content
 . $PSScriptRoot/TextDocument.ps1
 $document = [TextDocument]::new($content)
-$root | Show-AstNode
+$tree.root | Show-AstNode
