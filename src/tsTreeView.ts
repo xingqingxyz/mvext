@@ -36,6 +36,10 @@ export class TSTreeDataProvier implements TreeDataProvider<Node> {
           : TreeItemCollapsibleState.Collapsed
         : TreeItemCollapsibleState.None,
     )
+    if (element.parent) {
+      const index = element.parent.children.findIndex((n) => n!.equals(element))
+      item.description = element.parent.fieldNameForChild(index) ?? `[${index}]`
+    }
     item.id = element.id + ''
     item.iconPath = new ThemeIcon(
       element.isError
@@ -55,11 +59,7 @@ export class TSTreeDataProvier implements TreeDataProvider<Node> {
   resolveTreeItem(item: TreeItem, element: Node): ProviderResult<TreeItem> {
     item.tooltip = new MarkdownString()
       .appendCodeblock(element.text, this.languageId)
-      .appendMarkdown(
-        `---\n**${element.parent?.fieldNameForChild(
-          element.parent?.children.findIndex((n) => n!.equals(element)),
-        )}**: \`${element.grammarType}\``,
-      )
+      .appendMarkdown(`---\n**grammarType**: \`${element.grammarType}\``)
     return item
   }
   //#endregion

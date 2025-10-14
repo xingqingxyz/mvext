@@ -54,6 +54,17 @@
         "xingqingxyz.mvext",
         "${workspaceFolder}/fixtures"
       ]
+    },
+    {
+      "name": ".NET Core Launch (console)",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "dotnet: build",
+      "program": "${workspaceFolder}/VisitAst/bin/Debug/net9.0/VisitAst.dll",
+      "args": ["./test.ps1", "./test.json"],
+      "cwd": "${workspaceFolder}",
+      "stopAtEntry": false,
+      "console": "internalConsole"
     }
   ]
 }

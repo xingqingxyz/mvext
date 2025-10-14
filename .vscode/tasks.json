@@ -19,6 +19,14 @@
       },
       "isBackground": true,
       "problemMatcher": ["$rollup-watch"]
+    },
+    {
+      "type": "dotnet",
+      "task": "build",
+      "file": "${workspaceFolder}/VisitAst/VisitAst.csproj",
+      "group": "build",
+      "problemMatcher": [],
+      "label": "dotnet: build"
     }
   ]
 }

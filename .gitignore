@@ -1,3 +1,5 @@
+/VisitAst/bin
+/VisitAst/obj
 node_modules
 dist
 .eslintcache

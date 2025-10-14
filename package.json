@@ -162,7 +162,7 @@
           "default": {
             "@/": "${workspaceFolder}/src/"
           },
-          "markdownDescription": "Path mappings for path completion:\n- `${workspaceFolder}` means workspace folder\n- `~` means `os.homedir()`\n- use $VAR to substitute to environment variables",
+          "markdownDescription": "Path mappings for path completion:\n- `${workspaceFolder}` is workspace folder\n- `~` is `os.homedir()`\n- `$VAR` is environment variable `VAR`",
           "scope": "resource",
           "type": "object"
         },
@@ -172,7 +172,7 @@
           "type": "boolean"
         },
         "mvext.pwshAstTreeView.noProcessSize": {
-          "default": 12000,
+          "default": 900078,
           "markdownDescription": "When powershell document size `-gt` this, no process when refresh.",
           "type": "integer"
         },
@@ -532,26 +532,26 @@
       }
     ]
   },
-  "description": "Invoke terminal commands, eval selections and invoke complete.",
+  "description": "Make extension of completers, ast viewers, code launchers...",
   "devDependencies": {
     "@eslint/js": "^9.37.0",
     "@johnnymorganz/stylua": "^2.3.0",
     "@rollup/plugin-alias": "^5.1.1",
-    "@rollup/plugin-commonjs": "^28.0.6",
-    "@rollup/plugin-node-resolve": "^16.0.2",
+    "@rollup/plugin-commonjs": "^28.0.7",
+    "@rollup/plugin-node-resolve": "^16.0.3",
     "@rollup/plugin-replace": "^6.0.2",
     "@rollup/plugin-terser": "^0.4.4",
     "@rollup/plugin-typescript": "^12.1.4",
     "@swc-node/register": "^1.11.1",
     "@types/emscripten": "^1.41.2",
     "@types/mocha": "^10.0.10",
-    "@types/node": "^22.18.9",
+    "@types/node": "^22.18.10",
     "@types/vscode": "^1.105.0",
     "@types/which": "^3.0.4",
     "@vscode/tree-sitter-wasm": "^0.1.5",
     "eslint": "^9.37.0",
     "jsonc-parser": "^3.3.1",
-    "lint-staged": "^16.2.3",
+    "lint-staged": "^16.2.4",
     "mocha": "^11.7.4",
     "os-browserify": "^0.3.0",
     "path-browserify": "^1.0.1",
@@ -564,7 +564,7 @@
     "tree-sitter-bash": "^0.25.0",
     "tslib": "^2.8.1",
     "typescript": "^5.9.3",
-    "typescript-eslint": "^8.46.0",
+    "typescript-eslint": "^8.46.1",
     "web-tree-sitter": "^0.25.10",
     "which": "^5.0.0"
   },
@@ -620,5 +620,5 @@
     "pre-commit": "pnpm exec lint-staged && pnpm test"
   },
   "type": "module",
-  "version": "0.20.1"
+  "version": "0.20.3"
 }

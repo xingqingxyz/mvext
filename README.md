@@ -8,6 +8,8 @@ This extension ships a set of useful tools:
 - [Path Complete](#path-complete)
 - [Toggle Hex Color Language](#toggle-hex-color-language)
 - [TypeScript Code Actions](#typescript-code-actions)
+- [Tree-Sitter Tree View](#tree-sitter-tree-view)
+- [PowerShell Ast Tree View](#powershell-ast-tree-view)
 
 ## Features
 
@@ -68,3 +70,11 @@ Simply toggle hex color blocks for each language.
 
 See [transform.js](./src/test/unit/tsCodeAction/transform.js) for all refactor
 rewrite code actions supported for javascript languages.
+
+### Tree-Sitter Tree View
+
+Show Tree-Sitter CST node tree, implemented by javascript `web-tree-sitter`.
+
+### PowerShell Ast Tree View
+
+Show powershell ast node tree, implemented by powershell script process, cannot work on code workspace.

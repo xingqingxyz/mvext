@@ -1,7 +1,7 @@
 #Requires -Version 7.5.2
 
 function Write-Log ([string]$msg) {
-  "[$(Get-Date)] $msg" >> Temp:/mvext-powershell.log
+  "[$(Get-Date)] [Client] $msg" >> Temp:/mvext-powershell.log
 }
 
 $ErrorActionPreference = 'Stop'
@@ -17,7 +17,7 @@ while ($true) {
     }
     [string]::new($buffer, 0, [System.Console]::In.Read($buffer, 0, $tuple.Item2))
   ) -join ''
-  $text = Get-AstNode $text | ConvertTo-Json -Depth 99 -EnumsAsStrings -Compress | Tee-Object Temp:/mvext-powershell.json
+  $text = Get-AstNode $text | ConvertTo-Json -Depth 99 -Compress | Tee-Object Temp:/mvext-powershell.json
   Write-Log "Sending Length $($text.Length)"
   [System.Console]::Write("$($text.Length)`n$text")
 }

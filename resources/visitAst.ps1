@@ -2,44 +2,6 @@ using namespace System.Management.Automation
 using namespace System.Management.Automation.Language
 using namespace System.Collections.Generic
 
-enum NodeType {
-  Ast
-  Token
-  TokensChild
-}
-
-class AstNode {
-  [string] $id = $Script:id++
-  [int] $type = [NodeType]::Ast
-  [string] $fieldName
-  [string] $typeName
-  [int[]] $range
-  [Dictionary[string, System.Object]] $meta
-  [TokensChildNode] $tokens
-  [AstNode[]] $children
-}
-
-class TokenNode {
-  [int] $type = [NodeType]::Token
-  [int[]] $range
-  [TokenKind] $Kind
-  [TokenFlags] $TokenFlags
-  [bool] $HasError
-  TokenNode([Token]$token) {
-    $this.range = getRange $token.Extent
-    $this.Kind, $this.TokenFlags, $this.HasError = $token.Kind, $token.TokenFlags, $token.HasError
-  }
-}
-
-class TokensChildNode {
-  [string] $id = $Script:id++
-  [int] $type = [NodeType]::TokensChild
-  [int[]] $indexes
-  TokensChildNode([int[]]$range, [TokenNode[]]$tokenNodes) {
-    $this.indexes = @(0..($tokenNodes.Count - 1) | Where-Object { rangeContains $range $tokenNodes[$_].range })
-  }
-}
-
 function getRange ([IScriptExtent]$Extent) {
   [int[]]@(
     $Extent.StartLineNumber - 1
@@ -49,83 +11,89 @@ function getRange ([IScriptExtent]$Extent) {
   )
 }
 
-function rangeContains ([int[]]$range, [int[]]$o) {
-  ($range[0] -lt $o[0] -or ($range[0] -eq $o[0] -and $range[1] -le $o[1])) -and
-  ($range[2] -gt $o[2] -or ($range[2] -eq $o[2] -and $range[3] -ge $o[3]))
+function newAstNode ([Ast]$ast, [psobject[]]$Children, [string]$FieldName, [hashtable]$Meta) {
+  [pscustomobject]@{
+    Id        = $Script:id++ -as [string]
+    Children  = $Children
+    FieldName = $FieldName
+    Meta      = $Meta
+    Range     = getRange $ast.Extent
+    TypeName  = $ast.GetType().Name
+  }
+}
+
+function normalizeToken ([Token]$token) {
+  [pscustomobject]@{
+    HasError   = $token.HasError
+    Kind       = $token.Kind.ToString()
+    Range      = getRange $token.Extent
+    TokenFlags = $token.TokenFlags.ToString()
+  }
 }
 
 function normalizeDynamicKeyword ([DynamicKeyword]$keyword) {
-  # exclude [System.Func]
   $keyword | Select-Object -ExcludeProperty PreParse, PostParse, SemanticCheck
 }
 
-filter visitAst ([string]$fieldName, [psobject[]]$tokenNodes) {
-  [Ast]$ast = $_
-  [string]$typeName = $ast.GetType().Name
-  [int[]]$range = getRange $ast.Extent
-  [Dictionary[string, System.Object]]$meta = @{}
-  [AstNode[]]$children = $ast.GetType().GetProperties() | Where-Object { $_.DeclaringType.IsSubclassOf([Ast]) } | ForEach-Object {
+function visitAst ([string]$fieldName, [Ast]$ast) {
+  [psobject[]]$children = @()
+  [hashtable]$meta = @{}
+  $ast.GetType().GetProperties() | Where-Object { $_.DeclaringType.IsSubclassOf([Ast]) } | ForEach-Object {
     $name = $_.Name
-    $value = $ast.$name
-    if (!$value) {
+    $value = $_.GetValue($ast)
+    if ($null -eq $value) {
       $meta[$name] = $value
       return
     }
-    $type = $_.PropertyType
-    @(if ($type.IsArray) {
-        $type = $type.GetElementType()
+    if ($value -is [Ast]) {
+      $children += visitAst $name $value
+      return
+    }
+    if ($value -is [IReadOnlyCollection[Ast]]) {
+      if (!$value.Count) {
+        $meta[$name] = $value
+        return
       }
-      if ($type.IsAssignableTo([Ast])) {
-        $value
+      [int]$i = 0
+      $children += $value | ForEach-Object { visitAst "$name[$i]" $_; $i++ }
+      return
+    }
+    if ($value -is [IReadOnlyCollection[System.Runtime.CompilerServices.ITuple]] -and
+      $_.PropertyType.GenericTypeArguments[0].GenericTypeArguments[0].IsAssignableTo([Ast])) {
+      if (!$value.Count) {
+        $meta[$name] = $value
+        return
       }
-      elseif ($type.GetInterface('IReadOnlyCollection`1')) {
-        $elementType = $type.GenericTypeArguments[0]
-        if ($elementType.IsAssignableTo([Ast])) {
-          $value
-        }
-        elseif ($elementType.GetInterface('ITuple') -and $elementType.GenericTypeArguments[0].IsAssignableTo([Ast])) {
-          $value | ForEach-Object { $_[0..($_.Length - 1)] }
-        }
-        else {
-          Write-Debug "unknown $typeName.$name $type : $value"
-        }
-      }
-      else {
-        $meta[$name] = switch ($type) {
-          # StringConstantExpressionAst.Value -is [System.Object] but actually [string]
-          { $type.IsEnum -or $type.IsValueType -or $ignoredPropTypes.Contains($_) -or $value -is [string] } { $value; break }
-          ([type]) { $value.ToString(); break }
-          ([Token]) { $value | Select-Object Kind, TokenFlags, HasError, @{Name = 'range'; Expression = { getRange $_.Extent } }; break }
-          ([ITypeName]) { $value | Select-Object AssemblyName, FullName, IsArray, IsGeneric, Name, @{Name = 'range'; Expression = { getRange $_.Extent } }; break }
-          ([IScriptExtent]) { $value | ForEach-Object { getRange $_ }; break }
-          ([DynamicKeyword]) { $value | ForEach-Object { normalizeDynamicKeyword $_ }; break }
-          default { Write-Debug "$typeName.meta.$name type: $type"; break }
-        }
-      }) | visitAst $name $tokenNodes
+      [int]$i = 0
+      $children += $value | ForEach-Object { $_[0..($_.Length - 1)] } | ForEach-Object { visitAst "$name[$i]" $_; $i++ }
+      return
+    }
+    $meta[$name] = switch ($true) {
+      ($value -is [System.Enum] -or $value -is [type]) { $value.ToString(); break }
+      ($value -is [System.ValueType] -or $value -is [string] -or $value -is [VariablePath] -or $value -is [ScriptRequirements]) { $value; break }
+      ($value -is [DynamicKeyword]) { normalizeDynamicKeyword $value; break }
+      ($value -is [Token]) { normalizeToken $value; break }
+      ($value -is [IScriptExtent]) { getRange $value; break }
+      ($value -is [ITypeName]) { $value | Select-Object AssemblyName, FullName, IsArray, IsGeneric, Name, @{Name = 'Range'; Expression = { getRange $_.Extent } }; break }
+      default { $value.ToString(); break }
+    }
   }
-  $ast.GetType().GetMethods() | Where-Object { $methodNames.Contains($_.Name) -and !$_.GetParameters() -and $_.DeclaringType.IsSubclassOf([Ast]) } | ForEach-Object {
-    $meta.($_.Name + '()') = $ast.($_.Name)()
+  $ast.GetType().GetMethods() | Where-Object { ($_.Name -ceq 'GetHelpContent' -or $_.Name -ceq 'IsConstantVariable') -and
+    !$_.GetParameters() -and $_.DeclaringType.IsSubclassOf([Ast]) } | ForEach-Object {
+    $meta["$($_.Name)()"] = $_.Invoke($ast, $null)
   }
-  [AstNode]@{
-    fieldName = $fieldName
-    typeName  = $typeName
-    range     = $range
-    meta      = $meta
-    tokens    = [TokensChildNode]::new($range, $tokenNodes)
-    children  = $children ?? @()
-  }
+  newAstNode -ast $ast -Children $children -FieldName $fieldName -Meta $meta
 }
 
 function Get-AstNode ([string]$ScriptInput) {
-  [Token[]]$tokens = $null
-  [ScriptBlockAst]$ast = [Parser]::ParseInput($ScriptInput, [ref]$tokens, [ref]$null)
-  [TokenNode[]]$tokenNodes = $tokens.ForEach{ [TokenNode]::new($_) }
+  [Token[]]$tt = $null
+  [ScriptBlockAst]$ast = [Parser]::ParseInput($ScriptInput, [ref]$tt, [ref]$null)
+  $Script:tokens = $tt.ForEach{ normalizeToken $_ }
   @{
-    root   = $ast | visitAst ScriptFile $tokenNodes
-    tokens = $tokenNodes
+    Root   = visitAst ScriptFile $ast
+    Tokens = $tokens
   }
 }
 
-[type[]]$ignoredPropTypes = @([string], [VariablePath], [ScriptRequirements])
-[string[]]$methodNames = @('GetHelpContent', 'IsConstantVariable')
 [ulong]$id = 0
+[psobject[]]$tokens = $null

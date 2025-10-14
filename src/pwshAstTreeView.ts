@@ -1,4 +1,7 @@
 import { spawn, type ChildProcessWithoutNullStreams } from 'child_process'
+import { appendFile } from 'fs/promises'
+import { tmpdir } from 'os'
+import path from 'path'
 import {
   commands,
   EventEmitter,
@@ -19,41 +22,33 @@ import {
 import { getExtConfig } from './config'
 import { noop } from './util'
 
-const enum NodeType {
-  Ast,
-  Token,
-  TokensChild,
-}
-
 interface Ast {
   parent?: Ast
-  readonly id: string
-  readonly type: NodeType.Ast
-  readonly children: Ast[]
-  readonly fieldName: string
-  readonly typeName: string
-  readonly meta: Readonly<Record<string, unknown>>
-  readonly range: [number, number, number, number]
-  readonly tokens: TokensChild
+  tokens?: Token[]
+  readonly Id: string
+  readonly Children: Ast[]
+  readonly FieldName: string
+  readonly Meta: Readonly<Record<string, unknown>>
+  readonly Range: [number, number, number, number]
+  readonly TypeName: string
 }
 
 interface Token {
-  readonly type: NodeType.Token
-  readonly range: [number, number, number, number]
-  readonly Kind: string
-  readonly TokenFlags: string
   readonly HasError: boolean
+  readonly Kind: string
+  readonly Range: [number, number, number, number]
+  readonly TokenFlags: string
 }
 
-interface TokensChild {
-  readonly id: string
-  readonly type: NodeType.TokensChild
-  readonly indexes: number[]
+interface AstTree {
+  Root: Ast
+  Tokens: Token[]
 }
 
-type Node = Ast | Token | TokensChild
+type Node = Ast | Token
 
 class AstNodeGrabber implements Disposable {
+  private logPath = path.join(tmpdir(), 'mvext-powershell.log')
   private shell!: ChildProcessWithoutNullStreams
   private running = false
   private cancel: () => void = noop
@@ -95,7 +90,11 @@ class AstNodeGrabber implements Disposable {
           data = data.slice(data.indexOf('\n') + 1)
         }
         text += data
-        console.log(`Received length ${text.length}/${length}`)
+        void appendFile(
+          this.logPath,
+          `[${new Date().toLocaleString()}] [Server] Received length ${text.length}/${length}`,
+          'utf8',
+        )
         if (text.length === length) {
           resolve(text)
           this.running = false
@@ -146,76 +145,55 @@ export class PwshAstTreeDataProvier
   }
   getTreeItem(element: Node): TreeItem | Thenable<TreeItem> {
     let item
-    switch (element.type) {
-      case NodeType.Ast:
-        item = new TreeItem(
-          element.fieldName,
-          element === this.root
-            ? TreeItemCollapsibleState.Expanded
-            : TreeItemCollapsibleState.Collapsed,
-        )
-        item.id = element.id
-        item.description = element.typeName
-        item.iconPath = new ThemeIcon('symbol-field')
-        break
-      case NodeType.Token:
-        item = new TreeItem(element.Kind)
-        item.id = this.id++ + 't'
-        item.description = element.TokenFlags
-        item.iconPath = new ThemeIcon(
-          element.HasError ? 'error' : 'symbol-value',
-        )
-        break
-      case NodeType.TokensChild:
-        item = new TreeItem('tokens', TreeItemCollapsibleState.Collapsed)
-        item.id = element.id
-        item.iconPath = new ThemeIcon('symbol-parameter')
-        break
+    if ('Id' in element) {
+      item = new TreeItem(
+        element.FieldName,
+        element === this.tree!.Root
+          ? TreeItemCollapsibleState.Expanded
+          : TreeItemCollapsibleState.Collapsed,
+      )
+      item.id = element.Id
+      item.description = element.TypeName
+      item.iconPath = new ThemeIcon('symbol-field')
+    } else {
+      item = new TreeItem(element.Kind)
+      item.id = this.tokenIdPrefix + this.tokenId++
+      item.description = this.document!.getText(new Range(...element.Range))
+      item.iconPath = new ThemeIcon(element.HasError ? 'error' : 'symbol-value')
     }
     return item
   }
   getChildren(element?: Node): ProviderResult<Node[]> {
     if (!element) {
-      return this.root ? [this.root] : []
+      return this.tree ? [this.tree.Root] : []
     }
-    switch (element.type) {
-      case NodeType.Ast:
-        return (element.children as Node[]).concat(element.tokens)
-      case NodeType.TokensChild:
-        return element.indexes.map((i) => this.tokens[i])
+    if ('Id' in element) {
+      return (element.Children as Node[]).concat(element.tokens ?? [])
     }
   }
   getParent(element: Node): ProviderResult<Node> {
     return (element as Ast).parent
   }
   resolveTreeItem(item: TreeItem, element: Node): ProviderResult<TreeItem> {
-    switch (element.type) {
-      case NodeType.Ast:
-        item.tooltip = new MarkdownString().appendCodeblock(
-          this.document!.getText(new Range(...element.range)),
-          'powershell',
-        )
-        if (element.meta) {
-          item.tooltip
-            .appendMarkdown('---')
-            .appendCodeblock(JSON.stringify(element.meta, undefined, 2), 'json')
-        }
-        break
-      case NodeType.Token:
-        item.tooltip = new MarkdownString().appendCodeblock(
-          this.document!.getText(new Range(...element.range)),
-          'powershell',
-        )
-        break
+    if ('Id' in element) {
+      item.tooltip = new MarkdownString().appendCodeblock(
+        this.document!.getText(new Range(...element.Range)),
+        'powershell',
+      )
+      item.tooltip
+        .appendMarkdown('---')
+        .appendCodeblock(JSON.stringify(element.Meta, undefined, 2), 'json')
+    } else {
+      item.tooltip = element.Range.join(' ')
     }
     return item
   }
   //#endregion
-  private id = 0
+  private tokenIdPrefix!: string
+  private tokenId!: number
   private sender: AstNodeGrabber
   private document?: TextDocument
-  private root?: Ast
-  private tokens: Token[] = []
+  private tree?: AstTree
   private view = window.createTreeView('mvext.pwshAstTreeView', {
     treeDataProvider: this,
   })
@@ -241,14 +219,23 @@ export class PwshAstTreeDataProvier
       ),
       this.view.onDidChangeSelection(async ({ selection }) => {
         if (selection.length) {
-          switch (selection[0].type) {
-            case NodeType.TokensChild:
-              return
-          }
           const editor = window.activeTextEditor!
-          const range = new Range(...selection[0].range)
+          const range = new Range(...selection[0].Range)
           editor.revealRange(range)
           editor.setDecorations(this.treeViewDT, [{ range }])
+        }
+      }),
+      this.view.onDidExpandElement(({ element }) => {
+        if (
+          'Id' in element &&
+          !element.tokens &&
+          this.view.selection.includes(element)
+        ) {
+          element.tokens = this.getTokens(element)
+          // next calls getChildren, then getTreeItem
+          this.tokenIdPrefix = element.Id + '-'
+          this.tokenId = 0
+          this._onDidChangeTreeData.fire([element])
         }
       }),
     )
@@ -256,10 +243,10 @@ export class PwshAstTreeDataProvier
   private getNodeAtRange(range: Range) {
     const rv = rangeValues(range)
     const dfs = (root: Ast): Ast | undefined => {
-      if (!rangeContains(root.range, rv)) {
+      if (!rangeContains(root.Range, rv)) {
         return
       }
-      for (const child of root.children) {
+      for (const child of root.Children) {
         const node = dfs(child)
         if (node) {
           child.parent = root
@@ -268,7 +255,27 @@ export class PwshAstTreeDataProvier
       }
       return root
     }
-    return dfs(this.root!)!
+    return dfs(this.tree!.Root)!
+  }
+  private getTokens(element: Ast) {
+    const { Range } = element
+    const { Tokens } = this.tree!
+    const { length } = Tokens
+    let i = 0
+    while (Tokens[i].Range[0] < Range[0] && ++i < length) {}
+    while (
+      Tokens[i].Range[0] === Range[0] &&
+      Tokens[i].Range[1] < Range[1] &&
+      ++i < length
+    ) {}
+    const s = i++
+    while (Tokens[i].Range[2] < Range[2] && ++i < length) {}
+    while (
+      Tokens[i].Range[2] === Range[2] &&
+      Tokens[i].Range[3] <= Range[3] &&
+      ++i < length
+    ) {}
+    return Tokens.slice(s, i)
   }
   open = () => this.document && window.showTextDocument(this.document)
   refresh = async () => {
@@ -284,16 +291,11 @@ export class PwshAstTreeDataProvier
         'PowerShell ast tree view not processed: size exceeds.',
       )
     }
-    this.document = document
     await window
       .withProgress({ location: { viewId: 'mvext.pwshAstTreeView' } }, () =>
         this.sender.send(document.getText()).then((text) => {
-          const tree: {
-            root: Ast
-            tokens: Token[]
-          } = JSON.parse(text)
-          this.root = tree.root
-          this.tokens = tree.tokens
+          this.document = document
+          this.tree = JSON.parse(text)
           this._onDidChangeTreeData.fire(undefined)
         }),
       )
