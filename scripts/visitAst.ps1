@@ -2,6 +2,8 @@ using namespace System.Management.Automation
 using namespace System.Management.Automation.Language
 using namespace System.Collections.Generic
 
+[ulong]$id = 0
+
 function getRange ([IScriptExtent]$Extent) {
   [int[]]@(
     $Extent.StartLineNumber - 1
@@ -12,7 +14,7 @@ function getRange ([IScriptExtent]$Extent) {
 }
 
 function newAstNode ([Ast]$ast, [psobject[]]$Children, [string]$FieldName, [hashtable]$Meta) {
-  [pscustomobject]@{
+  [psobject]@{
     Id        = $Script:id++ -as [string]
     Children  = $Children
     FieldName = $FieldName
@@ -23,7 +25,7 @@ function newAstNode ([Ast]$ast, [psobject[]]$Children, [string]$FieldName, [hash
 }
 
 function normalizeToken ([Token]$token) {
-  [pscustomobject]@{
+  [psobject]@{
     HasError   = $token.HasError
     Kind       = $token.Kind.ToString()
     Range      = getRange $token.Extent
@@ -50,7 +52,7 @@ function visitAst ([string]$fieldName, [Ast]$ast) {
       return
     }
     if ($value -is [IReadOnlyCollection[Ast]]) {
-      if (!$value.Count) {
+      if ($value.Count -eq 0) {
         $meta[$name] = $value
         return
       }
@@ -60,7 +62,7 @@ function visitAst ([string]$fieldName, [Ast]$ast) {
     }
     if ($value -is [IReadOnlyCollection[System.Runtime.CompilerServices.ITuple]] -and
       $_.PropertyType.GenericTypeArguments[0].GenericTypeArguments[0].IsAssignableTo([Ast])) {
-      if (!$value.Count) {
+      if ($value.Count -eq 0) {
         $meta[$name] = $value
         return
       }
@@ -79,21 +81,16 @@ function visitAst ([string]$fieldName, [Ast]$ast) {
     }
   }
   $ast.GetType().GetMethods() | Where-Object { ($_.Name -ceq 'GetHelpContent' -or $_.Name -ceq 'IsConstantVariable') -and
-    !$_.GetParameters() -and $_.DeclaringType.IsSubclassOf([Ast]) } | ForEach-Object {
+    $_.GetParameters().Count -eq 0 -and $_.DeclaringType.IsSubclassOf([Ast]) } | ForEach-Object {
     $meta["$($_.Name)()"] = $_.Invoke($ast, $null)
   }
   newAstNode -ast $ast -Children $children -FieldName $fieldName -Meta $meta
 }
 
-function Get-AstNode ([string]$ScriptInput) {
-  [Token[]]$tt = $null
-  [ScriptBlockAst]$ast = [Parser]::ParseInput($ScriptInput, [ref]$tt, [ref]$null)
-  $Script:tokens = $tt.ForEach{ normalizeToken $_ }
-  @{
+function visit ([string]$text) {
+  [ScriptBlockAst]$ast = [Parser]::ParseInput($text, [ref]$tokens, [ref]$null)
+  [psobject]@{
     Root   = visitAst ScriptFile $ast
-    Tokens = $tokens
+    Tokens = $tokens.ForEach{ normalizeToken $_ }
   }
 }
-
-[ulong]$id = 0
-[psobject[]]$tokens = $null

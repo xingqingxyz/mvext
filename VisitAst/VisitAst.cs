@@ -18,7 +18,6 @@ public class AstNodeVisitor
   public record AstTree(AstNode Root, TokenNode[] Tokens) { }
 
   private static ulong id = 0;
-  private static TokenNode[] tokens = [];
 
   private static int[] GetRange(IScriptExtent scriptExtent) => [scriptExtent
   .StartLineNumber - 1, scriptExtent.StartColumnNumber - 1, scriptExtent.EndLineNumber - 1, scriptExtent.EndColumnNumber - 1];
@@ -102,8 +101,7 @@ public class AstNodeVisitor
 
   public static AstTree Visit(string input)
   {
-    var ast = Parser.ParseInput(input, out Token[] tt, out ParseError[] _);
-    tokens = [.. from token in tt select new TokenNode(token)];
-    return new(VisitAst("ScriptFile", ast), tokens);
+    var ast = Parser.ParseInput(input, out Token[] tokens, out ParseError[] _);
+    return new(VisitAst("ScriptFile", ast), [.. from token in tokens select new TokenNode(token)]);
   }
 }

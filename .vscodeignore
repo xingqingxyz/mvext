@@ -3,3 +3,4 @@
 !dist/*
 !CHANGELOG.md
 !LICENSE
+!VisitAst/bin/Release/net9.0/VisitAst.dll

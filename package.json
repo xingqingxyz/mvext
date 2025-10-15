@@ -172,7 +172,7 @@
           "type": "boolean"
         },
         "mvext.pwshAstTreeView.noProcessSize": {
-          "default": 900078,
+          "default": 9000000,
           "markdownDescription": "When powershell document size `-gt` this, no process when refresh.",
           "type": "integer"
         },
@@ -608,6 +608,7 @@
     "url": "https://github.com/xingqingxyz/mvext"
   },
   "scripts": {
+    "build": "dotnet build -c Release",
     "install-extension": "vsce pack -o mvext.vsix && code --install-extension mvext.vsix",
     "lint": "tsc --noEmit && eslint --fix --cache src",
     "postinstall": "node ./scripts/postinstall.ts",
@@ -620,5 +621,5 @@
     "pre-commit": "pnpm exec lint-staged && pnpm test"
   },
   "type": "module",
-  "version": "0.20.3"
+  "version": "0.21.0"
 }

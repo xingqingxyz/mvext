@@ -217,15 +217,14 @@ export class PwshAstTreeDataProvier
           ? this.refresh()
           : window.activeTextEditor!.setDecorations(this.treeViewDT, []),
       ),
-      this.view.onDidChangeSelection(async ({ selection }) => {
-        if (selection.length) {
-          const editor = window.activeTextEditor!
-          const range = new Range(...selection[0].Range)
-          editor.revealRange(range)
-          editor.setDecorations(this.treeViewDT, [{ range }])
+      this.view.onDidChangeSelection(async ({ selection: [element] }) => {
+        if (!element) {
+          return
         }
-      }),
-      this.view.onDidExpandElement(({ element }) => {
+        const editor = window.activeTextEditor!
+        const range = new Range(...element.Range)
+        editor.revealRange(range)
+        editor.setDecorations(this.treeViewDT, [{ range }])
         if (
           'Id' in element &&
           !element.tokens &&
