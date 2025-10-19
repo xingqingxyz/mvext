@@ -12,3 +12,9 @@ filter Show-AstNode ([int]$depth = 0) {
     $_.name
   }
 }
+
+switch ($true) {
+  $IsWindows { '1'; break }
+  $IsLinux { '2'; break }
+  default { 45; break }
+}

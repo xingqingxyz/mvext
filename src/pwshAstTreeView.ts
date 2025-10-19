@@ -1,9 +1,7 @@
 import { spawn, type ChildProcessWithoutNullStreams } from 'child_process'
-import { appendFile } from 'fs/promises'
-import { tmpdir } from 'os'
-import path from 'path'
 import {
   commands,
+  env,
   EventEmitter,
   MarkdownString,
   Position,
@@ -20,7 +18,13 @@ import {
   type TreeDataProvider,
 } from 'vscode'
 import { getExtConfig } from './config'
+import {
+  powershellExtension,
+  registerPowershellExtension,
+  requestEditorCommand,
+} from './powershellExtension'
 import { noop } from './util'
+import { logger } from './util/logger'
 
 interface Ast {
   parent?: Ast
@@ -47,21 +51,15 @@ interface AstTree {
 
 type Node = Ast | Token
 
-class AstNodeGrabber implements Disposable {
-  private logPath = path.join(tmpdir(), 'mvext-powershell.log')
-  private shell!: ChildProcessWithoutNullStreams
-  private running = false
+export class AstNodeServer implements Disposable {
+  private shell?: ChildProcessWithoutNullStreams
+  private isParsing = false
   private cancel: () => void = noop
-  private startServer() {
+  get isActive() {
+    return this.shell !== undefined && !this.shell.killed
+  }
+  start() {
     this.shell = spawn('pwsh', [this.scriptPath])
-  }
-  restartServer() {
-    this.shell.kill()
-    this.startServer()
-  }
-  dispose = () => this.shell.kill()
-  constructor(private scriptPath: string) {
-    this.startServer()
     this.shell.stdout.setEncoding('utf8')
     this.shell.on('exit', () =>
       window
@@ -70,17 +68,20 @@ class AstNodeGrabber implements Disposable {
           'Restart',
           'Cancel',
         )
-        .then((value) => value === 'Restart' && this.startServer()),
+        .then((value) => value === 'Restart' && this.start()),
     )
   }
+  dispose = () => this.shell?.kill()
+  constructor(private scriptPath: string) {}
   async send(text: string) {
-    if (!this.shell.stdin.write(`${text.length}\n${text}`)) {
-      throw 'cannot write to pwsh subprocess'
-    }
-    if (this.running) {
+    if (this.isParsing) {
       this.cancel()
     }
-    this.running = true
+    if (!this.shell?.stdin.write(`${text.length}\n${text}`)) {
+      throw 'cannot write to pwsh subprocess'
+    }
+    this.isParsing = true
+    const { shell } = this
     return await new Promise<string>((resolve, reject) => {
       let length = -1
       let text = ''
@@ -90,25 +91,23 @@ class AstNodeGrabber implements Disposable {
           data = data.slice(data.indexOf('\n') + 1)
         }
         text += data
-        void appendFile(
-          this.logPath,
-          `[${new Date().toLocaleString()}] [Server] Received length ${text.length}/${length}`,
-          'utf8',
+        logger.info(
+          `[PowerShell] received tree json length ${text.length}/${length}`,
         )
         if (text.length === length) {
           resolve(text)
-          this.running = false
-          this.shell.off('data', collect)
+          this.isParsing = false
+          shell.stdout.off('data', collect)
           clearTimeout(timer)
         }
       }
-      this.shell.stdout.on('data', collect)
+      shell.stdout.on('data', collect)
       const timer = setTimeout(() => {
         reject('pwsh ast parse timeout')
       }, 60000)
       this.cancel = () => {
         reject('canceled')
-        this.shell.off('data', collect)
+        shell.stdout.off('data', collect)
         clearTimeout(timer)
       }
     })
@@ -121,12 +120,12 @@ function rangeValues(range: Range) {
     range.start.character,
     range.end.line,
     range.end.character,
-  ] as const
+  ] as [number, number, number, number]
 }
 
 function rangeContains(
-  r0: readonly [number, number, number, number],
-  r1: readonly [number, number, number, number],
+  r0: [number, number, number, number],
+  r1: [number, number, number, number],
 ) {
   return (
     (r0[0] < r1[0] || (r0[0] === r1[0] && r0[1] <= r1[1])) &&
@@ -134,15 +133,10 @@ function rangeContains(
   )
 }
 
-export class PwshAstTreeDataProvier
-  implements TreeDataProvider<Node>, Disposable
-{
+export class PwshAstTreeDataProvier implements TreeDataProvider<Node> {
   //#region api
   private _onDidChangeTreeData = new EventEmitter<Node[] | undefined>()
   onDidChangeTreeData = this._onDidChangeTreeData.event
-  dispose() {
-    this.sender.dispose()
-  }
   getTreeItem(element: Node): TreeItem | Thenable<TreeItem> {
     let item
     if ('Id' in element) {
@@ -184,34 +178,31 @@ export class PwshAstTreeDataProvier
         .appendMarkdown('---')
         .appendCodeblock(JSON.stringify(element.Meta, undefined, 2), 'json')
     } else {
-      item.tooltip = element.Range.join(' ')
+      item.tooltip = `[${this.tree!.Tokens.indexOf(element)}]: ${element.Range.join(' ')}`
     }
     return item
   }
   //#endregion
   private tokenIdPrefix!: string
   private tokenId!: number
-  private sender: AstNodeGrabber
   private document?: TextDocument
   private tree?: AstTree
-  private view = window.createTreeView('mvext.pwshAstTreeView', {
+  private view = window.createTreeView('mvext.pwsh.astTreeView', {
     treeDataProvider: this,
   })
   private treeViewDT = window.createTextEditorDecorationType({
     border: '1px solid yellow',
     backgroundColor: new ThemeColor('editor.selectionBackground'),
   })
-  constructor(context: ExtensionContext) {
-    this.sender = new AstNodeGrabber(
-      context.asAbsolutePath('resources/serveAstNode.ps1'),
-    )
+  constructor(private context: ExtensionContext) {
     context.subscriptions.push(
-      this,
       this.view,
       this.treeViewDT,
-      commands.registerCommand('mvext.pwshAstTreeViewOpen', this.open),
-      commands.registerCommand('mvext.pwshAstTreeViewReveal', this.reveal),
-      commands.registerCommand('mvext.pwshAstTreeViewRefresh', this.refresh),
+      commands.registerCommand('mvext.pwsh.astTreeViewOpen', this.open),
+      commands.registerCommand('mvext.pwsh.astTreeViewReveal', this.reveal),
+      commands.registerCommand('mvext.pwsh.astTreeViewRefresh', this.refresh),
+      commands.registerCommand('mvext.pwsh.astTreeViewSend', this.send),
+      commands.registerCommand('mvext.pwsh.astTreeViewCopy', this.copy),
       this.view.onDidChangeVisibility((e) =>
         e.visible
           ? this.refresh()
@@ -225,11 +216,7 @@ export class PwshAstTreeDataProvier
         const range = new Range(...element.Range)
         editor.revealRange(range)
         editor.setDecorations(this.treeViewDT, [{ range }])
-        if (
-          'Id' in element &&
-          !element.tokens &&
-          this.view.selection.includes(element)
-        ) {
+        if ('Id' in element && !element.tokens) {
           element.tokens = this.getTokens(element)
           // next calls getChildren, then getTreeItem
           this.tokenIdPrefix = element.Id + '-'
@@ -239,10 +226,9 @@ export class PwshAstTreeDataProvier
       }),
     )
   }
-  private getNodeAtRange(range: Range) {
-    const rv = rangeValues(range)
+  private getNodeAtRange(range: [number, number, number, number]) {
     const dfs = (root: Ast): Ast | undefined => {
-      if (!rangeContains(root.Range, rv)) {
+      if (!rangeContains(root.Range, range)) {
         return
       }
       for (const child of root.Children) {
@@ -276,34 +262,65 @@ export class PwshAstTreeDataProvier
     ) {}
     return Tokens.slice(s, i)
   }
+  private getPath(element: Node) {
+    if ('Id' in element) {
+      if (!element.parent) {
+        // traverse all elements cover this, even child of this
+        this.getNodeAtRange(element.Range)
+      }
+      const items = []
+      while (element.parent) {
+        items.push('.' + element.FieldName)
+        element = element.parent
+      }
+      return items.reverse().join('')
+    }
+    return `[${this.tree!.Tokens.indexOf(element)}]`
+  }
+  send = async (element: Node) => {
+    const text =
+      '$psEditor.GetEditorContext().CurrentFile.' +
+      ('Id' in element ? 'Ast' : 'Tokens') +
+      this.getPath(element)
+    await commands.executeCommand('PowerShell.ShowSessionConsole')
+    window.activeTerminal!.sendText(text, false)
+  }
+  copy = (element: Node) => env.clipboard.writeText(this.getPath(element))
   open = () => this.document && window.showTextDocument(this.document)
   refresh = async () => {
+    if (!powershellExtension) {
+      await registerPowershellExtension(this.context)
+    }
     const document = window.activeTextEditor?.document
     if (document?.languageId !== 'powershell') {
       return
     }
     if (
       document.offsetAt(new Position(document.lineCount, 0)) >
-      getExtConfig('pwshAstTreeView.noProcessSize')
+      getExtConfig('pwsh.astTreeView.noProcessSize')
     ) {
-      return window.showWarningMessage(
+      await window.showWarningMessage(
         'PowerShell ast tree view not processed: size exceeds.',
       )
+      return
     }
-    await window
-      .withProgress({ location: { viewId: 'mvext.pwshAstTreeView' } }, () =>
-        this.sender.send(document.getText()).then((text) => {
+    await window.withProgress(
+      { location: { viewId: 'mvext.pwsh.astTreeView' } },
+      () =>
+        requestEditorCommand('sendAstTreeJson').then((tree) => {
+          this.tree = tree
           this.document = document
-          this.tree = JSON.parse(text)
           this._onDidChangeTreeData.fire(undefined)
         }),
-      )
-      .then(undefined, (e) => window.showErrorMessage(e + ''))
+    )
   }
   reveal = () => (
     this.view.visible || this.refresh(),
-    this.view.reveal(this.getNodeAtRange(window.activeTextEditor!.selection), {
-      expand: true,
-    })
+    this.view.reveal(
+      this.getNodeAtRange(rangeValues(window.activeTextEditor!.selection)),
+      {
+        expand: true,
+      },
+    )
   )
 }

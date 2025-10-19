@@ -62,6 +62,8 @@ export class PathCompleteProvider implements CompletionItemProvider {
         [
           { scheme: 'file', pattern: '**' },
           { scheme: 'vscode-vfs', pattern: '**' },
+          { scheme: 'vscode-remote', pattern: '**' },
+          { scheme: 'vscode-userdata', pattern: '**' },
         ],
         this,
         ...PathCompleteProvider.triggerCharacters.split(''),

@@ -78,6 +78,7 @@ export class HexColorProvider implements DocumentColorProvider, Disposable {
       [
         { scheme: 'file', language },
         { scheme: 'vscode-vfs', language },
+        { scheme: 'vscode-remote', language },
       ],
       this,
     )

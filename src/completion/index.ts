@@ -53,6 +53,7 @@ export class InvokeCompleteProvider implements CompletionItemProvider {
         [
           { scheme: 'file', pattern: '**' },
           { scheme: 'vscode-vfs', pattern: '**' },
+          { scheme: 'vscode-remote', pattern: '**' },
         ],
         this,
       ),

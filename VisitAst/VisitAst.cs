@@ -46,7 +46,6 @@ public class AstNodeVisitor
         continue;
       }
 
-      var id = 0;
       if (value is IReadOnlyCollection<Ast> asts)
       {
         if (asts.Count == 0)
@@ -54,6 +53,7 @@ public class AstNodeVisitor
           meta[name] = asts;
           continue;
         }
+        var id = 0;
         foreach (var ast2 in asts)
         {
           children.Add(VisitAst($"{name}[{id++}]", ast2));
@@ -66,12 +66,13 @@ public class AstNodeVisitor
           meta[name] = objects;
           continue;
         }
+        var id = 0;
         foreach (var item in objects)
         {
           if (item is (Ast a, Ast b))
           {
-            children.Add(VisitAst($"{name}[{id++}]", a));
-            children.Add(VisitAst($"{name}[{id++}]", b));
+            children.Add(VisitAst($"{name}[{id}].Item1", a));
+            children.Add(VisitAst($"{name}[{id++}].Item2", b));
           }
         }
       }
@@ -99,9 +100,14 @@ public class AstNodeVisitor
     return new(ast, fieldName, meta, children);
   }
 
+  public static AstTree Visit(Ast ast, Token[] tokens)
+  {
+    return new(VisitAst("ScriptFile", ast), [.. from token in tokens select new TokenNode(token)]);
+  }
+
   public static AstTree Visit(string input)
   {
     var ast = Parser.ParseInput(input, out Token[] tokens, out ParseError[] _);
-    return new(VisitAst("ScriptFile", ast), [.. from token in tokens select new TokenNode(token)]);
+    return Visit(ast, tokens);
   }
 }

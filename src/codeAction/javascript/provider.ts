@@ -91,6 +91,7 @@ export class TransformCodeActionProvider implements CodeActionProvider {
         ].flatMap((language) => [
           { language, scheme: 'file' },
           { language, scheme: 'vscode-vfs' },
+          { language, scheme: 'vscode-remote' },
         ]),
         this,
       ),

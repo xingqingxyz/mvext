@@ -20,6 +20,7 @@ export class MarkdownBlockRunProvider implements CodeLensProvider {
         [
           { scheme: 'file', language: 'markdown' },
           { scheme: 'vscode-vfs', language: 'markdown' },
+          { scheme: 'vscode-remote', language: 'markdown' },
         ],
         this,
       ),

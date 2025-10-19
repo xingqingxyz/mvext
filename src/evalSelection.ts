@@ -40,9 +40,9 @@ export async function evalSelection() {
   const { document, selections } = editor
   const config = getExtConfig('evalSelection.languageMap')
   let { languageId } = document
-  if (!Object.hasOwn(config, languageId)) {
+  if (!(languageId in config)) {
     languageId = getTerminalLaunchLanguageId(languageId)
-    if (!Object.hasOwn(config, languageId)) {
+    if (!(languageId in config)) {
       await window.showWarningMessage('no eval config found for ' + languageId)
       return
     }

@@ -4,6 +4,7 @@ import {
   Range,
   Selection,
   Uri,
+  window,
   workspace,
   type ExtensionContext,
   type TextDocument,
@@ -18,41 +19,47 @@ import {
 import { getExtConfig } from './config'
 import { ContextKey } from './context'
 
-export type TSLanguageId =
-  | 'cpp'
-  | 'css'
-  | 'go'
-  | 'ini'
-  | 'java'
-  | 'javascript'
-  | 'javascriptreact'
-  | 'typescript'
-  | 'typescriptreact'
-  | 'python'
-  | 'rust'
-  | 'shellscript'
-
-const parsers = {} as Record<TSLanguageId, Parser>
-const parserActiveDocumentMap = new Map<Parser, TextDocument>()
+const parsers = {} as Record<string, Parser>
 const treeMap = new Map<TextDocument, Tree>()
 let extensionUri: Uri
 
-export async function getParser(
-  languageId: TSLanguageId,
-): Promise<Parser | undefined> {
+export async function getParser(languageId: string) {
+  if (!languageId.length) {
+    throw 'empty languageId'
+  }
   if (languageId === 'javascriptreact') {
     languageId = 'javascript'
   }
-  return (
-    parsers[languageId] ??
-    (parsers[languageId] = new Parser().setLanguage(
-      await Language.load(
-        await workspace.fs.readFile(
-          Uri.joinPath(extensionUri, `dist/tree-sitter-${languageId}.wasm`),
+  if (languageId in parsers) {
+    return parsers[languageId]
+  }
+  const config = getExtConfig('treeSitter.extraParserMap')
+  let uri
+  if (languageId in config) {
+    uri = Uri.file(config[languageId])
+  } else if (languageId === 'javascriptreact') {
+    if (!('javascript' in parsers)) {
+      parsers.javascript = new Parser().setLanguage(
+        await Language.load(
+          await workspace.fs.readFile(
+            Uri.joinPath(extensionUri, 'dist/tree-sitter-javascript.wasm'),
+          ),
         ),
-      ),
+      )
+    }
+    return (parsers.javascriptreact = new Parser().setLanguage(
+      parsers.javascript.language,
     ))
-  )
+  } else {
+    uri = Uri.joinPath(extensionUri, `dist/tree-sitter-${languageId}.wasm`)
+  }
+  try {
+    return (parsers[languageId] = new Parser().setLanguage(
+      await Language.load(await workspace.fs.readFile(uri)),
+    ))
+  } catch {
+    await window.showErrorMessage('tree-sitter parser cannot be load at ' + uri)
+  }
 }
 
 export function getParseCallback(document: TextDocument) {
@@ -97,26 +104,25 @@ export function getDescendantPath(root: Node, descendant: Node) {
 }
 
 export function getParsedTree(document: TextDocument) {
-  const parser = parsers[document.languageId as TSLanguageId]
-  if (!parser) {
+  if (!(document.languageId in parsers)) {
     return
   }
-  if (parserActiveDocumentMap.get(parser) !== document) {
-    parser.reset()
-  }
   const tree = treeMap.get(document)
-  treeMap.set(document, parser.parse(getParseCallback(document), tree)!)
+  treeMap.set(
+    document,
+    parsers[document.languageId].parse(getParseCallback(document), tree)!,
+  )
   tree?.delete()
   return treeMap.get(document)!
 }
 
-async function setSyncedLanguages(languages: TSLanguageId[]) {
+async function setSyncedLanguages(languages: string[]) {
   await commands.executeCommand(
     'setContext',
     ContextKey.tsSyncedLanguages,
     languages,
   )
-  for (const languageId of Object.keys(parsers) as TSLanguageId[]) {
+  for (const languageId of Object.keys(parsers)) {
     if (languages.includes(languageId)) {
       continue
     }
@@ -129,15 +135,12 @@ async function setSyncedLanguages(languages: TSLanguageId[]) {
     // keep parsers alive for getParser API
   }
   for (const document of workspace.textDocuments) {
-    if (
-      !languages.includes(document.languageId as TSLanguageId) ||
-      treeMap.has(document)
-    ) {
+    if (!languages.includes(document.languageId) || treeMap.has(document)) {
       continue
     }
     treeMap.set(
       document,
-      (await getParser(document.languageId as TSLanguageId))!.parse(
+      (await getParser(document.languageId))!.parse(
         getParseCallback(document),
       )!,
     )
@@ -146,7 +149,7 @@ async function setSyncedLanguages(languages: TSLanguageId[]) {
 
 export async function initTSParser(context: ExtensionContext) {
   void ({ extensionUri } = context)
-  let syncedLanguages: TSLanguageId[]
+  let syncedLanguages: string[]
   await Parser.init({
     wasmBinary: await workspace.fs.readFile(
       Uri.joinPath(extensionUri, 'dist/tree-sitter.wasm'),
@@ -158,23 +161,19 @@ export async function initTSParser(context: ExtensionContext) {
   context.subscriptions.push(
     workspace.onDidChangeConfiguration(
       (e) =>
-        e.affectsConfiguration('mvext.treeSitter.syncedLanguages') &&
+        e.affectsConfiguration('mvext.treeSitter') &&
         setSyncedLanguages(
-          (syncedLanguages = getExtConfig(
-            'treeSitter.syncedLanguages',
-          ) as TSLanguageId[]),
+          (syncedLanguages = getExtConfig('treeSitter.syncedLanguages')),
         ),
     ),
     workspace.onDidOpenTextDocument(
       (document) =>
-        syncedLanguages.includes(document.languageId as TSLanguageId) &&
-        getParser(document.languageId as TSLanguageId).then(() =>
-          getParsedTree(document),
-        ),
+        syncedLanguages.includes(document.languageId) &&
+        getParser(document.languageId).then(() => getParsedTree(document)),
     ),
     workspace.onDidCloseTextDocument((document) => treeMap.delete(document)),
     workspace.onDidChangeTextDocument((e) => {
-      if (!Object.hasOwn(parsers, e.document.languageId)) {
+      if (!(e.document.languageId in parsers)) {
         return
       }
       e.contentChanges.forEach((cc) => {

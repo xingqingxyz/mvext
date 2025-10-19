@@ -68,6 +68,7 @@ function buildExtension(isWeb: boolean, isProd: boolean) {
           module: true,
           sourceMap: false,
           keep_fnames:
+            // generated using ./scripts/tsGetFunctionKeepNames.ts
             /^(?:templateToConcat|concatToTemplate|ifToBinary|ifToTernary|ifToSwitch|ifToSwitchLeft|binaryToIf|ternaryToIf|ternaryToSwitch|ternaryToSwitchLeft|whileToDoWhile|doWhileToWhile|swapTernary|swapIf|arrowToFunctionExpression|arrowToFunction|functionExpressionToArrow|functionToArrow|splitDeclaration|cast|callWrap)$/,
           mangle: { eval: true /* for web-tree-sitter */ },
         }),

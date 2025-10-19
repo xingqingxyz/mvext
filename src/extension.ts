@@ -1,5 +1,6 @@
 import '@/shims/web'
 import { commands, env, type ExtensionContext } from 'vscode'
+import { TransformCodeActionProvider } from './codeAction/javascript/provider'
 import { InvokeCompleteProvider } from './completion'
 import { getExtConfig } from './config'
 import {
@@ -19,7 +20,6 @@ import {
   transformCaseDefault,
   transformCaseWithPicker,
 } from './transformCase'
-import { TransformCodeActionProvider } from './tsCodeAction/provider'
 import { initTSParser } from './tsParser'
 import { TSTreeDataProvier } from './tsTreeView'
 import { terminalRunCode } from './util/terminalRunCode'
@@ -46,7 +46,7 @@ export async function activate(context: ExtensionContext) {
     if (getExtConfig('stylua.enabled')) {
       new StyluaFormatter(context)
     }
-    if (getExtConfig('pwshAstTreeView.enabled')) {
+    if (getExtConfig('pwsh.astTreeView.enabled')) {
       new PwshAstTreeDataProvier(context)
     }
   }

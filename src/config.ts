@@ -1,25 +1,25 @@
 import type { ShOptions } from 'sh-syntax'
 import { workspace, type ConfigurationScope } from 'vscode'
-import type { TSLanguageId } from './tsParser'
 import type { TerminalRunLanguageIds } from './util/terminalRunCode'
 import type { WordCase } from './util/transformCaseHelper'
 
 export type MvextConfig = {
   'evalSelection.languageMap': Record<string, string>
-  'terminalLaunch.languageMap': Record<string, string>
-  'pathComplete.prefixMap': Record<string, string>
-  'treeSitter.syncedLanguages': TSLanguageId[]
   'pathComplete.debounceTimeMs': number
-  'terminalRunCode.defaultLanguageId': TerminalRunLanguageIds
-  'transformCase.defaultCase': WordCase
-  'pwshAstTreeView.enabled': boolean
-  'pwshAstTreeView.noProcessSize': number
-  'treeSitterTreeView.enabled': boolean
+  'pathComplete.prefixMap': Record<string, string>
+  'pwsh.astTreeView.enabled': boolean
+  'pwsh.astTreeView.noProcessSize': number
   'shfmt.enabled': boolean
-  'stylua.enabled': boolean
   'shfmt.extraArgs': string[]
   'shfmt.optionsOnWeb': ShOptions
+  'stylua.enabled': boolean
   'stylua.extraArgs': string[]
+  'terminalLaunch.languageMap': Record<string, string>
+  'terminalRunCode.defaultLanguageId': TerminalRunLanguageIds
+  'transformCase.defaultCase': WordCase
+  'treeSitter.extraParserMap': Record<string, string>
+  'treeSitter.syncedLanguages': string[]
+  'treeSitter.treeView.enabled': boolean
 }
 
 type ScopedConfigKey = 'pathComplete.prefixMap' | 'transformCase.defaultCase'

@@ -115,20 +115,38 @@
       },
       {
         "category": "mvext",
-        "command": "mvext.pwshAstTreeViewReveal",
+        "command": "mvext.tsTreeViewCopy",
+        "icon": "$(copy)",
+        "title": "Copy JavaScript Expression"
+      },
+      {
+        "category": "mvext",
+        "command": "mvext.pwsh.astTreeViewReveal",
         "title": "Reveal Selection in PowerShell Ast Tree View"
       },
       {
         "category": "mvext",
-        "command": "mvext.pwshAstTreeViewRefresh",
+        "command": "mvext.pwsh.astTreeViewRefresh",
         "icon": "$(refresh)",
         "title": "Refresh PowerShell Ast Tree View"
       },
       {
         "category": "mvext",
-        "command": "mvext.pwshAstTreeViewOpen",
+        "command": "mvext.pwsh.astTreeViewOpen",
         "icon": "$(symbol-reference)",
         "title": "Open PowerShell Ast Tree View Document"
+      },
+      {
+        "category": "mvext",
+        "command": "mvext.pwsh.astTreeViewSend",
+        "icon": "$(send)",
+        "title": "Send the Node Expression to PSES Console"
+      },
+      {
+        "category": "mvext",
+        "command": "mvext.pwsh.astTreeViewCopy",
+        "icon": "$(copy)",
+        "title": "Copy PowerShell Expression"
       }
     ],
     "configuration": {
@@ -152,7 +170,7 @@
         },
         "mvext.pathComplete.debounceTimeMs": {
           "default": 200,
-          "markdownDescription": "Path completion debounceTimeMs",
+          "markdownDescription": "Path completion debounce time to use while quickly typing the trigger char `\\/`.",
           "type": "integer"
         },
         "mvext.pathComplete.prefixMap": {
@@ -166,12 +184,12 @@
           "scope": "resource",
           "type": "object"
         },
-        "mvext.pwshAstTreeView.enabled": {
+        "mvext.pwsh.astTreeView.enabled": {
           "default": true,
-          "markdownDescription": "Enable pwshAstTreeView, requires reload.",
+          "markdownDescription": "Enable PowerShell ast tree view.",
           "type": "boolean"
         },
-        "mvext.pwshAstTreeView.noProcessSize": {
+        "mvext.pwsh.astTreeView.noProcessSize": {
           "default": 9000000,
           "markdownDescription": "When powershell document size `-gt` this, no process when refresh.",
           "type": "integer"
@@ -190,7 +208,7 @@
           "items": {
             "type": "string"
           },
-          "markdownDescription": "Formatter shfmt's extra command line args",
+          "markdownDescription": "Formatter shfmt's extra command line args.",
           "type": "array"
         },
         "mvext.shfmt.optionsOnWeb": {
@@ -212,12 +230,11 @@
           "items": {
             "type": "string"
           },
-          "markdownDescription": "Formatter stylua's extra command line args",
+          "markdownDescription": "Formatter stylua's extra command line args.",
           "type": "array"
         },
         "mvext.terminalLaunch.languageMap": {
           "additionalProperties": {
-            "description": "Language Id : Launch Config",
             "type": "string"
           },
           "default": {
@@ -232,7 +249,7 @@
             "shellscript": "bash",
             "typescript": "tsx"
           },
-          "markdownDescription": "Languages launch config definitions",
+          "markdownDescription": "Languages launch command line definitions.",
           "type": "object"
         },
         "mvext.terminalRunCode.defaultLanguageId": {
@@ -269,6 +286,15 @@
           "scope": "language-overridable",
           "type": "string"
         },
+        "mvext.treeSitter.extraParserMap": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "default": {},
+          "ignoreSync": true,
+          "markdownDescription": "Extra parser paths used for language id, which overrides the bundled parsers.",
+          "type": "object"
+        },
         "mvext.treeSitter.syncedLanguages": {
           "default": [
             "css",
@@ -279,28 +305,33 @@
             "typescript",
             "typescriptreact"
           ],
+          "examples": [
+            "cpp",
+            "css",
+            "go",
+            "ini",
+            "java",
+            "javascript",
+            "javascriptreact",
+            "typescript",
+            "typescriptreact",
+            "python",
+            "rust",
+            "shellscript"
+          ],
           "items": {
-            "enum": [
-              "cpp",
-              "css",
-              "go",
-              "ini",
-              "java",
-              "javascript",
-              "javascriptreact",
-              "typescript",
-              "typescriptreact",
-              "python",
-              "rust",
-              "shellscript"
-            ],
             "type": "string"
           },
           "markdownDescription": "Tree-Sitter synced languages for code actions and completions.",
           "type": "array"
+        },
+        "mvext.treeSitter.treeView.enabled": {
+          "default": true,
+          "markdownDescription": "Enable tree-sitter tree view.",
+          "type": "boolean"
         }
       },
-      "title": "mvext"
+      "title": "Make VSCode Extension"
     },
     "keybindings": [
       {
@@ -394,6 +425,17 @@
         "when": "editorTextFocus && suggestWidgetVisible"
       }
     ],
+    "languages": [
+      {
+        "aliases": [
+          "Regex"
+        ],
+        "extensions": [
+          ".regex"
+        ],
+        "id": "regex"
+      }
+    ],
     "menus": {
       "editor/context": [
         {
@@ -401,7 +443,7 @@
           "when": "editorLangId in mvext.tsSyncedLanguages"
         },
         {
-          "command": "mvext.pwshAstTreeViewReveal",
+          "command": "mvext.pwsh.astTreeViewReveal",
           "when": "editorLangId == powershell"
         }
       ],
@@ -422,6 +464,19 @@
           "when": "!listMultiSelection && resourceLangId in mvext.terminalLaunchLanguages"
         }
       ],
+      "view/item/context": [
+        {
+          "command": "mvext.tsTreeViewCopy",
+          "group": "inline",
+          "when": "view == mvext.tsTreeView"
+        },
+        {
+          "alt": "mvext.pwsh.astTreeViewCopy",
+          "command": "mvext.pwsh.astTreeViewSend",
+          "group": "inline",
+          "when": "view == mvext.pwsh.astTreeView"
+        }
+      ],
       "view/title": [
         {
           "alt": "mvext.tsTreeViewOpen",
@@ -430,10 +485,10 @@
           "when": "view == mvext.tsTreeView"
         },
         {
-          "alt": "mvext.pwshAstTreeViewOpen",
-          "command": "mvext.pwshAstTreeViewRefresh",
+          "alt": "mvext.pwsh.astTreeViewOpen",
+          "command": "mvext.pwsh.astTreeViewRefresh",
           "group": "navigation",
-          "when": "view == mvext.pwshAstTreeView"
+          "when": "view == mvext.pwsh.astTreeView"
         }
       ]
     },
@@ -510,14 +565,17 @@
           "contextualTitle": "Tree-Sitter Tree View",
           "icon": "$(list-tree)",
           "id": "mvext.tsTreeView",
-          "name": "Tree-Sitter Tree View"
+          "name": "Tree-Sitter Tree View",
+          "visibility": "hidden",
+          "when": "config.mvext.treeSitter.treeView.enabled"
         },
         {
           "contextualTitle": "PowerShell Ast Tree View",
           "icon": "$(terminal-powershell)",
-          "id": "mvext.pwshAstTreeView",
+          "id": "mvext.pwsh.astTreeView",
           "name": "PowerShell Ast Tree View",
-          "when": "!isWeb && config.mvext.pwshAstTreeView.enabled"
+          "visibility": "hidden",
+          "when": "!isWeb && config.mvext.pwsh.astTreeView.enabled"
         }
       ]
     },
@@ -528,7 +586,7 @@
       },
       {
         "contents": "Please try to edit powershell scripts, then refresh to visit ast.",
-        "view": "mvext.pwshAstTreeView"
+        "view": "mvext.pwsh.astTreeView"
       }
     ]
   },
@@ -608,12 +666,11 @@
     "url": "https://github.com/xingqingxyz/mvext"
   },
   "scripts": {
-    "build": "dotnet build -c Release",
     "install-extension": "vsce pack -o mvext.vsix && code --install-extension mvext.vsix",
     "lint": "tsc --noEmit && eslint --fix --cache src",
     "postinstall": "node ./scripts/postinstall.ts",
     "test": "mocha",
-    "vscode:prepublish": "rollup -c --environment NODE_ENV:production,PLATFORM:all",
+    "vscode:prepublish": "dotnet build -c Release && rollup -c --environment NODE_ENV:production,PLATFORM:all",
     "watch": "rollup -c -w",
     "watch-web": "rollup -c -w --environment PLATFORM:web"
   },
@@ -621,5 +678,5 @@
     "pre-commit": "pnpm exec lint-staged && pnpm test"
   },
   "type": "module",
-  "version": "0.21.0"
+  "version": "0.22.0"
 }

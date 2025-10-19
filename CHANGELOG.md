@@ -2,13 +2,17 @@
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## [0.20.0]
+
+- Feature: [`pwshCodeAction`] powershell transform code actions implemented by PSES editor commands.
+
 ## [0.21.0]
 
 - Performance: Use csharp instead of powershell script to get ast nodes.
 
 ## [0.20.0]
 
-- Feature: [`pwshAstTreeView`](src/pwshAstTreeView.ts) PowerShell ast tree view.
+- Feature: [`pwsh.astTreeView`](src/pwsh.astTreeView.ts) PowerShell ast tree view.
 
 ## [0.18.0]
 

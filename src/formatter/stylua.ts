@@ -39,6 +39,7 @@ export class StyluaFormatter
         [
           { scheme: 'file', language: 'lua' },
           { scheme: 'vscode-vfs', language: 'lua' },
+          { scheme: 'vscode-remote', language: 'lua' },
         ],
         this,
       ),
@@ -46,6 +47,7 @@ export class StyluaFormatter
         [
           { scheme: 'file', language: 'lua' },
           { scheme: 'vscode-vfs', language: 'lua' },
+          { scheme: 'vscode-remote', language: 'lua' },
         ],
         this,
       ),
@@ -151,6 +153,7 @@ export class StyluaFormatterWasm
         [
           { scheme: 'file', language: 'lua' },
           { scheme: 'vscode-vfs', language: 'lua' },
+          { scheme: 'vscode-remote', language: 'lua' },
         ],
         this,
       ),
@@ -158,6 +161,7 @@ export class StyluaFormatterWasm
         [
           { scheme: 'file', language: 'lua' },
           { scheme: 'vscode-vfs', language: 'lua' },
+          { scheme: 'vscode-remote', language: 'lua' },
         ],
         this,
       ),

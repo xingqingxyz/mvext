@@ -14,8 +14,8 @@ import { ContextKey, WStateKey } from './context'
  * Resolves python,(java|type)script(react)?,shellscript,powershell,csharp,
  * fsharp,bat,
  */
-function getLangIdFromUri(uri: Uri) {
-  const ext = path.extname(uri.path).slice(1).toLowerCase()
+function getLangIdFromPath(path_: string) {
+  const ext = path.extname(path_).slice(1).toLowerCase()
   switch (ext) {
     case 'js':
     case 'cjs':
@@ -59,22 +59,19 @@ export async function terminalLaunch(
   arg1: Uri[] | undefined | object,
   argstr = '',
 ) {
+  if (!(await workspace.saveAll(true))) {
+    return
+  }
+  let path = uri.fsPath
   switch (uri.scheme) {
     case 'file':
+    case 'vscode-userdata':
       break
     case 'untitled':
-      if (!(await workspace.saveAll())) {
-        return
-      }
-      break
-    case 'vscode-vfs':
-      await window.showWarningMessage('Please download the file first.')
-      return
-    case 'vscode-userdata':
-      uri = Uri.file(uri.fsPath)
+      path = window.activeTextEditor!.document.fileName
       break
     default:
-      await window.showWarningMessage('Cannot handle uri scheme: ' + uri.scheme)
+      await window.showWarningMessage('Cannot launch uri scheme: ' + uri.scheme)
       return
   }
   const shells = ['bash', 'gitbash', 'pwsh', 'sh', 'wsl', 'zsh']
@@ -99,10 +96,10 @@ export async function terminalLaunch(
   terminal.show()
   let languageId
   languageId = Array.isArray(arg1)
-    ? getLangIdFromUri(uri)
+    ? getLangIdFromPath(path)
     : window.activeTextEditor!.document.languageId
   const config = getExtConfig('terminalLaunch.languageMap')
-  if (!Object.hasOwn(config, languageId)) {
+  if (!(languageId in config)) {
     languageId = await window.showQuickPick(Object.keys(config), {
       placeHolder: 'Select Language Id',
     })
@@ -111,7 +108,7 @@ export async function terminalLaunch(
     }
   }
   terminal.sendText(
-    `${config[languageId]} '${uri.fsPath.replaceAll(
+    `${config[languageId]} '${path.replaceAll(
       "'",
       terminal.state.shell === 'pwsh' ? "''" : "'\"'\"'",
     )}' ${argstr}`,

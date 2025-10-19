@@ -22,6 +22,7 @@ export class ShfmtFormatter implements DocumentFormattingEditProvider {
         [
           { scheme: 'file', language: 'shellscript' },
           { scheme: 'vscode-vfs', language: 'shellscript' },
+          { scheme: 'vscode-remote', language: 'shellscript' },
         ],
         this,
       ),
@@ -72,6 +73,7 @@ export class ShfmtFormatterWasm implements DocumentFormattingEditProvider {
         [
           { scheme: 'file', language: 'shellscript' },
           { scheme: 'vscode-vfs', language: 'shellscript' },
+          { scheme: 'vscode-remote', language: 'shellscript' },
         ],
         this,
       ),

@@ -1,5 +1,6 @@
 import {
   commands,
+  env,
   EventEmitter,
   MarkdownString,
   ThemeColor,
@@ -15,12 +16,7 @@ import {
   type TreeDataProvider,
 } from 'vscode'
 import { Node, type Tree } from 'web-tree-sitter'
-import {
-  getParsedTree,
-  nodeToRange,
-  positionToPoint,
-  type TSLanguageId,
-} from './tsParser'
+import { getParsedTree, nodeToRange, positionToPoint } from './tsParser'
 
 export class TSTreeDataProvier implements TreeDataProvider<Node> {
   //#region api
@@ -58,7 +54,7 @@ export class TSTreeDataProvier implements TreeDataProvider<Node> {
   }
   resolveTreeItem(item: TreeItem, element: Node): ProviderResult<TreeItem> {
     item.tooltip = new MarkdownString()
-      .appendCodeblock(element.text, this.languageId)
+      .appendCodeblock(element.text, this.document!.languageId)
       .appendMarkdown(`---\n**grammarType**: \`${element.grammarType}\``)
     return item
   }
@@ -66,7 +62,6 @@ export class TSTreeDataProvier implements TreeDataProvider<Node> {
   private document?: TextDocument
   private tree?: Tree | null
   private root?: Node // tree.rootNode is not memorized
-  private languageId?: TSLanguageId
   private view = window.createTreeView('mvext.tsTreeView', {
     treeDataProvider: this,
   })
@@ -81,6 +76,7 @@ export class TSTreeDataProvier implements TreeDataProvider<Node> {
       commands.registerCommand('mvext.tsTreeViewOpen', this.open),
       commands.registerCommand('mvext.tsTreeViewReveal', this.reveal),
       commands.registerCommand('mvext.tsTreeViewRefresh', this.refresh),
+      commands.registerCommand('mvext.tsTreeViewCopy', this.copy),
       this.view.onDidChangeVisibility((e) =>
         e.visible
           ? this.refresh()
@@ -102,16 +98,33 @@ export class TSTreeDataProvier implements TreeDataProvider<Node> {
       positionToPoint(range.end),
     )!
   }
+  copy = (element: Node) => {
+    const items = []
+    while (element.parent) {
+      const index = element.parent.children.findIndex((n) => n!.equals(element))
+      const fieldName = element.parent.fieldNameForChild(index)
+      items.push(
+        fieldName
+          ? `.childForFieldName(${JSON.stringify(fieldName)})`
+          : `.child(${index})`,
+      )
+      element = element.parent
+    }
+    return env.clipboard.writeText(items.reverse().join(''))
+  }
   open = () => this.document && window.showTextDocument(this.document)
   refresh = () => {
     const document = window.activeTextEditor?.document
     if (!document) {
       return
     }
+    const tree = getParsedTree(document)
+    if (!tree) {
+      return
+    }
     this.document = document
-    this.tree = getParsedTree(document)
+    this.tree = tree
     this.root = this.tree?.rootNode
-    this.languageId = document.languageId as TSLanguageId
     this._onDidChangeTreeData.fire(undefined)
   }
   reveal = () => (
