@@ -63,7 +63,7 @@ export class TextObject {
       break
     }
     if (outer) {
-      post = document.getWordRangeAtPosition(post, reSep)!.end
+      post = post.translate(undefined, 1)
     }
     return new Range(pre, post)
   }

@@ -1,11 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import {
-  Position,
-  Selection,
-  window,
-  workspace,
-  type TextDocument,
-} from 'vscode'
+import { Position, Selection, window, type TextDocument } from 'vscode'
 import {
   ActionHandlerKind,
   type ActionHandlerContext,
@@ -20,12 +14,12 @@ import {
   preLookup,
   preLookupRegExp,
 } from './util/bracketLookup'
-import { findMethod } from './util/findMethod'
+import { findRegexp, findWord } from './util/findMethod'
 
 export class Motion {
   //#region keepLine
   '0'(document: TextDocument, position: Position, count: number): Position {
-    return document.lineAt(position).range.start
+    return position.with(undefined, 0)
   }
   '|'(document: TextDocument, position: Position, count: number): Position {
     return document.validatePosition(position.with(undefined, count - 1))
@@ -72,13 +66,16 @@ export class Motion {
     return this['*'](document, position, count, true)
   }
   '%'(document: TextDocument, position: Position, count: number): Position {
+    const savePosition = position
     // please keep regexp char order
-    for (const pos of preLookupRegExp(document, position, /[([{<)\]}>]/g)) {
+    for (position of preLookupRegExp(document, position, /[([{<]/g)) {
       if (!--count) {
-        return pos.isEqual(position) ? bracketPairLookup(document, pos) : pos
+        break
       }
     }
-    return position
+    return position.isEqual(savePosition)
+      ? bracketPairLookup(document, position)
+      : position
   }
   '/'(
     document: TextDocument,
@@ -88,13 +85,13 @@ export class Motion {
     findType: '/' | '?' = '/',
   ): Position {
     if (!findSequence.length) {
-      return findMethod.findRegexp(document, position, count, {
-        findRegexp: findMethod.findRegexpContext.findRegexp,
+      return findRegexp(document, position, count, {
+        findRegexp: findRegexp.context.findRegexp,
         findType,
       })
     }
     try {
-      return findMethod.findRegexp(document, position, count, {
+      return findRegexp(document, position, count, {
         findRegexp: new RegExp(findSequence, 'g'),
         findType,
       })
@@ -111,14 +108,14 @@ export class Motion {
     return this['/'](document, position, count, findSequence, '?')
   }
   n(document: TextDocument, position: Position, count: number): Position {
-    return findMethod.findRegexp(document, position, count, {
-      ...findMethod.findRegexpContext,
+    return findRegexp(document, position, count, {
+      ...findRegexp.context,
       reverse: false,
     })
   }
   N(document: TextDocument, position: Position, count: number): Position {
-    return findMethod.findRegexp(document, position, count, {
-      ...findMethod.findRegexpContext,
+    return findRegexp(document, position, count, {
+      ...findRegexp.context,
       reverse: true,
     })
   }
@@ -184,11 +181,12 @@ export class Motion {
     position: Position,
     count: number,
     backward = false,
+    useSpace = false,
   ): Position {
     for (position of (backward ? preLookupRegExp : postLookupRegExp)(
       document,
       position,
-      /(?<=\W)\w/g,
+      useSpace ? /(?<=\s)\S/g : /(?<=\W)\w/g,
       backward,
     )) {
       if (!--count) {
@@ -203,23 +201,20 @@ export class Motion {
     count: number,
     backward = false,
   ): Position {
-    for (position of (backward ? preLookupRegExp : postLookupRegExp)(
-      document,
-      position,
-      /(?<=\s)\S/g,
-      backward,
-    )) {
-      if (!--count) {
-        break
-      }
-    }
-    return position
+    return this.w(document, position, count, false, true)
+  }
+  b(document: TextDocument, position: Position, count: number): Position {
+    return this.w(document, position, count, true, false)
+  }
+  B(document: TextDocument, position: Position, count: number): Position {
+    return this.w(document, position, count, true, true)
   }
   e(
     document: TextDocument,
     position: Position,
     count: number,
     backward = false,
+    useSpace = false,
   ): Position {
     // hack solves string slice debuff
     if (backward) {
@@ -228,7 +223,7 @@ export class Motion {
     for (position of (backward ? preLookupRegExp : postLookupRegExp)(
       document,
       position,
-      /(?<=\w)\b/g,
+      useSpace ? /(?<=\S)(?:\s|$)/g : /(?<=\w)\b/g,
       backward,
     )) {
       if (!--count) {
@@ -237,39 +232,14 @@ export class Motion {
     }
     return position
   }
-  E(
-    document: TextDocument,
-    position: Position,
-    count: number,
-    backward = false,
-  ): Position {
-    // hack solves string slice debuff
-    if (backward) {
-      count++
-    }
-    for (position of (backward ? preLookupRegExp : postLookupRegExp)(
-      document,
-      position,
-      /(?<=\S)(?:\s|$)/g,
-      backward,
-    )) {
-      if (!--count) {
-        break
-      }
-    }
-    return position
+  E(document: TextDocument, position: Position, count: number): Position {
+    return this.e(document, position, count, false, true)
   }
   ge(document: TextDocument, position: Position, count: number): Position {
-    return this.e(document, position, count, true)
+    return this.e(document, position, count, true, false)
   }
   gE(document: TextDocument, position: Position, count: number): Position {
-    return this.E(document, position, count, true)
-  }
-  b(document: TextDocument, position: Position, count: number): Position {
-    return this.w(document, position, count, true)
-  }
-  B(document: TextDocument, position: Position, count: number): Position {
-    return this.W(document, position, count, true)
+    return this.e(document, position, count, true, true)
   }
   G(
     document: TextDocument,
@@ -287,7 +257,7 @@ export class Motion {
     count: number,
     findSequence: string,
   ): Position {
-    return findMethod.findWord(document, position, count, {
+    return findWord(document, position, count, {
       findType: 'f',
       findSequence,
     })
@@ -298,7 +268,7 @@ export class Motion {
     count: number,
     findSequence: string,
   ): Position {
-    return findMethod.findWord(document, position, count, {
+    return findWord(document, position, count, {
       findType: 'F',
       findSequence,
     })
@@ -309,13 +279,10 @@ export class Motion {
     count: number,
     findSequence: string,
   ): Position {
-    const pos = findMethod.findWord(document, position, count, {
+    return findWord(document, position, count, {
       findType: 't',
       findSequence,
     })
-    return pos.isEqual(position)
-      ? position
-      : position.with(0, pos.character - 1) // assert pos.character > 0
   }
   T(
     document: TextDocument,
@@ -323,24 +290,17 @@ export class Motion {
     count: number,
     findSequence: string,
   ): Position {
-    const pos = findMethod.findWord(document, position, count, {
+    return findWord(document, position, count, {
       findType: 'T',
       findSequence,
     })
-    // assert pos.character + 1 in line
-    return pos.isEqual(position) ? position : pos.with(0, pos.character + 1)
   }
   ';'(document: TextDocument, position: Position, count: number): Position {
-    return findMethod.findWord(
-      document,
-      position,
-      count,
-      findMethod.findWordContext,
-    )
+    return findWord(document, position, count, findWord.context)
   }
   ','(document: TextDocument, position: Position, count: number): Position {
-    return findMethod.findWord(document, position, count, {
-      ...findMethod.findWordContext,
+    return findWord(document, position, count, {
+      ...findWord.context,
       reverse: true,
     })
   }
@@ -348,43 +308,23 @@ export class Motion {
     return position.with(undefined, Math.max(0, position.character - count))
   }
   j(document: TextDocument, position: Position, count: number): Position {
-    return document.validatePosition(position.with(position.line + count))
+    return document.validatePosition(position.translate(count))
   }
   k(document: TextDocument, position: Position, count: number): Position {
-    return document.validatePosition(
-      position.with(Math.max(0, position.line - count)),
-    )
+    return document.validatePosition(position.translate(-count))
   }
   l(document: TextDocument, position: Position, count: number): Position {
-    return position.with(
-      undefined,
-      Math.min(
-        document.lineAt(position).range.end.character,
-        position.character + count,
-      ),
-    )
+    return document.validatePosition(position.translate(undefined, +count))
   }
   H(document: TextDocument, position: Position, count: number): Position {
-    return new Position(
-      window.activeTextEditor!.visibleRanges[0].start.line +
-        workspace
-          .getConfiguration('editor')
-          .get<number>('cursorSurroundingLines')!,
-      0,
-    )
+    return window.activeTextEditor!.visibleRanges[0].start.with(undefined, 0)
   }
   M(document: TextDocument, position: Position, count: number): Position {
     const range = window.activeTextEditor!.visibleRanges[0]
     return new Position((range.start.line + range.end.line) >> 1, 0)
   }
   L(document: TextDocument, position: Position, count: number): Position {
-    return new Position(
-      window.activeTextEditor!.visibleRanges[0].end.line -
-        workspace
-          .getConfiguration('editor')
-          .get<number>('cursorSurroundingLines')!,
-      0,
-    )
+    return window.activeTextEditor!.visibleRanges[0].end.with(undefined, 0)
   }
   getSeletion(context: ActionHandlerContext) {
     const editor = window.activeTextEditor!
@@ -414,6 +354,7 @@ export function* produceMeta(): Generator<[string, ActionMeta]> {
     switch (Motion.prototype[key].length) {
       case 2:
       case 3:
+      case 5:
         meta = { kind: ActionHandlerKind.Immediate, handler: noop }
         break
       case 4:

@@ -31,17 +31,17 @@ export type ActionMeta = {
 class ActionTire {
   public children = Array<ActionTire | undefined>(128)
   public meta?: ActionMeta
-  public add(s: string, meta: ActionMeta) {
-    let node: ActionTire | undefined = this
+  public add(this: ActionTire, s: string, meta: ActionMeta) {
+    let node = this
     for (let i = 0; i < s.length; i++) {
       node = node.children[s.charCodeAt(i)] ??= new ActionTire()
     }
     node.meta = meta
   }
-  public get(s: string) {
-    let node: ActionTire | undefined = this
+  public get(this: ActionTire, s: string) {
+    let node = this
     for (let i = 0; i < s.length; i++) {
-      node = node.children[s.charCodeAt(i)]
+      node = node.children[s.charCodeAt(i)]!
       if (!node) {
         return
       }

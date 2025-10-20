@@ -1,5 +1,5 @@
 import { Position, Range, type TextDocument } from 'vscode'
-import { reEscapeRegexp } from './vendor'
+import { reEscapeRegexp } from '.'
 
 export function* preLookup(
   document: TextDocument,

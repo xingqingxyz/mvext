@@ -1,11 +1,12 @@
 import eslint from '@eslint/js'
+import { defineConfig } from 'eslint/config'
 import tseslint from 'typescript-eslint'
 
-export default tseslint.config(
+export default defineConfig(
   eslint.configs.recommended,
   tseslint.configs.recommended,
   {
-    ignores: ['*.*', 'out/**', 'dist/**', 'testdir/**'],
+    ignores: ['*.ts', '**/*.js', 'out', 'dist', 'fixtures'],
   },
   {
     files: ['src/**/*.ts'],
@@ -18,6 +19,7 @@ export default tseslint.config(
       'no-extra-semi': 'off',
       'no-control-regex': 'off',
       '@typescript-eslint/no-non-null-assertion': 'off',
+      '@typescript-eslint/no-namespace': 'off',
       '@typescript-eslint/no-explicit-any': ['error', { ignoreRestArgs: true }],
       '@typescript-eslint/no-empty-object-type': [
         'error',

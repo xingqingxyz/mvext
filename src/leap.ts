@@ -11,8 +11,8 @@ import { modeController } from './modeController'
 import { postLookupRegExp } from './util/bracketLookup'
 
 export class Leap {
-  static readonly leapChars = 'ajskdlfghquwieorptyzxcvbnm'
-  static get2AtIndex(index: number) {
+  private static readonly leapChars = 'ajskdlfghquwieorptyzxcvbnm'
+  private static get2AtIndex(index: number) {
     // prevent overflow
     return this.leapChars[(index / 26) >> 0 % 26] + this.leapChars[index % 26]
   }
@@ -35,36 +35,9 @@ export class Leap {
     context.subscriptions.push(
       this.twoDT,
       this.oneDT,
-      commands.registerCommand(
-        'vincode.leapToWordStart',
-        this.start.bind(this),
-      ),
-      commands.registerCommand('vincode.cancelLeap', this.clear.bind(this)),
+      commands.registerCommand('vincode.leapToWordStart', this.start),
+      commands.registerCommand('vincode.cancelLeap', this.clear),
     )
-  }
-  async start() {
-    const editor = window.activeTextEditor!
-    editor.setDecorations(
-      this.twoDT,
-      (this.decorations = editor.visibleRanges.flatMap((range) =>
-        Array.from(
-          postLookupRegExp(editor.document, range.start, /\w+/g),
-          (position, index) =>
-            ({
-              range: new Range(
-                position,
-                position.with(undefined, position.character + 2),
-              ),
-              renderOptions: {
-                before: {
-                  contentText: Leap.get2AtIndex(index),
-                },
-              },
-            }) as DecorationOptions,
-        ),
-      )),
-    )
-    await modeController.setMode('leap')
   }
   async nextChar(char: string) {
     const decorations = this.decorations!.filter(
@@ -110,7 +83,31 @@ export class Leap {
       }
     }
   }
-  async clear() {
+  start = async () => {
+    const editor = window.activeTextEditor!
+    editor.setDecorations(
+      this.twoDT,
+      (this.decorations = editor.visibleRanges.flatMap((range) =>
+        Array.from(
+          postLookupRegExp(editor.document, range.start, /\w+/g),
+          (position, index) =>
+            ({
+              range: new Range(
+                position,
+                position.with(undefined, position.character + 2),
+              ),
+              renderOptions: {
+                before: {
+                  contentText: Leap.get2AtIndex(index),
+                },
+              },
+            }) as DecorationOptions,
+        ),
+      )),
+    )
+    await modeController.setMode('leap')
+  }
+  clear = async () => {
     const editor = window.activeTextEditor!
     editor.setDecorations(this.oneDT, [])
     editor.setDecorations(this.twoDT, [])

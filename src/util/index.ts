@@ -1,6 +1,7 @@
 import { execFile } from 'child_process'
 import { format, promisify } from 'util'
 
+export const reEscapeRegexp = /[|\\{}()[\]^$+*?.]/g
 export const execFilePm = promisify(execFile)
 
 export function kebabToPascal(word: string) {
