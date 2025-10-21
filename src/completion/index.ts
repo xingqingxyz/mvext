@@ -1,4 +1,3 @@
-import { isWin32 } from '@/util'
 import {
   type CancellationToken,
   commands,
@@ -16,21 +15,18 @@ import {
 import { CssCompleteProvider } from './css'
 import { DictCompleteProvider } from './dict'
 import { LineCompleteProvider } from './line'
-import { PathCompleteProvider } from './path'
 import { UserCompleteProvider } from './user'
 
-type InvokeCompleteKind = 'css' | 'dict' | 'line' | 'path' | 'user' | 'none'
+type InvokeCompleteKind = 'css' | 'dict' | 'line' | 'user' | 'none'
 
 export class InvokeCompleteProvider implements CompletionItemProvider {
+  private kind: InvokeCompleteKind = 'none'
   private css = new CssCompleteProvider()
   private dict: CompletionItemProvider
-  private kind: InvokeCompleteKind = 'none'
   private line = new LineCompleteProvider()
-  private path: CompletionItemProvider
   private user = new UserCompleteProvider()
   constructor(context: ExtensionContext) {
     this.dict = new DictCompleteProvider(context)
-    this.path = new PathCompleteProvider(context)
     context.subscriptions.push(
       commands.registerCommand(
         'mvext.invokeComplete',
@@ -39,15 +35,6 @@ export class InvokeCompleteProvider implements CompletionItemProvider {
           await commands.executeCommand('editor.action.triggerSuggest')
           this.kind = 'none'
         },
-        commands.registerCommand(
-          'mvext.refreshComplete',
-          async (kind: InvokeCompleteKind) => {
-            await commands.executeCommand('hideSuggestWidget')
-            this.kind = kind
-            await commands.executeCommand('editor.action.triggerSuggest')
-            this.kind = 'none'
-          },
-        ),
       ),
       languages.registerCompletionItemProvider(
         [
@@ -70,12 +57,6 @@ export class InvokeCompleteProvider implements CompletionItemProvider {
       this.kind === 'none'
     ) {
       return
-    }
-    if (this.kind === 'path') {
-      context = {
-        triggerKind: CompletionTriggerKind.TriggerCharacter,
-        triggerCharacter: isWin32 ? '\\' : '/',
-      }
     }
     return this[this.kind].provideCompletionItems(
       document,

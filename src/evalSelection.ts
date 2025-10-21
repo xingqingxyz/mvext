@@ -88,7 +88,7 @@ export async function terminalEvalSelection() {
   const selectMap = new Map<Range, string>()
 
   for (let range of editor.selections as readonly Range[]) {
-    let text: string
+    let text
     if (range.isEmpty) {
       const line = document.lineAt(range.start.line)
       range = line.range
@@ -136,10 +136,9 @@ export async function terminalFilterSelection() {
     }
   }
 
-  const usePwsh = terminal.state.shell === 'pwsh'
   terminal.show()
   terminal.sendText(
-    usePwsh
+    terminal.state.shell === 'pwsh'
       ? `@'\n${lines.join('\n')}\n'@.Split("\`n") | `
       : `(cat << 'EOF'\n${lines.join('\n')}\nEOF\n) | `,
     false,

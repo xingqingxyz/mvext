@@ -31,7 +31,7 @@ export function concatJsonPathJq(path: JSONPath) {
 
 export async function copyJsonPath() {
   const editor = window.activeTextEditor
-  if (!editor || !editor.document.languageId.startsWith('json')) {
+  if (!editor?.document.languageId.startsWith('json')) {
     return
   }
   const { path } = getLocation(

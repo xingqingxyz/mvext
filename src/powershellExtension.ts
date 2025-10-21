@@ -46,9 +46,11 @@ export async function registerPowershellExtension(context: ExtensionContext) {
   }
 }
 
-type PowerShellEditorCommands = 'sendAstTreeJson' | 'codeAction.cast'
+type PowerShellEditorCommands =
+  | 'mvext.sendAstTreeJson'
+  | 'mvext.provideCodeActions'
 
-export async function requestEditorCommand(
+export async function requestEditorCommand<T>(
   commandName: PowerShellEditorCommands,
 ) {
   if (!powershellExtension) {
@@ -57,5 +59,5 @@ export async function requestEditorCommand(
   await commands.executeCommand('PowerShell.InvokeRegisteredEditorCommand', {
     commandName,
   })
-  return JSON.parse(await fs.readFile(ipcPath, 'utf8'))
+  return JSON.parse(await fs.readFile(ipcPath, 'utf8')) as T
 }

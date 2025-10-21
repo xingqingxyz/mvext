@@ -15,23 +15,7 @@ export type WordCase =
 
 type ComplexWordCase = Exclude<WordCase, 'lower' | 'upper'>
 
-export const casesList = Object.freeze([
-  'camel',
-  'constant',
-  'dot',
-  'header',
-  'kebab',
-  'normal',
-  'pascal',
-  'path',
-  'sentence',
-  'snake',
-  'title',
-  'lower',
-  'upper',
-] as const)
-
-export const caseShortMap = Object.freeze({
+export const WordCaseShort = Object.freeze({
   camel: 'c',
   constant: '0',
   dot: '.',

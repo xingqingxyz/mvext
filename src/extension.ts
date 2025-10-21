@@ -2,6 +2,7 @@ import '@/shims/web'
 import { commands, env, type ExtensionContext } from 'vscode'
 import { TransformCodeActionProvider } from './codeAction/javascript/provider'
 import { InvokeCompleteProvider } from './completion'
+import { PathCompleteProvider } from './completion/path'
 import { getExtConfig } from './config'
 import {
   evalSelection,
@@ -22,15 +23,18 @@ import {
 } from './transformCase'
 import { initTSParser } from './tsParser'
 import { TSTreeDataProvier } from './tsTreeView'
+import { execScript } from './util/execScript'
+import { logger } from './util/logger'
 import { terminalRunCode } from './util/terminalRunCode'
 
 export async function activate(context: ExtensionContext) {
+  await initTSParser(context)
   registerTerminalLaunch(context)
   HexColorProvider.init(context)
-  await initTSParser(context)
   new TSTreeDataProvier(context)
-  new InvokeCompleteProvider(context)
   new TransformCodeActionProvider(context)
+  new InvokeCompleteProvider(context)
+  new PathCompleteProvider(context)
   new MarkdownBlockRunProvider(context)
   if (__WEB__) {
     if (getExtConfig('shfmt.enabled')) {
@@ -51,6 +55,7 @@ export async function activate(context: ExtensionContext) {
     }
   }
   context.subscriptions.push(
+    logger,
     commands.registerCommand('mvext.terminalRunCode', terminalRunCode),
     commands.registerCommand('mvext._copyCodeBlock', (text: string) =>
       env.clipboard.writeText(text),
@@ -75,6 +80,9 @@ export async function activate(context: ExtensionContext) {
     commands.registerCommand('mvext.copyJsonPath', copyJsonPath),
     ...(__WEB__
       ? []
-      : [commands.registerCommand('mvext.evalSelection', evalSelection)]),
+      : [
+          commands.registerCommand('mvext.evalSelection', evalSelection),
+          commands.registerCommand('mvext.execScript', execScript),
+        ]),
   )
 }

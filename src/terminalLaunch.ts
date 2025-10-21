@@ -59,20 +59,8 @@ export async function terminalLaunch(
   arg1: Uri[] | undefined | object,
   argstr = '',
 ) {
-  if (!(await workspace.saveAll(true))) {
+  if (!(await workspace.saveAll())) {
     return
-  }
-  let path = uri.fsPath
-  switch (uri.scheme) {
-    case 'file':
-    case 'vscode-userdata':
-      break
-    case 'untitled':
-      path = window.activeTextEditor!.document.fileName
-      break
-    default:
-      await window.showWarningMessage('Cannot launch uri scheme: ' + uri.scheme)
-      return
   }
   const shells = ['bash', 'gitbash', 'pwsh', 'sh', 'wsl', 'zsh']
   const terminal =
@@ -96,7 +84,7 @@ export async function terminalLaunch(
   terminal.show()
   let languageId
   languageId = Array.isArray(arg1)
-    ? getLangIdFromPath(path)
+    ? getLangIdFromPath(uri.fsPath)
     : window.activeTextEditor!.document.languageId
   const config = getExtConfig('terminalLaunch.languageMap')
   if (!(languageId in config)) {
@@ -108,7 +96,7 @@ export async function terminalLaunch(
     }
   }
   terminal.sendText(
-    `${config[languageId]} '${path.replaceAll(
+    `${config[languageId]} '${uri.fsPath.replaceAll(
       "'",
       terminal.state.shell === 'pwsh' ? "''" : "'\"'\"'",
     )}' ${argstr}`,

@@ -49,7 +49,7 @@ import {
 } from './transform'
 import { callWrap, cast } from './transform.snippets'
 
-interface CodeActionData extends CodeAction {
+interface CodeActionWithData extends CodeAction {
   data: {
     kind: CompletionItemKind
     uri: Uri
@@ -59,11 +59,11 @@ interface CodeActionData extends CodeAction {
 }
 
 function getOrderedTypePath(nodePath: Node[]) {
-  const typeIds: number[] = []
+  const typeIds = new Set<number>()
   const newPath = []
   for (let i = nodePath.length - 1; i >= 0; i--) {
-    if (!typeIds.includes(nodePath[i].typeId)) {
-      typeIds.push(nodePath[i].typeId)
+    if (!typeIds.has(nodePath[i].typeId)) {
+      typeIds.add(nodePath[i].typeId)
       newPath.push(nodePath[i])
     }
   }
@@ -80,6 +80,42 @@ function getOrderedTypePathFromRange(tree: Tree, range: Range | Selection) {
 }
 
 export class TransformCodeActionProvider implements CodeActionProvider {
+  //#region api
+  provideCodeActions(
+    document: TextDocument,
+    range: Range | Selection,
+    context: CodeActionContext,
+  ): ProviderResult<(CodeAction | Command)[]> {
+    if (
+      context.triggerKind !== CodeActionTriggerKind.Invoke ||
+      !context.only?.contains(CodeActionKind.RefactorRewrite)
+    ) {
+      return
+    }
+    const tree = getParsedTree(document)
+    if (!tree) {
+      return
+    }
+    return this.getActions(
+      getOrderedTypePathFromRange(tree, range),
+      document.uri,
+    )
+  }
+  resolveCodeAction(codeAction: CodeAction): ProviderResult<CodeAction> {
+    const { data } = codeAction as CodeActionWithData
+    const newText = data.callback(data.node)
+    if (!newText) {
+      return
+    }
+    codeAction.edit = new WorkspaceEdit()
+    codeAction.edit.set(data.uri, [
+      typeof newText === 'string'
+        ? new TextEdit(nodeToRange(data.node), newText)
+        : new SnippetTextEdit(nodeToRange(data.node), newText),
+    ])
+    return codeAction
+  }
+  //#endregion
   constructor(context: ExtensionContext) {
     context.subscriptions.push(
       languages.registerCodeActionsProvider(
@@ -97,7 +133,7 @@ export class TransformCodeActionProvider implements CodeActionProvider {
       ),
     )
   }
-  getActions(orderedTypePath: Node[], uri: Uri) {
+  private getActions(orderedTypePath: Node[], uri: Uri) {
     const actions: [typeof ifToBinary | typeof cast, Node][] = []
     for (const node of orderedTypePath) {
       switch (node.type) {
@@ -156,39 +192,5 @@ export class TransformCodeActionProvider implements CodeActionProvider {
           data: { uri, node, callback },
         }) as CodeAction,
     )
-  }
-  provideCodeActions(
-    document: TextDocument,
-    range: Range | Selection,
-    context: CodeActionContext,
-  ): ProviderResult<(CodeAction | Command)[]> {
-    if (
-      context.triggerKind !== CodeActionTriggerKind.Invoke ||
-      (context.only && !context.only.contains(CodeActionKind.RefactorRewrite))
-    ) {
-      return
-    }
-    const tree = getParsedTree(document)
-    if (!tree) {
-      return
-    }
-    const orderedTypePath = getOrderedTypePathFromRange(tree, range)
-    return orderedTypePath && this.getActions(orderedTypePath, document.uri)
-  }
-  resolveCodeAction(codeAction: CodeAction): ProviderResult<CodeAction> {
-    const { data } = codeAction as CodeActionData
-    const newText = data.callback(data.node)
-    if (!newText) {
-      return
-    }
-    codeAction.edit = new WorkspaceEdit()
-    codeAction.edit.set(data.uri, [
-      new (typeof newText === 'string' ? TextEdit : SnippetTextEdit)(
-        nodeToRange(data.node),
-        // @ts-expect-error stupid
-        newText,
-      ),
-    ])
-    return codeAction
   }
 }

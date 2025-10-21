@@ -9,7 +9,7 @@ param (
 )
 
 function newRandomName {
-  '%' + [System.Random]::new().NextDouble().ToString('F6').Substring(2) + '%'
+  [System.Random]::new().NextDouble().ToString('F6').Substring(2)
 }
 
 $ErrorActionPreference = 'Stop'
@@ -23,4 +23,4 @@ PowerShellEditorServices.Commands\Register-EditorCommand -Name 'mvext.sendAstTre
 PowerShellEditorServices.Commands\Register-EditorCommand -Name 'mvext.codeAction.cast' -DisplayName (newRandomName) -ScriptBlock {
   $fileContext = $psEditor.GetEditorContext().CurrentFile
   [VisitAst.AstNodeVisitor]::Visit($fileContext.Ast, $fileContext.Tokens) | ConvertTo-Json -Depth 99 -Compress > $IpcPath
-}
+}.GetNewClosure() -SuppressOutput

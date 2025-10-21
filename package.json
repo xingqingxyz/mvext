@@ -42,6 +42,12 @@
       },
       {
         "category": "mvext",
+        "command": "mvext.execScript",
+        "enablement": "resourceFilename == test.js",
+        "title": "Exec Script with VSCode API"
+      },
+      {
+        "category": "mvext",
         "command": "mvext.terminalEvalSelection",
         "icon": "$(debug-line-by-line)",
         "title": "Terminal Eval Selection"
@@ -88,13 +94,7 @@
         "category": "mvext",
         "command": "mvext.invokeComplete",
         "shortTitle": "Invoke Special Complete",
-        "title": "Invoke Complete (css,dict,line,path,user)"
-      },
-      {
-        "category": "mvext",
-        "command": "mvext.refreshComplete",
-        "shortTitle": "Refresh Complete to Special Complete",
-        "title": "Refresh Complete (css,dict,line,path,user)"
+        "title": "Invoke Complete (css,dict,line,user)"
       },
       {
         "category": "mvext",
@@ -383,46 +383,10 @@
         "when": "editorTextFocus"
       },
       {
-        "args": "path",
-        "command": "mvext.invokeComplete",
-        "key": "alt+p ctrl+space",
-        "when": "editorTextFocus"
-      },
-      {
         "args": "user",
         "command": "mvext.invokeComplete",
         "key": "alt+u ctrl+space",
         "when": "editorTextFocus"
-      },
-      {
-        "args": "css",
-        "command": "mvext.refreshComplete",
-        "key": "alt+c",
-        "when": "editorTextFocus && suggestWidgetVisible"
-      },
-      {
-        "args": "dict",
-        "command": "mvext.refreshComplete",
-        "key": "alt+d",
-        "when": "editorTextFocus && suggestWidgetVisible"
-      },
-      {
-        "args": "line",
-        "command": "mvext.refreshComplete",
-        "key": "alt+l",
-        "when": "editorTextFocus && suggestWidgetVisible"
-      },
-      {
-        "args": "path",
-        "command": "mvext.refreshComplete",
-        "key": "alt+p",
-        "when": "editorTextFocus && suggestWidgetVisible"
-      },
-      {
-        "args": "user",
-        "command": "mvext.refreshComplete",
-        "key": "alt+u",
-        "when": "editorTextFocus && suggestWidgetVisible"
       }
     ],
     "languages": [
@@ -451,16 +415,13 @@
         {
           "alt": "mvext.terminalLaunchArgs",
           "command": "mvext.terminalLaunch",
-          "when": "editorLangId != powershell && editorLangId in mvext.terminalLaunchLanguages"
+          "when": "resourceScheme != untitled && editorLangId in mvext.terminalLaunchLanguages"
         }
       ],
       "explorer/context": [
         {
+          "alt": "mvext.terminalLaunchArgs",
           "command": "mvext.terminalLaunch",
-          "when": "!listMultiSelection && resourceLangId in mvext.terminalLaunchLanguages"
-        },
-        {
-          "command": "mvext.terminalLaunchArgs",
           "when": "!listMultiSelection && resourceLangId in mvext.terminalLaunchLanguages"
         }
       ],
@@ -607,6 +568,7 @@
     "@types/vscode": "^1.105.0",
     "@types/which": "^3.0.4",
     "@vscode/tree-sitter-wasm": "^0.1.5",
+    "concurrently": "^9.2.1",
     "eslint": "^9.37.0",
     "jsonc-parser": "^3.3.1",
     "lint-staged": "^16.2.4",
@@ -654,7 +616,7 @@
     "watch-files": "src/**"
   },
   "name": "mvext",
-  "packageManager": "pnpm@10.18.2",
+  "packageManager": "pnpm@10.18.3",
   "prettier": {
     "semi": false,
     "singleQuote": true
@@ -667,10 +629,10 @@
   },
   "scripts": {
     "install-extension": "vsce pack -o mvext.vsix && code --install-extension mvext.vsix",
-    "lint": "tsc --noEmit && eslint --fix --cache src",
+    "lint": "concurrently \"tsc --noEmit\" \"eslint --cache --fix src\"",
     "postinstall": "node ./scripts/postinstall.ts",
     "test": "mocha",
-    "vscode:prepublish": "dotnet build -c Release && rollup -c --environment NODE_ENV:production,PLATFORM:all",
+    "vscode:prepublish": "concurrently \"dotnet build -c Release\" \"rollup -c --environment NODE_ENV:production\" \"rollup -c --environment NODE_ENV:production,PLATFORM:web\"",
     "watch": "rollup -c -w",
     "watch-web": "rollup -c -w --environment PLATFORM:web"
   },
@@ -678,5 +640,5 @@
     "pre-commit": "pnpm exec lint-staged && pnpm test"
   },
   "type": "module",
-  "version": "0.22.0"
+  "version": "0.23.0"
 }

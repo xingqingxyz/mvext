@@ -60,6 +60,7 @@ export class TSTreeDataProvier implements TreeDataProvider<Node> {
   }
   //#endregion
   private document?: TextDocument
+  private documentVersion = 0
   private tree?: Tree | null
   private root?: Node // tree.rootNode is not memorized
   private view = window.createTreeView('mvext.tsTreeView', {
@@ -77,17 +78,11 @@ export class TSTreeDataProvier implements TreeDataProvider<Node> {
       commands.registerCommand('mvext.tsTreeViewReveal', this.reveal),
       commands.registerCommand('mvext.tsTreeViewRefresh', this.refresh),
       commands.registerCommand('mvext.tsTreeViewCopy', this.copy),
-      this.view.onDidChangeVisibility((e) =>
-        e.visible
-          ? this.refresh()
-          : window.activeTextEditor!.setDecorations(this.treeViewDT, []),
-      ),
-      this.view.onDidChangeSelection(async ({ selection: [node] }) => {
-        if (node) {
+      this.view.onDidChangeSelection(({ selection: [node] }) => {
+        if (node && window.activeTextEditor?.document === this.document!) {
           const range = nodeToRange(node)
-          const editor = window.activeTextEditor!
-          editor.revealRange(range)
-          editor.setDecorations(this.treeViewDT, [{ range }])
+          window.activeTextEditor.revealRange(range)
+          window.activeTextEditor.setDecorations(this.treeViewDT, [{ range }])
         }
       }),
     )
@@ -115,7 +110,10 @@ export class TSTreeDataProvier implements TreeDataProvider<Node> {
   open = () => this.document && window.showTextDocument(this.document)
   refresh = () => {
     const document = window.activeTextEditor?.document
-    if (!document) {
+    if (
+      !document ||
+      (document === this.document && document.version === this.documentVersion)
+    ) {
       return
     }
     const tree = getParsedTree(document)
@@ -123,14 +121,15 @@ export class TSTreeDataProvier implements TreeDataProvider<Node> {
       return
     }
     this.document = document
+    this.documentVersion = document.version
     this.tree = tree
     this.root = this.tree?.rootNode
     this._onDidChangeTreeData.fire(undefined)
   }
-  reveal = () => (
-    this.view.visible || this.refresh(),
+  reveal = () => {
+    this.refresh()
     this.view.reveal(this.getNodeAtRange(window.activeTextEditor!.selection), {
       expand: true,
     })
-  )
+  }
 }

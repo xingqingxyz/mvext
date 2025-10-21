@@ -1,3 +1,4 @@
+import { noop } from '@/util'
 import { homedir } from 'os'
 import {
   CompletionItemKind,
@@ -16,22 +17,29 @@ export class UserCompleteProvider implements CompletionItemProvider {
       document.getWordRangeAtPosition(position) ??
         new Range(position, position),
     )
-    const wordsUri = Uri.joinPath(
+    const uri = Uri.joinPath(
       workspace.getWorkspaceFolder(document.uri)?.uri ?? Uri.file(homedir()),
       '.vscode/words.txt',
     )
-    await workspace.fs.stat(wordsUri)
-    return (await workspace.decode(await workspace.fs.readFile(wordsUri)))
-      .split(/\r?\n/g)
-      .filter((word) => word.includes(needle))
-      .map(
-        (word) =>
-          ({
-            label: word,
-            sortText: '10',
-            detail: wordsUri.fsPath,
-            kind: CompletionItemKind.Keyword,
-          }) as CompletionItem,
+    const commitCharacters = ['.', ',', ';']
+    return await workspace.fs
+      .readFile(uri)
+      .then(workspace.decode)
+      .then(
+        (text) =>
+          text
+            .split(/\r?\n/g)
+            .filter((word) => word.includes(needle))
+            .map(
+              (word) =>
+                ({
+                  label: word,
+                  sortText: '10',
+                  kind: CompletionItemKind.Keyword,
+                  commitCharacters,
+                }) as CompletionItem,
+            ),
+        noop,
       )
   }
 }
