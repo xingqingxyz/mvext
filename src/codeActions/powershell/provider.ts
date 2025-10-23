@@ -1,4 +1,4 @@
-import { requestEditorCommand } from '@/powershellExtension'
+import { requestEditorCommand } from '@/vendor/powershellExtension'
 import {
   type CodeAction,
   type CodeActionContext,

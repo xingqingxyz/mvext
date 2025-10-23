@@ -8,7 +8,7 @@ import {
   type Extension,
   type ExtensionContext,
 } from 'vscode'
-import type { IPowerShellExtensionClient } from './pwshExternalApi'
+import type { IPowerShellExtensionClient } from './ExternalApi'
 
 let ipcPath: string
 export let powershellExtension:

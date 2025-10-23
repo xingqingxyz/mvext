@@ -17,7 +17,7 @@ import {
   ternaryToSwitch,
   ternaryToSwitchLeft,
   whileToDoWhile,
-} from '@/codeAction/javascript/transform'
+} from '@/codeActions/javascript/transform'
 import assert from 'assert/strict'
 import { fileURLToPath } from 'url'
 import { Language, Parser } from 'web-tree-sitter'

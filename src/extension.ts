@@ -1,31 +1,31 @@
 import '@/shims/web'
 import { commands, env, type ExtensionContext } from 'vscode'
-import { TransformCodeActionProvider } from './codeAction/javascript/provider'
-import { InvokeCompleteProvider } from './completion'
-import { PathCompleteProvider } from './completion/path'
-import { getExtConfig } from './config'
+import { TransformCodeActionProvider } from './codeActions/javascript/provider'
 import {
   evalSelection,
   terminalEvalSelection,
   terminalFilterSelection,
-} from './evalSelection'
-import { ShfmtFormatter, ShfmtFormatterWasm } from './formatter/shfmt'
-import { StyluaFormatter, StyluaFormatterWasm } from './formatter/stylua'
-import { HexColorProvider } from './hexColor'
-import { copyJsonPath } from './jsonPath'
-import { MarkdownBlockRunProvider } from './markdownBlockRun'
-import { PwshAstTreeDataProvier } from './pwshAstTreeView'
-import { registerTerminalLaunch } from './terminalLaunch'
+} from './commands/evalSelection'
+import { execScript } from './commands/execScript'
+import { HexColorProvider } from './commands/hexColor'
+import { copyJsonPath } from './commands/jsonPath'
+import { MarkdownBlockRunProvider } from './commands/markdownBlockRun'
+import { registerTerminalLaunch } from './commands/terminalLaunch'
 import {
   renameWithCase,
   transformCaseDefault,
   transformCaseWithPicker,
-} from './transformCase'
-import { initTSParser } from './tsParser'
-import { TSTreeDataProvier } from './tsTreeView'
-import { execScript } from './util/execScript'
+} from './commands/transformCase'
+import { InvokeCompleteProvider } from './completion'
+import { PathCompleteProvider } from './completion/path'
+import { getExtConfig } from './config'
+import { ShfmtFormatter, ShfmtFormatterWasm } from './formatter/shfmt'
+import { StyluaFormatter, StyluaFormatterWasm } from './formatter/stylua'
+import { initTSParser } from './ts/parser'
+import { TSTreeDataProvier } from './ts/treeView'
 import { logger } from './util/logger'
 import { terminalRunCode } from './util/terminalRunCode'
+import { PwshAstTreeDataProvier } from './vendor/powershellExtension/astTreeView'
 
 export async function activate(context: ExtensionContext) {
   await initTSParser(context)
@@ -83,6 +83,16 @@ export async function activate(context: ExtensionContext) {
       : [
           commands.registerCommand('mvext.evalSelection', evalSelection),
           commands.registerCommand('mvext.execScript', execScript),
+          commands.registerTextEditorCommand(
+            'mvext.execReference',
+            (editor, edit) => {
+              edit.replace(
+                editor.selection,
+                `/// <reference path="${context.asAbsolutePath('./resources/vscode.d.ts')}" />\n` +
+                  `/// <reference path="${context.asAbsolutePath('./resources/global.vscode.d.ts')}" />\n`,
+              )
+            },
+          ),
         ]),
   )
 }

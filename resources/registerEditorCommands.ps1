@@ -20,7 +20,7 @@ PowerShellEditorServices.Commands\Register-EditorCommand -Name 'mvext.sendAstTre
   [VisitAst.AstNodeVisitor]::Visit($fileContext.Ast, $fileContext.Tokens) | ConvertTo-Json -Depth 99 -Compress > $IpcPath
 }.GetNewClosure() -SuppressOutput
 
-PowerShellEditorServices.Commands\Register-EditorCommand -Name 'mvext.codeAction.cast' -DisplayName (newRandomName) -ScriptBlock {
+PowerShellEditorServices.Commands\Register-EditorCommand -Name 'mvext.provideCodeActions' -DisplayName (newRandomName) -ScriptBlock {
   $fileContext = $psEditor.GetEditorContext().CurrentFile
   [VisitAst.AstNodeVisitor]::Visit($fileContext.Ast, $fileContext.Tokens) | ConvertTo-Json -Depth 99 -Compress > $IpcPath
 }.GetNewClosure() -SuppressOutput

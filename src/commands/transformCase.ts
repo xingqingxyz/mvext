@@ -1,3 +1,9 @@
+import { getExtConfig } from '@/config'
+import {
+  transformCaseHelper,
+  WordCaseShort,
+  type WordCase,
+} from '@/util/transformCaseHelper'
 import {
   commands,
   window,
@@ -8,12 +14,6 @@ import {
   type TextEditorEdit,
   type WorkspaceEdit,
 } from 'vscode'
-import { getExtConfig } from './config'
-import {
-  transformCaseHelper,
-  WordCaseShort,
-  type WordCase,
-} from './util/transformCaseHelper'
 
 function transformCase(editor: TextEditor, edit: TextEditorEdit, wc: WordCase) {
   const { document, selections } = editor

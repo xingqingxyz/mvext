@@ -1,3 +1,5 @@
+import { getExtConfig } from '@/config'
+import { ContextKey, WStateKey } from '@/context'
 import path from 'path'
 import {
   commands,
@@ -7,8 +9,6 @@ import {
   window,
   workspace,
 } from 'vscode'
-import { getExtConfig } from './config'
-import { ContextKey, WStateKey } from './context'
 
 /**
  * Resolves python,(java|type)script(react)?,shellscript,powershell,csharp,

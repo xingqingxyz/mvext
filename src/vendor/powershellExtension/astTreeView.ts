@@ -1,3 +1,4 @@
+import { getExtConfig } from '@/config'
 import {
   commands,
   env,
@@ -15,12 +16,11 @@ import {
   type TextDocument,
   type TreeDataProvider,
 } from 'vscode'
-import { getExtConfig } from './config'
 import {
   powershellExtension,
   registerPowershellExtension,
   requestEditorCommand,
-} from './powershellExtension'
+} from '.'
 
 interface Ast {
   parent?: Ast

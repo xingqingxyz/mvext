@@ -1,10 +1,10 @@
-import { _javascript as $ } from '@/tsLanguage/javascript'
+import { _javascript as $ } from '@/ts/language/javascript'
 import {
   getDescendantPath,
   getParsedTree,
   nodeToRange,
   positionToPoint,
-} from '@/tsParser'
+} from '@/ts/parser'
 import {
   CodeActionKind,
   CodeActionTriggerKind,

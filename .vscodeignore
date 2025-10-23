@@ -1,7 +1,6 @@
 **
+!dist/*.{js,cjs,wasm}
 !resources
-!dist/*
-dist/*.map
 !CHANGELOG.md
 !LICENSE
 !VisitAst/bin/Release/net9.0/VisitAst.dll

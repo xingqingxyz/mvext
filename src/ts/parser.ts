@@ -16,8 +16,8 @@ import {
   type Point,
   type Tree,
 } from 'web-tree-sitter'
-import { getExtConfig } from './config'
-import { ContextKey } from './context'
+import { getExtConfig } from '../config'
+import { ContextKey } from '../context'
 
 const parsers = {} as Record<string, Parser>
 const treeMap = new Map<TextDocument, Tree>()

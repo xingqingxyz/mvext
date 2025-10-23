@@ -2,7 +2,7 @@
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
-## [0.20.0]
+## [0.22.0]
 
 - Feature: [`pwshCodeAction`] powershell transform code actions implemented by PSES editor commands.
 

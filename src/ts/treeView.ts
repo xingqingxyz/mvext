@@ -16,7 +16,7 @@ import {
   type TreeDataProvider,
 } from 'vscode'
 import { Node, type Tree } from 'web-tree-sitter'
-import { getParsedTree, nodeToRange, positionToPoint } from './tsParser'
+import { getParsedTree, nodeToRange, positionToPoint } from './parser'
 
 export class TSTreeDataProvier implements TreeDataProvider<Node> {
   //#region api

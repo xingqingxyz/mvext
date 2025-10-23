@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { getParsedTree } from '@/tsParser'
+import { getParsedTree } from '@/ts/parser'
 import {
   CompletionItemKind,
   Position,

@@ -1,3 +1,4 @@
+import { WStateKey } from '@/context'
 import {
   Color,
   ColorInformation,
@@ -12,7 +13,6 @@ import {
   type ProviderResult,
   type TextDocument,
 } from 'vscode'
-import { WStateKey } from './context'
 
 function hexToColor(hex: string): Color {
   const step = hex.length > 5 ? 2 : 1

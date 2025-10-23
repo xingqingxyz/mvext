@@ -1,12 +1,12 @@
-import path from 'path'
-import stripAnsi from 'strip-ansi'
-import { window, type Range } from 'vscode'
-import { getExtConfig } from './config'
-import { execFilePm, setTimeoutPm } from './util'
+import { getExtConfig } from '@/config'
+import { execFilePm, setTimeoutPm } from '@/util'
 import {
   getTerminalLaunchLanguageId,
   terminalRunCode,
-} from './util/terminalRunCode'
+} from '@/util/terminalRunCode'
+import path from 'path'
+import stripAnsi from 'strip-ansi'
+import { window, type Range } from 'vscode'
 
 /**
  * OSC 633 ; A ST - Mark prompt start.

@@ -1,6 +1,7 @@
+import { logger } from '@/util/logger'
 import { constants, runInNewContext } from 'vm'
-import vscode, { window } from 'vscode'
-import { logger } from './logger'
+import * as vscode from 'vscode'
+import { window } from 'vscode'
 
 export async function execScript() {
   try {
