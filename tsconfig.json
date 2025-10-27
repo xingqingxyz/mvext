@@ -1,8 +1,8 @@
 {
   "include": ["src"],
   "compilerOptions": {
-    "target": "ES2023",
-    "lib": ["ES2023"],
+    "target": "esnext",
+    "lib": ["ESNext"],
     "module": "ESNext",
     "moduleResolution": "Bundler",
     "resolveJsonModule": true,

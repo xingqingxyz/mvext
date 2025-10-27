@@ -20,15 +20,8 @@ import { window, type Range } from 'vscode'
  * OSC 633 ; E ; <commandline> [; <nonce] ST - Explicitly set the command line with an optional nonce.
  */
 function getCommandOutput(text: string) {
-  // first two lines are OSC 633 E record, last line is new prompt
-  text = text.slice(
-    text.indexOf('\x1b]633;C\x07') + 8,
-    text.indexOf('\x1b]633;D'),
-  )
-  if (text.includes('\x1b')) {
-    text = stripAnsi(text)
-  }
-  return text.trimEnd()
+  text = text.slice(text.indexOf('\x1b]633;C\x07') + 8, text.indexOf('\x1b]0;'))
+  return stripAnsi(text).trimEnd() + '\n'
 }
 
 export async function evalSelection() {

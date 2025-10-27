@@ -19,13 +19,6 @@ import { getExtConfig } from '../config'
 import { noop, setTimeoutPm } from '../util'
 
 export class PathCompleteProvider implements CompletionItemProvider {
-  private static readonly rePath = /(?:[-\w\\/.+,#$%{}[\]@!~=:]|[^\x00-\xff])+/
-  private static readonly kindMap = /* @__PURE__ */ Object.freeze({
-    [FileType.Directory]: CompletionItemKind.Folder,
-    [FileType.File]: CompletionItemKind.File,
-    [FileType.SymbolicLink]: CompletionItemKind.Reference,
-    [FileType.Unknown]: CompletionItemKind.Text,
-  })
   private static expandPath(text: string, document: TextDocument) {
     const prefixMap = getExtConfig('pathComplete.prefixMap', document)
     for (const [lhs, rhs] of Object.entries(prefixMap)) {
@@ -43,7 +36,7 @@ export class PathCompleteProvider implements CompletionItemProvider {
     if (text.startsWith('file://')) {
       return Uri.parse(text, true)
     }
-    const [first, rest] = text.split(/[\\/]+/, 1)
+    const [first, ...rest] = text.split(/[\\/]+/)
     let uri
     if (first === '~') {
       uri = __WEB__
@@ -68,13 +61,15 @@ export class PathCompleteProvider implements CompletionItemProvider {
       }
     }
     if (uri) {
-      return Uri.joinPath(uri, rest)
+      return Uri.joinPath(uri, ...rest)
     }
     // relative
-    uri = document.uri
     let scheme
+    uri = document.uri
     switch (uri.scheme) {
       case 'untitled':
+        scheme = workspace.workspaceFolders?.[0].uri.scheme
+        break
       case 'vscode-notebook-cell':
         scheme = workspace.getWorkspaceFolder(uri)?.uri.scheme
         break
@@ -107,26 +102,51 @@ export class PathCompleteProvider implements CompletionItemProvider {
     if (context.triggerKind !== CompletionTriggerKind.TriggerCharacter) {
       return
     }
+    // prevents dobule slash/backslash to accept
     await setTimeoutPm(getExtConfig('pathComplete.debounceTimeMs'))
     if (token.isCancellationRequested) {
       return
     }
-    const text = document.getText(
-      document.getWordRangeAtPosition(position, PathCompleteProvider.rePath),
-    )
+    const text = document
+      .lineAt(position)
+      .text.slice(0, position.character)
+      .match(/(?:[-\w\\/.+,#$%{}[\]@!~=:]|[^\x00-\xff])+$/)?.[0]
+    if (!text) {
+      return
+    }
     const uri = PathCompleteProvider.expandPath(text, document)
+    const prefix = uri + (uri.path.endsWith('/') ? '' : '/')
     const commitCharacters = [context.triggerCharacter!]
     return await workspace.fs.readDirectory(uri).then(
       (dirent) =>
-        dirent.map(
-          ([name, type]) =>
-            ({
-              label: name,
-              kind: PathCompleteProvider.kindMap[type],
-              detail: Uri.joinPath(uri, name) + '',
-              commitCharacters,
-            }) as CompletionItem,
-        ),
+        dirent.map(([name, type]) => {
+          const index = name.indexOf('.') + 1
+          let kind
+          switch (type) {
+            case FileType.Directory:
+              kind = CompletionItemKind.Folder
+              break
+            case FileType.File:
+              kind = CompletionItemKind.File
+              break
+            case FileType.SymbolicLink:
+              kind = CompletionItemKind.Reference
+              break
+            case FileType.Unknown:
+              kind = CompletionItemKind.Text
+              break
+          }
+          return {
+            label: name,
+            detail: prefix + name,
+            kind,
+            commitCharacters,
+            sortText: '10',
+            // prevents dobule dot to accept, but keep the first
+            filterText:
+              name.slice(0, index) + name.slice(index).replaceAll('.', ''),
+          } as CompletionItem
+        }),
       noop,
     )
   }

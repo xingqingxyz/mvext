@@ -22,7 +22,7 @@
     "commands": [
       {
         "category": "mvext",
-        "command": "mvext.transformCaseDefault",
+        "command": "mvext.transformCase",
         "title": "Transform Case Default"
       },
       {
@@ -43,14 +43,8 @@
       {
         "category": "mvext",
         "command": "mvext.execScript",
-        "enablement": "editorLangId == javascript",
+        "enablement": "!editorReadonly && editorLangId == javascript",
         "title": "Exec Script with VSCode API"
-      },
-      {
-        "category": "mvext",
-        "command": "mvext.execReference",
-        "enablement": "editorLangId == javascript",
-        "title": "Insert VSCode API Reference"
       },
       {
         "category": "mvext",
@@ -104,24 +98,24 @@
       },
       {
         "category": "mvext",
-        "command": "mvext.tsTreeViewReveal",
+        "command": "mvext.ts.treeViewReveal",
         "title": "Reveal Selection in Tree-Sitter Tree View"
       },
       {
         "category": "mvext",
-        "command": "mvext.tsTreeViewRefresh",
+        "command": "mvext.ts.treeViewRefresh",
         "icon": "$(refresh)",
         "title": "Refresh Tree-Sitter Tree View"
       },
       {
         "category": "mvext",
-        "command": "mvext.tsTreeViewOpen",
+        "command": "mvext.ts.treeViewOpen",
         "icon": "$(symbol-reference)",
         "title": "Open Tree-Sitter Tree View Document"
       },
       {
         "category": "mvext",
-        "command": "mvext.tsTreeViewCopy",
+        "command": "mvext.ts.treeViewCopy",
         "icon": "$(copy)",
         "title": "Copy JavaScript Expression"
       },
@@ -157,6 +151,16 @@
     ],
     "configuration": {
       "properties": {
+        "mvext.copyJsonPath.defaultLanguageId": {
+          "default": "jq",
+          "enum": [
+            "jq",
+            "javascript",
+            "python"
+          ],
+          "markdownDescription": "The command `mvext.copyJsonPath` use this if first argument is undefined.",
+          "type": "string"
+        },
         "mvext.evalSelection.languageMap": {
           "additionalProperties": {
             "type": "string"
@@ -268,7 +272,7 @@
             "javascript",
             "typescript"
           ],
-          "markdownDescription": "The default language fallback for command `mvext.terminalRunCode`.",
+          "markdownDescription": "The default language fallback for command `mvext.terminalLaunch` or `mvext.terminalEvalSelection`.",
           "type": "string"
         },
         "mvext.transformCase.defaultCase": {
@@ -288,7 +292,7 @@
             "title",
             "upper"
           ],
-          "markdownDescription": "Command `mvext.transformCaseDefault` use this as transform to target case",
+          "markdownDescription": "The command `mvext.transformCase` use this if first argument is undefined.",
           "scope": "language-overridable",
           "type": "string"
         },
@@ -341,7 +345,7 @@
     },
     "keybindings": [
       {
-        "command": "mvext.transformCaseDefault",
+        "command": "mvext.transformCase",
         "key": "alt+x d",
         "when": "editorTextFocus && !editorReadonly"
       },
@@ -374,25 +378,25 @@
         "args": "css",
         "command": "mvext.invokeComplete",
         "key": "alt+c ctrl+space",
-        "when": "editorTextFocus"
+        "when": "editorTextFocus && !editorReadonly"
       },
       {
         "args": "dict",
         "command": "mvext.invokeComplete",
         "key": "alt+d ctrl+space",
-        "when": "editorTextFocus"
+        "when": "editorTextFocus && !editorReadonly"
       },
       {
         "args": "line",
         "command": "mvext.invokeComplete",
         "key": "alt+l ctrl+space",
-        "when": "editorTextFocus"
+        "when": "editorTextFocus && !editorReadonly"
       },
       {
         "args": "user",
         "command": "mvext.invokeComplete",
         "key": "alt+u ctrl+space",
-        "when": "editorTextFocus"
+        "when": "editorTextFocus && !editorReadonly"
       }
     ],
     "languages": [
@@ -407,9 +411,35 @@
       }
     ],
     "menus": {
+      "commandPalette": [
+        {
+          "command": "mvext.renameWithCase"
+        },
+        {
+          "command": "mvext.transformCase"
+        },
+        {
+          "command": "mvext.transformCaseWithPicker"
+        },
+        {
+          "command": "mvext.hexColor.toggleLanguage"
+        },
+        {
+          "command": "mvext.copyJsonPath"
+        },
+        {
+          "command": "mvext.terminalLaunch"
+        },
+        {
+          "command": "mvext.terminalLaunchArgs"
+        },
+        {
+          "command": "mvext.execScript"
+        }
+      ],
       "editor/context": [
         {
-          "command": "mvext.tsTreeViewReveal",
+          "command": "mvext.ts.treeViewReveal",
           "when": "editorLangId in mvext.tsSyncedLanguages"
         },
         {
@@ -433,9 +463,9 @@
       ],
       "view/item/context": [
         {
-          "command": "mvext.tsTreeViewCopy",
+          "command": "mvext.ts.treeViewCopy",
           "group": "inline",
-          "when": "view == mvext.tsTreeView"
+          "when": "view == mvext.ts.treeView"
         },
         {
           "alt": "mvext.pwsh.astTreeViewCopy",
@@ -446,10 +476,10 @@
       ],
       "view/title": [
         {
-          "alt": "mvext.tsTreeViewOpen",
-          "command": "mvext.tsTreeViewRefresh",
+          "alt": "mvext.ts.treeViewOpen",
+          "command": "mvext.ts.treeViewRefresh",
           "group": "navigation",
-          "when": "view == mvext.tsTreeView"
+          "when": "view == mvext.ts.treeView"
         },
         {
           "alt": "mvext.pwsh.astTreeViewOpen",
@@ -529,18 +559,18 @@
     "views": {
       "explorer": [
         {
-          "contextualTitle": "Tree-Sitter Tree View",
+          "contextualTitle": "Tree-Sitter Tree",
           "icon": "$(list-tree)",
-          "id": "mvext.tsTreeView",
-          "name": "Tree-Sitter Tree View",
+          "id": "mvext.ts.treeView",
+          "name": "Tree-Sitter Tree",
           "visibility": "hidden",
           "when": "config.mvext.treeSitter.treeView.enabled"
         },
         {
-          "contextualTitle": "PowerShell Ast Tree View",
+          "contextualTitle": "PowerShell Ast Tree",
           "icon": "$(terminal-powershell)",
           "id": "mvext.pwsh.astTreeView",
-          "name": "PowerShell Ast Tree View",
+          "name": "PowerShell Ast Tree",
           "visibility": "hidden",
           "when": "!isWeb && config.mvext.pwsh.astTreeView.enabled"
         }
@@ -549,7 +579,7 @@
     "viewsWelcome": [
       {
         "contents": "Please try to refresh or check tree-sitter sync settings.\n[Open Settings](command:workbench.action.openSettings)",
-        "view": "mvext.tsTreeView"
+        "view": "mvext.ts.treeView"
       },
       {
         "contents": "Please try to edit powershell scripts, then refresh to visit ast.",
@@ -562,11 +592,11 @@
     "@eslint/js": "^9.38.0",
     "@johnnymorganz/stylua": "^2.3.0",
     "@rollup/plugin-alias": "^5.1.1",
-    "@rollup/plugin-commonjs": "^28.0.8",
+    "@rollup/plugin-commonjs": "^28.0.9",
     "@rollup/plugin-node-resolve": "^16.0.3",
     "@rollup/plugin-replace": "^6.0.2",
     "@rollup/plugin-terser": "^0.4.4",
-    "@rollup/plugin-typescript": "^12.2.0",
+    "@rollup/plugin-typescript": "^12.3.0",
     "@swc-node/register": "^1.11.1",
     "@types/emscripten": "^1.41.4",
     "@types/mocha": "^10.0.10",
@@ -584,6 +614,7 @@
     "prettier": "^3.6.2",
     "process": "^0.11.10",
     "rollup": "^4.52.5",
+    "rollup-plugin-dts": "^6.2.3",
     "sh-syntax": "^0.5.8",
     "simple-git-hooks": "^2.13.1",
     "strip-ansi": "^7.1.2",

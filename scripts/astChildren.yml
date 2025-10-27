@@ -1,0 +1,149 @@
+ArrayExpressionAst: []
+ArrayLiteralAst: []
+AssignmentStatementAst: []
+Ast:
+- AttributeBaseAst
+- CatchClauseAst
+- CommandElementAst
+- MemberAst
+- NamedAttributeArgumentAst
+- NamedBlockAst
+- ParamBlockAst
+- ParameterAst
+- RedirectionAst
+- ScriptBlockAst
+- StatementAst
+- StatementBlockAst
+AttributeAst: []
+AttributeBaseAst:
+- AttributeAst
+- TypeConstraintAst
+AttributedExpressionAst:
+- ConvertExpressionAst
+BaseCtorInvokeMemberExpressionAst: []
+BinaryExpressionAst: []
+BlockStatementAst: []
+BreakStatementAst: []
+CatchClauseAst: []
+ChainableAst:
+- PipelineAst
+- PipelineChainAst
+CommandAst: []
+CommandBaseAst:
+- CommandAst
+- CommandExpressionAst
+CommandElementAst:
+- CommandParameterAst
+- ExpressionAst
+CommandExpressionAst: []
+CommandParameterAst: []
+ConfigurationDefinitionAst: []
+ConstantExpressionAst:
+- StringConstantExpressionAst
+ContinueStatementAst: []
+ConvertExpressionAst: []
+DataStatementAst: []
+DoUntilStatementAst: []
+DoWhileStatementAst: []
+DynamicKeywordStatementAst: []
+ErrorExpressionAst: []
+ErrorStatementAst: []
+ExitStatementAst: []
+ExpandableStringExpressionAst: []
+ExpressionAst:
+- ArrayExpressionAst
+- ArrayLiteralAst
+- AttributedExpressionAst
+- BinaryExpressionAst
+- ConstantExpressionAst
+- ErrorExpressionAst
+- ExpandableStringExpressionAst
+- HashtableAst
+- IndexExpressionAst
+- MemberExpressionAst
+- ParenExpressionAst
+- ScriptBlockExpressionAst
+- SubExpressionAst
+- TernaryExpressionAst
+- TypeExpressionAst
+- UnaryExpressionAst
+- UsingExpressionAst
+- VariableExpressionAst
+FileRedirectionAst: []
+ForEachStatementAst: []
+ForStatementAst: []
+FunctionDefinitionAst: []
+FunctionMemberAst: []
+HashtableAst: []
+IfStatementAst: []
+IndexExpressionAst: []
+InvokeMemberExpressionAst:
+- BaseCtorInvokeMemberExpressionAst
+LabeledStatementAst:
+- LoopStatementAst
+- SwitchStatementAst
+LoopStatementAst:
+- DoUntilStatementAst
+- DoWhileStatementAst
+- ForEachStatementAst
+- ForStatementAst
+- WhileStatementAst
+MemberAst:
+- FunctionMemberAst
+- PropertyMemberAst
+MemberExpressionAst:
+- InvokeMemberExpressionAst
+MergingRedirectionAst: []
+NamedAttributeArgumentAst: []
+NamedBlockAst: []
+ParamBlockAst: []
+ParameterAst: []
+ParenExpressionAst: []
+PipelineAst: []
+PipelineBaseAst:
+- AssignmentStatementAst
+- ChainableAst
+- ErrorStatementAst
+PipelineChainAst: []
+PropertyMemberAst: []
+RedirectionAst:
+- FileRedirectionAst
+- MergingRedirectionAst
+ReturnStatementAst: []
+ScriptBlockAst: []
+ScriptBlockExpressionAst: []
+StatementAst:
+- BlockStatementAst
+- BreakStatementAst
+- CommandBaseAst
+- ConfigurationDefinitionAst
+- ContinueStatementAst
+- DataStatementAst
+- DynamicKeywordStatementAst
+- ExitStatementAst
+- FunctionDefinitionAst
+- IfStatementAst
+- LabeledStatementAst
+- PipelineBaseAst
+- ReturnStatementAst
+- ThrowStatementAst
+- TrapStatementAst
+- TryStatementAst
+- TypeDefinitionAst
+- UsingStatementAst
+StatementBlockAst: []
+StringConstantExpressionAst: []
+SubExpressionAst: []
+SwitchStatementAst: []
+TernaryExpressionAst: []
+ThrowStatementAst: []
+TrapStatementAst: []
+TryStatementAst: []
+TypeConstraintAst: []
+TypeDefinitionAst: []
+TypeExpressionAst: []
+UnaryExpressionAst: []
+UsingExpressionAst: []
+UsingStatementAst: []
+VariableExpressionAst: []
+WhileStatementAst: []

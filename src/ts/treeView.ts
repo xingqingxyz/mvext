@@ -63,7 +63,7 @@ export class TSTreeDataProvier implements TreeDataProvider<Node> {
   private documentVersion = 0
   private tree?: Tree | null
   private root?: Node // tree.rootNode is not memorized
-  private view = window.createTreeView('mvext.tsTreeView', {
+  private view = window.createTreeView('mvext.ts.treeView', {
     treeDataProvider: this,
   })
   private treeViewDT = window.createTextEditorDecorationType({
@@ -74,10 +74,10 @@ export class TSTreeDataProvier implements TreeDataProvider<Node> {
     context.subscriptions.push(
       this.view,
       this.treeViewDT,
-      commands.registerCommand('mvext.tsTreeViewOpen', this.open),
-      commands.registerCommand('mvext.tsTreeViewReveal', this.reveal),
-      commands.registerCommand('mvext.tsTreeViewRefresh', this.refresh),
-      commands.registerCommand('mvext.tsTreeViewCopy', this.copy),
+      commands.registerCommand('mvext.ts.treeViewOpen', this.open),
+      commands.registerCommand('mvext.ts.treeViewReveal', this.reveal),
+      commands.registerCommand('mvext.ts.treeViewRefresh', this.refresh),
+      commands.registerCommand('mvext.ts.treeViewCopy', this.copy),
       this.view.onDidChangeSelection(({ selection: [node] }) => {
         if (node && window.activeTextEditor?.document === this.document!) {
           const range = nodeToRange(node)

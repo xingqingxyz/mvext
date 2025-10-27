@@ -15,7 +15,11 @@ import {
   type WorkspaceEdit,
 } from 'vscode'
 
-function transformCase(editor: TextEditor, edit: TextEditorEdit, wc: WordCase) {
+function transformCaseAtSelections(
+  editor: TextEditor,
+  edit: TextEditorEdit,
+  wc: WordCase,
+) {
   const { document, selections } = editor
 
   for (const selectionRange of selections) {
@@ -60,11 +64,15 @@ async function pickWordCase({ document, selection }: TextEditor) {
   }
 }
 
-export function transformCaseDefault(editor: TextEditor, edit: TextEditorEdit) {
-  transformCase(
+export function transformCase(
+  editor: TextEditor,
+  edit: TextEditorEdit,
+  wc?: WordCase,
+) {
+  transformCaseAtSelections(
     editor,
     edit,
-    getExtConfig('transformCase.defaultCase', editor.document),
+    wc ?? getExtConfig('transformCase.defaultCase', editor.document),
   )
 }
 
@@ -77,7 +85,7 @@ export async function transformCaseWithPicker() {
   if (!wc) {
     return
   }
-  await editor.edit((edit) => transformCase(editor, edit, wc))
+  await editor.edit((edit) => transformCaseAtSelections(editor, edit, wc))
 }
 
 /**

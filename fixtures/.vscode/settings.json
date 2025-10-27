@@ -1,0 +1,6 @@
+{
+  "mvext.pathComplete.prefixMap": {
+    "@/": "${workspaceFolder}/src/",
+    "hello": "~/.bun"
+  }
+}

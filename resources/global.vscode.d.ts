@@ -1,5 +1,2 @@
-declare global {
-  export const vscode: typeof import('vscode')
-}
-
-export {}
+/// <reference path="vscode.d.ts" />
+declare const vscode: typeof import('vscode')

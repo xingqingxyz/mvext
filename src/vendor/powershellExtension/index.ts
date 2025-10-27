@@ -16,11 +16,29 @@ export let powershellExtension:
   | undefined
 
 export async function registerPowershellExtension(context: ExtensionContext) {
+  ipcPath = path.join(
+    tmpdir(),
+    'mvext.sendAstTreeJson-' + Math.random().toFixed(6).slice(2),
+  )
   powershellExtension = extensions.getExtension<IPowerShellExtensionClient>(
     'ms-vscode.powershell',
   )
   if (!powershellExtension) {
-    throw 'requires vscode extension: ms-vscode.powershell'
+    if (
+      !(await window.showInformationMessage(
+        'requires extension: ms-vscode.powershell',
+        'Install',
+      ))
+    ) {
+      throw 'powershell extension not found'
+    }
+    await commands.executeCommand(
+      'workbench.extensions.installExtension',
+      'ms-vscode.powershell',
+    )
+    powershellExtension = extensions.getExtension<IPowerShellExtensionClient>(
+      'ms-vscode.powershell',
+    )!
   }
   if (!powershellExtension.isActive) {
     await powershellExtension.activate()
@@ -30,20 +48,42 @@ export async function registerPowershellExtension(context: ExtensionContext) {
     context.extension.id,
   )
   await powerShellExtensionClient.waitUntilStarted(extensionId)
-  await commands.executeCommand('PowerShell.ShowSessionConsole')
-  ipcPath = path.join(
-    tmpdir(),
-    'mvext.sendAstTreeJson-' + Math.random().toFixed(6).slice(2),
+  let terminal = window.terminals.find(
+    (t) =>
+      t.creationOptions.name === 'PowerShell Extension' && t.shellIntegration,
   )
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  for await (const _ of window
-    .activeTerminal!.shellIntegration!.executeCommand('&', [
-      context.asAbsolutePath('resources/registerEditorCommands.ps1'),
-      '-IpcPath',
-      ipcPath,
-    ])
-    .read()) {
+  if (!terminal) {
+    await commands.executeCommand('PowerShell.ShowSessionConsole')
+    terminal = window.activeTerminal!
   }
+  await Array.fromAsync(
+    terminal
+      .shellIntegration!.executeCommand('&', [
+        context.asAbsolutePath('resources/registerEditorCommands.ps1'),
+        '-IpcPath',
+        ipcPath,
+      ])
+      .read(),
+  )
+  context.subscriptions.push(
+    window.onDidOpenTerminal((t) => {
+      // session restarted
+      if (t.creationOptions.name === 'PowerShell Extension') {
+        let times = 0
+        const event = window.onDidChangeTerminalShellIntegration((e) => {
+          if (e.terminal !== t || !times++) {
+            return // not available to exec
+          }
+          event.dispose()
+          e.shellIntegration.executeCommand('&', [
+            context.asAbsolutePath('resources/registerEditorCommands.ps1'),
+            '-IpcPath',
+            ipcPath,
+          ])
+        })
+      }
+    }),
+  )
 }
 
 type PowerShellEditorCommands =

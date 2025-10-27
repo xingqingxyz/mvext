@@ -1,0 +1,259 @@
+ArrayExpressionAst:
+- ExpressionAst
+- CommandElementAst
+- Ast
+ArrayLiteralAst:
+- ExpressionAst
+- CommandElementAst
+- Ast
+AssignmentStatementAst:
+- PipelineBaseAst
+- StatementAst
+- Ast
+Ast: []
+AttributeAst:
+- AttributeBaseAst
+- Ast
+AttributeBaseAst:
+- Ast
+AttributedExpressionAst:
+- ExpressionAst
+- CommandElementAst
+- Ast
+BaseCtorInvokeMemberExpressionAst:
+- InvokeMemberExpressionAst
+- MemberExpressionAst
+- ExpressionAst
+- CommandElementAst
+- Ast
+BinaryExpressionAst:
+- ExpressionAst
+- CommandElementAst
+- Ast
+BlockStatementAst:
+- StatementAst
+- Ast
+BreakStatementAst:
+- StatementAst
+- Ast
+CatchClauseAst:
+- Ast
+ChainableAst:
+- PipelineBaseAst
+- StatementAst
+- Ast
+CommandAst:
+- CommandBaseAst
+- StatementAst
+- Ast
+CommandBaseAst:
+- StatementAst
+- Ast
+CommandElementAst:
+- Ast
+CommandExpressionAst:
+- CommandBaseAst
+- StatementAst
+- Ast
+CommandParameterAst:
+- CommandElementAst
+- Ast
+ConfigurationDefinitionAst:
+- StatementAst
+- Ast
+ConstantExpressionAst:
+- ExpressionAst
+- CommandElementAst
+- Ast
+ContinueStatementAst:
+- StatementAst
+- Ast
+ConvertExpressionAst:
+- AttributedExpressionAst
+- ExpressionAst
+- CommandElementAst
+- Ast
+DataStatementAst:
+- StatementAst
+- Ast
+DoUntilStatementAst:
+- LoopStatementAst
+- LabeledStatementAst
+- StatementAst
+- Ast
+DoWhileStatementAst:
+- LoopStatementAst
+- LabeledStatementAst
+- StatementAst
+- Ast
+DynamicKeywordStatementAst:
+- StatementAst
+- Ast
+ErrorExpressionAst:
+- ExpressionAst
+- CommandElementAst
+- Ast
+ErrorStatementAst:
+- PipelineBaseAst
+- StatementAst
+- Ast
+ExitStatementAst:
+- StatementAst
+- Ast
+ExpandableStringExpressionAst:
+- ExpressionAst
+- CommandElementAst
+- Ast
+ExpressionAst:
+- CommandElementAst
+- Ast
+FileRedirectionAst:
+- RedirectionAst
+- Ast
+ForEachStatementAst:
+- LoopStatementAst
+- LabeledStatementAst
+- StatementAst
+- Ast
+ForStatementAst:
+- LoopStatementAst
+- LabeledStatementAst
+- StatementAst
+- Ast
+FunctionDefinitionAst:
+- StatementAst
+- Ast
+FunctionMemberAst:
+- MemberAst
+- Ast
+HashtableAst:
+- ExpressionAst
+- CommandElementAst
+- Ast
+IfStatementAst:
+- StatementAst
+- Ast
+IndexExpressionAst:
+- ExpressionAst
+- CommandElementAst
+- Ast
+InvokeMemberExpressionAst:
+- MemberExpressionAst
+- ExpressionAst
+- CommandElementAst
+- Ast
+LabeledStatementAst:
+- StatementAst
+- Ast
+LoopStatementAst:
+- LabeledStatementAst
+- StatementAst
+- Ast
+MemberAst:
+- Ast
+MemberExpressionAst:
+- ExpressionAst
+- CommandElementAst
+- Ast
+MergingRedirectionAst:
+- RedirectionAst
+- Ast
+NamedAttributeArgumentAst:
+- Ast
+NamedBlockAst:
+- Ast
+ParamBlockAst:
+- Ast
+ParameterAst:
+- Ast
+ParenExpressionAst:
+- ExpressionAst
+- CommandElementAst
+- Ast
+PipelineAst:
+- ChainableAst
+- PipelineBaseAst
+- StatementAst
+- Ast
+PipelineBaseAst:
+- StatementAst
+- Ast
+PipelineChainAst:
+- ChainableAst
+- PipelineBaseAst
+- StatementAst
+- Ast
+PropertyMemberAst:
+- MemberAst
+- Ast
+RedirectionAst:
+- Ast
+ReturnStatementAst:
+- StatementAst
+- Ast
+ScriptBlockAst:
+- Ast
+ScriptBlockExpressionAst:
+- ExpressionAst
+- CommandElementAst
+- Ast
+StatementAst:
+- Ast
+StatementBlockAst:
+- Ast
+StringConstantExpressionAst:
+- ConstantExpressionAst
+- ExpressionAst
+- CommandElementAst
+- Ast
+SubExpressionAst:
+- ExpressionAst
+- CommandElementAst
+- Ast
+SwitchStatementAst:
+- LabeledStatementAst
+- StatementAst
+- Ast
+TernaryExpressionAst:
+- ExpressionAst
+- CommandElementAst
+- Ast
+ThrowStatementAst:
+- StatementAst
+- Ast
+TrapStatementAst:
+- StatementAst
+- Ast
+TryStatementAst:
+- StatementAst
+- Ast
+TypeConstraintAst:
+- AttributeBaseAst
+- Ast
+TypeDefinitionAst:
+- StatementAst
+- Ast
+TypeExpressionAst:
+- ExpressionAst
+- CommandElementAst
+- Ast
+UnaryExpressionAst:
+- ExpressionAst
+- CommandElementAst
+- Ast
+UsingExpressionAst:
+- ExpressionAst
+- CommandElementAst
+- Ast
+UsingStatementAst:
+- StatementAst
+- Ast
+VariableExpressionAst:
+- ExpressionAst
+- CommandElementAst
+- Ast
+WhileStatementAst:
+- LoopStatementAst
+- LabeledStatementAst
+- StatementAst
+- Ast

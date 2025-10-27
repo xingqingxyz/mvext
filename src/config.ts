@@ -4,6 +4,7 @@ import type { TerminalRunLanguageIds } from './util/terminalRunCode'
 import type { WordCase } from './util/transformCaseHelper'
 
 export type MvextConfig = {
+  'copyJsonPath.defaultLanguageId': 'jq' | 'javascript' | 'python'
   'evalSelection.languageMap': Record<string, string>
   'pathComplete.debounceTimeMs': number
   'pathComplete.prefixMap': Record<string, string>
@@ -22,7 +23,10 @@ export type MvextConfig = {
   'treeSitter.treeView.enabled': boolean
 }
 
-type ScopedConfigKey = 'pathComplete.prefixMap' | 'transformCase.defaultCase'
+type ScopedConfigKey =
+  | 'copyJsonPath.defaultLanguageId'
+  | 'pathComplete.prefixMap'
+  | 'transformCase.defaultCase'
 
 export function getExtConfig<const T extends ScopedConfigKey>(
   key: T,
