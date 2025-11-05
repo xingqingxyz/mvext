@@ -1,0 +1,24 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "type": "npm",
+      "script": "watch",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "isBackground": true,
+      "problemMatcher": ["$rollup-watch"]
+    },
+    {
+      "type": "npm",
+      "script": "watch-web",
+      "group": {
+        "kind": "build"
+      },
+      "isBackground": true,
+      "problemMatcher": ["$rollup-watch"]
+    }
+  ]
+}
