@@ -1,16 +1,7 @@
 {
-  "include": ["src"],
   "compilerOptions": {
-    "module": "ESNext",
-    "moduleResolution": "bundler",
-    "target": "ES2023",
-    "lib": ["ES2023"],
-    "paths": { "@/*": ["./src/*"] },
-    "strict": true,
-    "noImplicitReturns": true,
-    "noFallthroughCasesInSwitch": true,
-    "noImplicitOverride": true,
-    "noImplicitAny": true,
-    "skipLibCheck": true
-  }
+    "baseUrl": "."
+  },
+  "extends": "../../tsconfig.json",
+  "include": ["./src"]
 }

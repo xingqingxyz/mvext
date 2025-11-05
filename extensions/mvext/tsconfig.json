@@ -1,21 +1,8 @@
 {
-  "include": ["src"],
   "compilerOptions": {
-    "target": "esnext",
-    "lib": ["ESNext"],
-    "module": "ESNext",
-    "moduleResolution": "Bundler",
-    "resolveJsonModule": true,
-    "baseUrl": ".",
-    "paths": {
-      "@/*": ["src/*"]
-    },
-    "outDir": "dist",
     "allowJs": true,
-    "strict": true,
-    "noImplicitAny": true,
-    "noImplicitOverride": true,
-    "noFallthroughCasesInSwitch": true,
-    "skipLibCheck": true
-  }
+    "baseUrl": "."
+  },
+  "extends": "../../tsconfig.json",
+  "include": ["./src"]
 }
