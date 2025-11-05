@@ -387,10 +387,6 @@
   "license": "MIT",
   "main": "./dist/extension.js",
   "name": "vue",
-  "prettier": {
-    "semi": false,
-    "singleQuote": true
-  },
   "private": true,
   "publisher": "xingqingxyz",
   "repository": {

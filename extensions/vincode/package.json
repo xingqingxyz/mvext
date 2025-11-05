@@ -194,10 +194,6 @@
   },
   "main": "./dist/extension.js",
   "name": "vincode",
-  "prettier": {
-    "semi": false,
-    "singleQuote": true
-  },
   "private": true,
   "publisher": "xingqingxyz",
   "repository": {

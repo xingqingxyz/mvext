@@ -1,6 +1,10 @@
 {
   "folders": [
     {
+      "name": "root",
+      "path": ".",
+    },
+    {
       "path": "./extensions/mvext",
     },
     {
@@ -13,5 +17,7 @@
       "path": "./extensions/vue",
     },
   ],
-  "settings": {},
+  "settings": {
+    "powershell.cwd": "mvext",
+  },
 }

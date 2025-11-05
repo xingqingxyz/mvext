@@ -6,7 +6,6 @@
     "noFallthroughCasesInSwitch": true,
     "noImplicitAny": true,
     "noImplicitOverride": true,
-    "outDir": "dist",
     "paths": {
       "@/*": ["./src/*"]
     },

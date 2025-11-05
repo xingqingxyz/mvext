@@ -620,10 +620,6 @@
     "watch-files": "src/**"
   },
   "name": "mvext",
-  "prettier": {
-    "semi": false,
-    "singleQuote": true
-  },
   "private": true,
   "publisher": "xingqingxyz",
   "repository": {
@@ -638,9 +634,6 @@
     "vscode:prepublish": "concurrently \"dotnet build -c Release\" \"rollup -c --environment NODE_ENV:production\" \"rollup -c --environment NODE_ENV:production,PLATFORM:web\"",
     "watch": "rollup -c -w",
     "watch-web": "rollup -c -w --environment PLATFORM:web"
-  },
-  "simple-git-hooks": {
-    "pre-commit": "pnpm exec lint-staged && pnpm test"
   },
   "type": "module",
   "version": "0.23.0"
