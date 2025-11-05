@@ -1,0 +1,48 @@
+import { execFile } from 'child_process'
+import { format, promisify } from 'util'
+
+export const reEscapeRegexp = /[|\\{}()[\]^$+*?.]/g
+export const execFilePm = promisify(execFile)
+
+export function kebabToPascal(word: string) {
+  return word
+    .split('-')
+    .map((w) => w[0].toUpperCase() + w.slice(1))
+    .join('')
+}
+
+export function noop(): undefined {}
+
+export function formatDate(date: Date) {
+  return format(
+    '%d-%s-%s %s:%s:%s.%s',
+    date.getFullYear(),
+    (date.getMonth() + 1).toString().padStart(2, '0'),
+    date.getDate().toString().padStart(2, '0'),
+    date.getHours().toString().padStart(2, '0'),
+    date.getMinutes().toString().padStart(2, '0'),
+    date.getSeconds().toString().padStart(2, '0'),
+    date.getMilliseconds().toString().padStart(3, '0'),
+  )
+}
+
+export function reverseCase(word: string) {
+  let newWord = ''
+  for (let i = 0, code; i < word.length; i++) {
+    code = word.charCodeAt(i)
+    switch (true) {
+      case code < 65:
+        break
+      case code < 91:
+        code = code + 32
+        break
+      case code < 97:
+        break
+      case code < 123:
+        code = code - 32
+        break
+    }
+    newWord += String.fromCharCode(code)
+  }
+  return newWord
+}
