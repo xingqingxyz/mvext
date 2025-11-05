@@ -374,20 +374,8 @@
   },
   "description": "Vue language supports based on @vue/language-server.",
   "devDependencies": {
-    "@rollup/plugin-commonjs": "^28.0.9",
-    "@rollup/plugin-json": "^6.1.0",
-    "@rollup/plugin-node-resolve": "^16.0.3",
-    "@rollup/plugin-replace": "^6.0.2",
-    "@rollup/plugin-terser": "^0.4.4",
-    "@rollup/plugin-typescript": "^12.3.0",
-    "@types/node": "~22.17.2",
-    "@types/vscode": "^1.105.0",
     "@volar/vscode": "^2.4.23",
-    "@vue/language-server": "^3.1.2",
-    "oxlint": "^1.24.0",
-    "rollup": "^4.52.5",
-    "tslib": "^2.8.1",
-    "typescript": "^5.9.3"
+    "@vue/language-server": "^3.1.2"
   },
   "displayName": "Vue",
   "engines": {
@@ -399,7 +387,6 @@
   "license": "MIT",
   "main": "./dist/extension.js",
   "name": "vue",
-  "packageManager": "pnpm@10.19.0",
   "prettier": {
     "semi": false,
     "singleQuote": true

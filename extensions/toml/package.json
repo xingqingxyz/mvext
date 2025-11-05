@@ -55,9 +55,9 @@
           "type": "array"
         },
         "toml.taplo.path": {
+          "default": "taplo",
           "description": "An absolute path to the `taplo` executable.",
-          "type": "string",
-          "default": "taplo"
+          "type": "string"
         }
       },
       "title": "TOML"
@@ -129,25 +129,11 @@
   },
   "description": "TOML language supports based on taplo.",
   "devDependencies": {
-    "@rollup/plugin-commonjs": "^28.0.6",
-    "@rollup/plugin-node-resolve": "^16.0.1",
-    "@rollup/plugin-replace": "^6.0.2",
-    "@rollup/plugin-terser": "^0.4.4",
-    "@rollup/plugin-typescript": "^12.1.4",
-    "@types/mocha": "^10.0.10",
-    "@types/node": "~22.17.2",
-    "@types/vscode": "^1.104.0",
-    "@types/which": "^3.0.4",
-    "oxlint": "^1.16.0",
-    "rollup": "^4.52.0",
-    "tslib": "^2.8.1",
-    "typescript": "^5.9.2",
-    "vscode-languageclient": "^9.0.1",
-    "which": "^5.0.0"
+    "vscode-languageclient": "^9.0.1"
   },
   "displayName": "TOML",
   "engines": {
-    "vscode": "^1.104.0"
+    "vscode": "^1.105.0"
   },
   "extensionKind": [
     "workspace"
@@ -155,7 +141,6 @@
   "license": "MIT",
   "main": "./dist/extension.js",
   "name": "toml",
-  "packageManager": "pnpm@10.17.0",
   "prettier": {
     "semi": false,
     "singleQuote": true
@@ -167,7 +152,7 @@
     "url": "https://github.com/xingqingxyz/toml"
   },
   "scripts": {
-    "ext-install": "vsce pack -o xingqingxyz.toml.vsix && code --install-extension xingqingxyz.toml.vsix",
+    "extension:install": "vsce pack -o toml.vsix && code --install-extension toml.vsix",
     "lint": "tsc --noEmit && oxlint --fix src",
     "vscode:prepublish": "rollup -c --environment NODE_ENV:production,PLATFORM:all",
     "watch": "rollup -c -w",

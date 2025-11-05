@@ -3,36 +3,36 @@
 // Hover to view descriptions of existing attributes.
 // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
 {
-  "version": "0.2.0",
   "configurations": [
     {
-      "name": "Run Extension",
-      "type": "extensionHost",
-      "request": "launch",
       "args": [
         "--extensionDevelopmentPath=${workspaceFolder}",
         "--disable-extensions",
         "--enable-proposed-api",
         "xingqingxyz.toml",
-        "${workspaceFolder}/testdir"
+        "${workspaceFolder}/fixtures"
       ],
+      "name": "Run Extension",
       "outFiles": ["${workspaceFolder}/dist/**/*.js"],
-      "preLaunchTask": "${defaultBuildTask}"
+      "preLaunchTask": "${defaultBuildTask}",
+      "request": "launch",
+      "type": "extensionHost"
     },
     {
-      "name": "Extension Tests",
-      "type": "extensionHost",
-      "request": "launch",
       "args": [
         "--extensionDevelopmentPath=${workspaceFolder}",
         "--extensionTestsPath=${workspaceFolder}/src/test",
         "--disable-extensions",
         "--enable-proposed-api",
         "xingqingxyz.toml",
-        "${workspaceFolder}/testdir"
+        "${workspaceFolder}/fixtures"
       ],
+      "name": "Extension Tests",
       "outFiles": ["${workspaceFolder}/dist/**/*.js"],
-      "preLaunchTask": "npm: build:test"
+      "preLaunchTask": "npm: build:test",
+      "request": "launch",
+      "type": "extensionHost"
     }
-  ]
+  ],
+  "version": "0.2.0"
 }

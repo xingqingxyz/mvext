@@ -1,5 +1,0 @@
-onlyBuiltDependencies:
-  - '@swc/core'
-  - oxc-resolver
-  - simple-git-hooks
-  - tree-sitter-bash
