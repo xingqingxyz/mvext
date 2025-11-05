@@ -1,0 +1,7 @@
+**
+!node_modules
+!dist
+!schemas
+!syntaxes
+!language-configuration.json
+!LICENSE

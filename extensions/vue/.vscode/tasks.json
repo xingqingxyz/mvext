@@ -1,0 +1,15 @@
+{
+  "tasks": [
+    {
+      "group": {
+        "isDefault": true,
+        "kind": "build"
+      },
+      "isBackground": true,
+      "problemMatcher": ["$rollup-watch"],
+      "script": "watch",
+      "type": "npm"
+    }
+  ],
+  "version": "2.0.0"
+}

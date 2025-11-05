@@ -1,0 +1,9 @@
+{
+  "npm.exclude": ["build", "test.*"],
+  "search.exclude": {
+    "**/*.code-search": true,
+    "**/bower_components": true,
+    "**/node_modules": true,
+    "build": true
+  }
+}
