@@ -18,15 +18,15 @@ import {
 } from './commands/transformCase'
 import { InvokeCompleteProvider } from './completion'
 import { PathCompleteProvider } from './completion/path'
+import { PwshAstTreeDataProvier } from './components/powershell/astTreeView'
+import { getParser, initTSParser } from './components/treeSitter/parser'
+import { TSTreeDataProvier } from './components/treeSitter/treeView'
 import { getExtConfig } from './config'
 import type { ExternalApi } from './ExternalApi'
 import { ShfmtFormatter, ShfmtFormatterWasm } from './formatter/shfmt'
 import { StyluaFormatter, StyluaFormatterWasm } from './formatter/stylua'
-import { getParser, initTSParser } from './ts/parser'
-import { TSTreeDataProvier } from './ts/treeView'
 import { logger } from './util/logger'
 import { transformCaseHelper } from './util/transformCaseHelper'
-import { PwshAstTreeDataProvier } from './vendor/powershellExtension/astTreeView'
 
 export type { ExternalApi } from './ExternalApi'
 

@@ -589,12 +589,12 @@
   },
   "description": "Make extension of completers, ast viewers, code launchers...",
   "devDependencies": {
-    "@johnnymorganz/stylua": "^2.3.0",
+    "@johnnymorganz/stylua": "^2.3.1",
     "sh-syntax": "^0.5.8"
   },
   "displayName": "Make VSCode Extension",
   "engines": {
-    "vscode": "^1.105.0"
+    "vscode": "^1.109.0"
   },
   "extensionKind": [
     "ui",

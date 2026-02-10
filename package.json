@@ -2,7 +2,7 @@
   "author": "Ming Chen <cm.email@qq.com> (https://github.com/xingqingxyz)",
   "description": "Make VSCode Extension",
   "devDependencies": {
-    "@eslint/js": "^9.39.1",
+    "@eslint/js": "^9.39.2",
     "@johnnymorganz/stylua": "^2.3.1",
     "@rollup/plugin-alias": "^6.0.0",
     "@rollup/plugin-commonjs": "^29.0.0",
@@ -14,44 +14,49 @@
     "@swc-node/register": "^1.11.1",
     "@types/emscripten": "^1.41.5",
     "@types/mocha": "^10.0.10",
-    "@types/node": "^24.10.0",
-    "@types/vscode": "^1.105.0",
+    "@types/node": "^24.10.12",
+    "@types/vscode": "^1.109.0",
     "@types/which": "^3.0.4",
-    "@vscode/tree-sitter-wasm": "^0.2.0",
+    "@vscode/test-cli": "^0.0.12",
+    "@vscode/test-electron": "^2.5.2",
+    "@vscode/tree-sitter-wasm": "^0.3.0",
     "concurrently": "^9.2.1",
-    "esbuild": "^0.25.12",
-    "eslint": "^9.39.1",
+    "esbuild": "^0.27.3",
+    "eslint": "^9.39.2",
     "jsonc-parser": "^3.3.1",
-    "lint-staged": "^16.2.6",
+    "lint-staged": "^16.2.7",
     "mocha": "^11.7.5",
     "os-browserify": "^0.3.0",
-    "oxlint": "^1.25.0",
+    "oxlint": "^1.43.0",
     "path-browserify": "^1.0.1",
-    "prettier": "^3.6.2",
+    "prettier": "^3.8.1",
     "process": "^0.11.10",
-    "rollup": "^4.52.5",
-    "rollup-plugin-dts": "^6.2.3",
+    "rollup": "^4.57.1",
+    "rollup-plugin-dts": "^6.3.0",
     "simple-git-hooks": "^2.13.1",
     "strip-ansi": "^7.1.2",
-    "tree-sitter-bash": "^0.25.0",
+    "tree-sitter-bash": "^0.25.1",
     "tslib": "^2.8.1",
     "typescript": "^5.9.3",
-    "typescript-eslint": "^8.46.3",
-    "web-tree-sitter": "^0.25.10",
-    "which": "^5.0.0"
+    "typescript-eslint": "^8.55.0",
+    "web-tree-sitter": "^0.26.5",
+    "which": "^6.0.0"
   },
   "keywords": [],
   "license": "MIT",
   "name": "mvext",
-  "packageManager": "pnpm@10.20.0",
+  "packageManager": "pnpm@10.29.2",
   "prettier": {
     "semi": false,
     "singleQuote": true
   },
   "private": true,
   "simple-git-hooks": {
-    "pre-commit": "pnpm exec lint-staged && pnpm test"
+    "pre-commit": "pnpm -r --workspace-concurrency=1 exec lint-staged && pnpm run -r --if-present test"
   },
   "type": "module",
-  "version": "0.0.1"
+  "version": "0.0.1",
+  "workspaces": [
+    "extensions/*"
+  ]
 }

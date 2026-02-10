@@ -1,4 +1,4 @@
-import { _javascript as $ } from '@/ts/language/javascript'
+import { _javascript as $ } from '@/components/treeSitter/language/javascript'
 import type { Node } from 'web-tree-sitter'
 
 function unpackParentheses(node: Node) {

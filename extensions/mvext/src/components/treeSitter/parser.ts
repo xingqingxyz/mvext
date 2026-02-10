@@ -1,3 +1,5 @@
+import { getExtConfig } from '@/config'
+import { ContextKey } from '@/context'
 import {
   commands,
   Position,
@@ -10,14 +12,13 @@ import {
   type TextDocument,
 } from 'vscode'
 import {
+  Edit,
   Language,
   Parser,
   type Node,
   type Point,
   type Tree,
 } from 'web-tree-sitter'
-import { getExtConfig } from '../config'
-import { ContextKey } from '../context'
 
 const parsers = {} as Record<string, Parser>
 const treeMap = new Map<TextDocument, Tree>()
@@ -182,17 +183,19 @@ export async function initTSParser(context: ExtensionContext) {
             new Range(cc.range.start.with(undefined, 0), cc.range.start),
           ) + cc.text
         ).split('\r\n'.slice(2 - e.document.eol))
-        treeMap.get(e.document)!.edit({
-          newEndIndex: cc.rangeOffset + cc.text.length,
-          newEndPosition: {
-            row: cc.range.start.line + lines.length - 1,
-            column: lines.at(-1)!.length,
-          },
-          startIndex: cc.rangeOffset,
-          oldEndIndex: cc.rangeOffset + cc.rangeLength,
-          oldEndPosition: positionToPoint(cc.range.end),
-          startPosition: positionToPoint(cc.range.start),
-        })
+        treeMap.get(e.document)!.edit(
+          new Edit({
+            startIndex: cc.rangeOffset,
+            startPosition: positionToPoint(cc.range.start),
+            newEndIndex: cc.rangeOffset + cc.text.length,
+            newEndPosition: {
+              row: cc.range.start.line + lines.length - 1,
+              column: lines.at(-1)!.length,
+            },
+            oldEndIndex: cc.rangeOffset + cc.rangeLength,
+            oldEndPosition: positionToPoint(cc.range.end),
+          }),
+        )
       })
     }),
     {

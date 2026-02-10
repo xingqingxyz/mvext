@@ -370,21 +370,25 @@
     ]
   },
   "dependencies": {
-    "@vue/typescript-plugin": "^3.1.2"
+    "@vue/typescript-plugin": "^3.2.4"
   },
   "description": "Vue language supports based on @vue/language-server.",
   "devDependencies": {
-    "@volar/vscode": "^2.4.23",
-    "@vue/language-server": "^3.1.2"
+    "@volar/vscode": "^2.4.28",
+    "@vue/language-server": "^3.2.4"
   },
   "displayName": "Vue",
   "engines": {
-    "vscode": "^1.105.0"
+    "vscode": "^1.109.0"
   },
   "extensionKind": [
     "workspace"
   ],
   "license": "MIT",
+  "lint-staged": {
+    "*.{js,ts,json,md}": "prettier -w --cache",
+    "*.{js,ts}": "oxlint --fix"
+  },
   "main": "./dist/extension.js",
   "name": "vue",
   "private": true,

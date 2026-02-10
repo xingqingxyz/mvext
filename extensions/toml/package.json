@@ -133,12 +133,16 @@
   },
   "displayName": "TOML",
   "engines": {
-    "vscode": "^1.105.0"
+    "vscode": "^1.109.0"
   },
   "extensionKind": [
     "workspace"
   ],
   "license": "MIT",
+  "lint-staged": {
+    "*.{js,ts,json,md}": "prettier -w --cache",
+    "*.{js,ts}": "oxlint --fix"
+  },
   "main": "./dist/extension.js",
   "name": "toml",
   "private": true,
