@@ -1,9 +1,9 @@
 {
   "compilerOptions": {
     "allowJs": true,
-    "baseUrl": ".",
-    "outDir": "./dist"
+    "paths": {
+      "@/*": ["./src/*"]
+    }
   },
-  "extends": "../../tsconfig.json",
-  "include": ["./src"]
+  "extends": "../../tsconfig.json"
 }

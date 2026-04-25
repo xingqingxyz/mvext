@@ -1,18 +1,37 @@
 {
-  "author": "Ming Chen <cm.email@qq.com> (https://github.com/xingqingxyz)",
+  "name": "toml",
+  "displayName": "TOML",
+  "version": "0.3.0",
+  "private": true,
+  "description": "TOML language supports based on taplo.",
+  "categories": [
+    "Formatters",
+    "Programming Languages"
+  ],
   "bugs": {
     "url": "https://github.com/xingqingxyz/toml/issues"
   },
-  "capabilities": {
-    "untrustedWorkspaces": {
-      "supported": true
-    },
-    "virtualWorkspaces": true
+  "license": "MIT",
+  "author": "Ming Chen <cm.email@qq.com> (https://github.com/xingqingxyz)",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/xingqingxyz/toml"
   },
-  "categories": [
-    "Programming Languages",
-    "Formatters"
-  ],
+  "publisher": "xingqingxyz",
+  "type": "module",
+  "main": "./dist/extension.js",
+  "browser": "./dist/extension.cjs",
+  "scripts": {
+    "extension:install": "vsce pack -o toml.vsix && code --install-extension toml.vsix",
+    "lint": "concurrently \"tsc --noEmit\" \"oxlint --type-aware --fix\"",
+    "pretest": "rolldown -c --environment NODE_ENV:test",
+    "vscode:prepublish": "concurrently \"rolldown -c --environment NODE_ENV:production\" \"rolldown -c --environment NODE_ENV:production,PLATFORM:web\"",
+    "watch-web": "rolldown -c -w --environment PLATFORM:web",
+    "watch": "rolldown -c -w"
+  },
+  "devDependencies": {
+    "vscode-languageclient": "^9.0.1"
+  },
   "contributes": {
     "commands": [
       {
@@ -127,37 +146,16 @@
       }
     ]
   },
-  "description": "TOML language supports based on taplo.",
-  "devDependencies": {
-    "vscode-languageclient": "^9.0.1"
-  },
-  "displayName": "TOML",
-  "engines": {
-    "vscode": "^1.109.0"
-  },
   "extensionKind": [
     "workspace"
   ],
-  "license": "MIT",
-  "lint-staged": {
-    "*.{js,ts,json,md}": "prettier -w --cache",
-    "*.{js,ts}": "oxlint --fix"
+  "engines": {
+    "vscode": "^1.116.0"
   },
-  "main": "./dist/extension.js",
-  "name": "toml",
-  "private": true,
-  "publisher": "xingqingxyz",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/xingqingxyz/toml"
-  },
-  "scripts": {
-    "extension:install": "vsce pack -o toml.vsix && code --install-extension toml.vsix",
-    "lint": "tsc --noEmit && oxlint --fix src",
-    "vscode:prepublish": "rollup -c --environment NODE_ENV:production,PLATFORM:all",
-    "watch": "rollup -c -w",
-    "watch-web": "rollup -c -w --environment PLATFORM:web"
-  },
-  "type": "module",
-  "version": "0.2.0"
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": true
+    },
+    "virtualWorkspaces": true
+  }
 }

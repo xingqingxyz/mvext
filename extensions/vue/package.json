@@ -1,18 +1,43 @@
 {
-  "author": "Ming Chen <cm.email@qq.com> (https://github.com/xingqingxyz)",
+  "name": "vue",
+  "displayName": "Vue",
+  "version": "0.2.0",
+  "private": true,
+  "description": "Vue language supports based on @vue/language-server.",
+  "categories": [
+    "Formatters",
+    "Programming Languages"
+  ],
   "bugs": {
     "url": "https://github.com/xingqingxyz/vue/issues"
   },
-  "capabilities": {
-    "untrustedWorkspaces": {
-      "supported": true
-    },
-    "virtualWorkspaces": true
+  "license": "MIT",
+  "author": "Ming Chen <cm.email@qq.com> (https://github.com/xingqingxyz)",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/xingqingxyz/vue"
   },
-  "categories": [
-    "Programming Languages",
-    "Formatters"
-  ],
+  "publisher": "xingqingxyz",
+  "type": "module",
+  "main": "./dist/extension.js",
+  "browser": "./dist/extension.cjs",
+  "scripts": {
+    "extension:install": "node ./scripts/pack.ts && code --install-extension vue.vsix",
+    "extension:publish": "node ./scripts/pack.ts && vsce publish -i vue.vsix",
+    "lint": "concurrently \"tsc --noEmit\" \"oxlint --type-aware --fix\"",
+    "postinstall": "rolldown -c --environment PREBUILD:1",
+    "pretest": "rolldown -c --environment NODE_ENV:test",
+    "vscode:prepublish": "concurrently \"rolldown -c --environment NODE_ENV:production\" \"rolldown -c --environment NODE_ENV:production,PLATFORM:web\"",
+    "watch-web": "rolldown -c -w --environment PLATFORM:web",
+    "watch": "rolldown -c -w"
+  },
+  "dependencies": {
+    "@vue/typescript-plugin": "^3.2.7"
+  },
+  "devDependencies": {
+    "@volar/vscode": "^2.4.28",
+    "@vue/language-server": "^3.2.7"
+  },
   "contributes": {
     "breakpoints": [
       {
@@ -369,42 +394,16 @@
       }
     ]
   },
-  "dependencies": {
-    "@vue/typescript-plugin": "^3.2.4"
-  },
-  "description": "Vue language supports based on @vue/language-server.",
-  "devDependencies": {
-    "@volar/vscode": "^2.4.28",
-    "@vue/language-server": "^3.2.4"
-  },
-  "displayName": "Vue",
-  "engines": {
-    "vscode": "^1.109.0"
-  },
   "extensionKind": [
     "workspace"
   ],
-  "license": "MIT",
-  "lint-staged": {
-    "*.{js,ts,json,md}": "prettier -w --cache",
-    "*.{js,ts}": "oxlint --fix"
+  "engines": {
+    "vscode": "^1.116.0"
   },
-  "main": "./dist/extension.js",
-  "name": "vue",
-  "private": true,
-  "publisher": "xingqingxyz",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/xingqingxyz/vue"
-  },
-  "scripts": {
-    "extension:install": "pnpm extension:pack && code --install-extension vue.vsix",
-    "extension:pack": "rollup -c --environment NODE_ENV:production && node ./scripts/pack.ts",
-    "extension:publish": "pnpm extension:pack && vsce publish -i vue.vsix",
-    "lint": "tsc --noEmit && oxlint --fix src",
-    "postinstall": "rollup -c --environment PREBUILD:1",
-    "watch": "rollup -c -w"
-  },
-  "type": "module",
-  "version": "0.2.0"
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": true
+    },
+    "virtualWorkspaces": true
+  }
 }

@@ -27,7 +27,7 @@ export function registerExtensionSchemas() {
         if (!m.startsWith('/')) {
           m = `/${m}`
         }
-        client.sendNotification('taplo/associateSchema', {
+        void client.sendNotification('taplo/associateSchema', {
           schemaUri: url,
           priority: 10, // above catalogs, but below any manual config
           rule: {
@@ -46,7 +46,7 @@ export function registerExtensionSchemas() {
         if (typeof m !== 'string') {
           continue
         }
-        client.sendNotification('taplo/associateSchema', {
+        void client.sendNotification('taplo/associateSchema', {
           schemaUri: url,
           priority: 10, // above catalogs, but below any manual config
           rule: {

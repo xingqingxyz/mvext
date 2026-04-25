@@ -11,9 +11,9 @@ export class SearchDict {
   private async getWords() {
     return (
       await new Response(
-        (await fetch(this.dictUrl)).body!.pipeThrough(
-          new DecompressionStream('gzip'),
-        ),
+        (
+          await fetch(this.dictUrl)
+        ).body!.pipeThrough(new DecompressionStream('gzip')),
       ).text()
     ).split('\n')
   }

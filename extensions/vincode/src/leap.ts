@@ -14,7 +14,7 @@ export class Leap {
   private static readonly leapChars = 'ajskdlfghquwieorptyzxcvbnm'
   private static get2AtIndex(index: number) {
     // prevent overflow
-    return this.leapChars[(index / 26) >> 0 % 26] + this.leapChars[index % 26]
+    return this.leapChars[(index / 26) >> (0 % 26)] + this.leapChars[index % 26]
   }
   private readonly twoDT = window.createTextEditorDecorationType({
     color: 'transparent',

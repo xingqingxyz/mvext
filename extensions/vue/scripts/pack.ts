@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 import { spawn } from 'child_process'
 import fs from 'fs/promises'
 
@@ -12,14 +13,14 @@ try {
   await Promise.all([
     fs.writeFile(
       'node_modules/@vue/typescript-plugin/index.js',
-      "module.exports = require('../../../dist/vueTypeScriptPlugin.js').default"
+      "module.exports = require('../../../dist/vueTypeScriptPlugin.js').default",
     ),
     fs.writeFile(
       'node_modules/@vue/typescript-plugin/package.json',
       JSON.stringify({
         name: '@vue/typescript-plugin',
         version: packageJSON.dependencies['@vue/typescript-plugin'].slice(1),
-      })
+      }),
     ),
   ])
   ec = await new Promise<number>((resolve, reject) => {

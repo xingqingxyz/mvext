@@ -14,7 +14,7 @@ export async function createClient(context: ExtensionContext) {
     {
       language: 'toml',
       scheme: 'file',
-    }
+    },
   )
   clientStatusBarItem.name = 'TOML schema'
   clientStatusBarItem.text = 'no schema selected'
@@ -41,7 +41,7 @@ export async function createClient(context: ExtensionContext) {
         configurationSection: 'toml',
         cachePath: context.globalStorageUri.fsPath,
       },
-    }
+    },
   )
   console.log(client.state)
   await client.start()
@@ -50,7 +50,7 @@ export async function createClient(context: ExtensionContext) {
     client,
     clientStatusBarItem,
     client.onNotification('taplo/messageWithOutput', (params) =>
-      showMessage(params.kind, params.message)
+      showMessage(params.kind, params.message),
     ),
     client.onNotification(
       'taplo/didChangeSchemaAssociation',
@@ -66,7 +66,7 @@ export async function createClient(context: ExtensionContext) {
           clientStatusBarItem.text =
             params.meta?.name ?? params.schemaUri ?? 'no schema selected'
         }
-      }
-    )
+      },
+    ),
   )
 }

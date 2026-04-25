@@ -178,7 +178,7 @@ export class Consumer {
     console.log(Array.from(actionTire))
   }
   updateStatusBarItem() {
-    statusBarItem.text = `|-${modeController.mode.toUpperCase()}-| ${this.sequence}`
+    statusBarItem.text = `|-${modeController.mode.toUpperCase()}-| ${this.sequence.toString()}`
     statusBarItem.show()
   }
   clear() {
@@ -258,14 +258,14 @@ export class Consumer {
       case SequenceKind.Invoke:
         try {
           const digit = this.sequence[SequenceKind.Digit]
-          this.actionTireNode.meta!.handler({
+          void this.actionTireNode.meta!.handler({
             command: this.sequence[SequenceKind.Command],
             count: digit.length ? +digit : undefined,
             argStr: this.sequence[SequenceKind.ArgStr],
           })
           this.clear()
         } catch (e) {
-          throw `handler failed for ${this.sequence}: ${e}`
+          throw `handler failed for ${this.sequence.toString()}: ${e as any}`
         }
         break
     }
@@ -280,7 +280,7 @@ export class Consumer {
         this.updateStatusBarItem()
       } catch (e) {
         this.clear()
-        logger.error(`nextSequence: ${e}`)
+        logger.error(`nextSequence: ${e as any}`)
       }
     }
   }

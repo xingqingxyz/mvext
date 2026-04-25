@@ -17,7 +17,7 @@ export async function activate(context: ExtensionContext) {
     context.asAbsolutePath('dist/vueLanguageServerMain.js')
   const tsdk =
     resolveConfigPath(
-      workspace.getConfiguration('typescript').get<string>('tsdk')
+      workspace.getConfiguration('typescript').get<string>('tsdk'),
     ) ?? path.join(env.appRoot, 'extensions/node_modules/typescript/lib')
   const client = new LanguageClient(
     'Vue',
@@ -41,7 +41,7 @@ export async function activate(context: ExtensionContext) {
         supportHtml: true,
       },
       outputChannel: logger,
-    }
+    },
   )
   await client.start()
   context.subscriptions.push(
@@ -59,8 +59,8 @@ export async function activate(context: ExtensionContext) {
               seq,
               (res as any)?.body,
             ]),
-          () => client.sendNotification('tsserver/response', [seq, undefined])
-        )
+          () => client.sendNotification('tsserver/response', [seq, undefined]),
+        ),
     ),
     activateAutoInsertion({ language: 'vue', scheme: 'file' }, client),
     activateDocumentDropEdit({ language: 'vue', scheme: 'file' }, client),
@@ -72,7 +72,7 @@ export async function activate(context: ExtensionContext) {
         }
         await client.start()
       }
-    })
+    }),
   )
   const volarLabs = createLabsInfo()
   volarLabs.addLanguageClient(client)

@@ -1,259 +1,259 @@
 ArrayExpressionAst:
-- ExpressionAst
-- CommandElementAst
-- Ast
+  - ExpressionAst
+  - CommandElementAst
+  - Ast
 ArrayLiteralAst:
-- ExpressionAst
-- CommandElementAst
-- Ast
+  - ExpressionAst
+  - CommandElementAst
+  - Ast
 AssignmentStatementAst:
-- PipelineBaseAst
-- StatementAst
-- Ast
+  - PipelineBaseAst
+  - StatementAst
+  - Ast
 Ast: []
 AttributeAst:
-- AttributeBaseAst
-- Ast
+  - AttributeBaseAst
+  - Ast
 AttributeBaseAst:
-- Ast
+  - Ast
 AttributedExpressionAst:
-- ExpressionAst
-- CommandElementAst
-- Ast
+  - ExpressionAst
+  - CommandElementAst
+  - Ast
 BaseCtorInvokeMemberExpressionAst:
-- InvokeMemberExpressionAst
-- MemberExpressionAst
-- ExpressionAst
-- CommandElementAst
-- Ast
+  - InvokeMemberExpressionAst
+  - MemberExpressionAst
+  - ExpressionAst
+  - CommandElementAst
+  - Ast
 BinaryExpressionAst:
-- ExpressionAst
-- CommandElementAst
-- Ast
+  - ExpressionAst
+  - CommandElementAst
+  - Ast
 BlockStatementAst:
-- StatementAst
-- Ast
+  - StatementAst
+  - Ast
 BreakStatementAst:
-- StatementAst
-- Ast
+  - StatementAst
+  - Ast
 CatchClauseAst:
-- Ast
+  - Ast
 ChainableAst:
-- PipelineBaseAst
-- StatementAst
-- Ast
+  - PipelineBaseAst
+  - StatementAst
+  - Ast
 CommandAst:
-- CommandBaseAst
-- StatementAst
-- Ast
+  - CommandBaseAst
+  - StatementAst
+  - Ast
 CommandBaseAst:
-- StatementAst
-- Ast
+  - StatementAst
+  - Ast
 CommandElementAst:
-- Ast
+  - Ast
 CommandExpressionAst:
-- CommandBaseAst
-- StatementAst
-- Ast
+  - CommandBaseAst
+  - StatementAst
+  - Ast
 CommandParameterAst:
-- CommandElementAst
-- Ast
+  - CommandElementAst
+  - Ast
 ConfigurationDefinitionAst:
-- StatementAst
-- Ast
+  - StatementAst
+  - Ast
 ConstantExpressionAst:
-- ExpressionAst
-- CommandElementAst
-- Ast
+  - ExpressionAst
+  - CommandElementAst
+  - Ast
 ContinueStatementAst:
-- StatementAst
-- Ast
+  - StatementAst
+  - Ast
 ConvertExpressionAst:
-- AttributedExpressionAst
-- ExpressionAst
-- CommandElementAst
-- Ast
+  - AttributedExpressionAst
+  - ExpressionAst
+  - CommandElementAst
+  - Ast
 DataStatementAst:
-- StatementAst
-- Ast
+  - StatementAst
+  - Ast
 DoUntilStatementAst:
-- LoopStatementAst
-- LabeledStatementAst
-- StatementAst
-- Ast
+  - LoopStatementAst
+  - LabeledStatementAst
+  - StatementAst
+  - Ast
 DoWhileStatementAst:
-- LoopStatementAst
-- LabeledStatementAst
-- StatementAst
-- Ast
+  - LoopStatementAst
+  - LabeledStatementAst
+  - StatementAst
+  - Ast
 DynamicKeywordStatementAst:
-- StatementAst
-- Ast
+  - StatementAst
+  - Ast
 ErrorExpressionAst:
-- ExpressionAst
-- CommandElementAst
-- Ast
+  - ExpressionAst
+  - CommandElementAst
+  - Ast
 ErrorStatementAst:
-- PipelineBaseAst
-- StatementAst
-- Ast
+  - PipelineBaseAst
+  - StatementAst
+  - Ast
 ExitStatementAst:
-- StatementAst
-- Ast
+  - StatementAst
+  - Ast
 ExpandableStringExpressionAst:
-- ExpressionAst
-- CommandElementAst
-- Ast
+  - ExpressionAst
+  - CommandElementAst
+  - Ast
 ExpressionAst:
-- CommandElementAst
-- Ast
+  - CommandElementAst
+  - Ast
 FileRedirectionAst:
-- RedirectionAst
-- Ast
+  - RedirectionAst
+  - Ast
 ForEachStatementAst:
-- LoopStatementAst
-- LabeledStatementAst
-- StatementAst
-- Ast
+  - LoopStatementAst
+  - LabeledStatementAst
+  - StatementAst
+  - Ast
 ForStatementAst:
-- LoopStatementAst
-- LabeledStatementAst
-- StatementAst
-- Ast
+  - LoopStatementAst
+  - LabeledStatementAst
+  - StatementAst
+  - Ast
 FunctionDefinitionAst:
-- StatementAst
-- Ast
+  - StatementAst
+  - Ast
 FunctionMemberAst:
-- MemberAst
-- Ast
+  - MemberAst
+  - Ast
 HashtableAst:
-- ExpressionAst
-- CommandElementAst
-- Ast
+  - ExpressionAst
+  - CommandElementAst
+  - Ast
 IfStatementAst:
-- StatementAst
-- Ast
+  - StatementAst
+  - Ast
 IndexExpressionAst:
-- ExpressionAst
-- CommandElementAst
-- Ast
+  - ExpressionAst
+  - CommandElementAst
+  - Ast
 InvokeMemberExpressionAst:
-- MemberExpressionAst
-- ExpressionAst
-- CommandElementAst
-- Ast
+  - MemberExpressionAst
+  - ExpressionAst
+  - CommandElementAst
+  - Ast
 LabeledStatementAst:
-- StatementAst
-- Ast
+  - StatementAst
+  - Ast
 LoopStatementAst:
-- LabeledStatementAst
-- StatementAst
-- Ast
+  - LabeledStatementAst
+  - StatementAst
+  - Ast
 MemberAst:
-- Ast
+  - Ast
 MemberExpressionAst:
-- ExpressionAst
-- CommandElementAst
-- Ast
+  - ExpressionAst
+  - CommandElementAst
+  - Ast
 MergingRedirectionAst:
-- RedirectionAst
-- Ast
+  - RedirectionAst
+  - Ast
 NamedAttributeArgumentAst:
-- Ast
+  - Ast
 NamedBlockAst:
-- Ast
+  - Ast
 ParamBlockAst:
-- Ast
+  - Ast
 ParameterAst:
-- Ast
+  - Ast
 ParenExpressionAst:
-- ExpressionAst
-- CommandElementAst
-- Ast
+  - ExpressionAst
+  - CommandElementAst
+  - Ast
 PipelineAst:
-- ChainableAst
-- PipelineBaseAst
-- StatementAst
-- Ast
+  - ChainableAst
+  - PipelineBaseAst
+  - StatementAst
+  - Ast
 PipelineBaseAst:
-- StatementAst
-- Ast
+  - StatementAst
+  - Ast
 PipelineChainAst:
-- ChainableAst
-- PipelineBaseAst
-- StatementAst
-- Ast
+  - ChainableAst
+  - PipelineBaseAst
+  - StatementAst
+  - Ast
 PropertyMemberAst:
-- MemberAst
-- Ast
+  - MemberAst
+  - Ast
 RedirectionAst:
-- Ast
+  - Ast
 ReturnStatementAst:
-- StatementAst
-- Ast
+  - StatementAst
+  - Ast
 ScriptBlockAst:
-- Ast
+  - Ast
 ScriptBlockExpressionAst:
-- ExpressionAst
-- CommandElementAst
-- Ast
+  - ExpressionAst
+  - CommandElementAst
+  - Ast
 StatementAst:
-- Ast
+  - Ast
 StatementBlockAst:
-- Ast
+  - Ast
 StringConstantExpressionAst:
-- ConstantExpressionAst
-- ExpressionAst
-- CommandElementAst
-- Ast
+  - ConstantExpressionAst
+  - ExpressionAst
+  - CommandElementAst
+  - Ast
 SubExpressionAst:
-- ExpressionAst
-- CommandElementAst
-- Ast
+  - ExpressionAst
+  - CommandElementAst
+  - Ast
 SwitchStatementAst:
-- LabeledStatementAst
-- StatementAst
-- Ast
+  - LabeledStatementAst
+  - StatementAst
+  - Ast
 TernaryExpressionAst:
-- ExpressionAst
-- CommandElementAst
-- Ast
+  - ExpressionAst
+  - CommandElementAst
+  - Ast
 ThrowStatementAst:
-- StatementAst
-- Ast
+  - StatementAst
+  - Ast
 TrapStatementAst:
-- StatementAst
-- Ast
+  - StatementAst
+  - Ast
 TryStatementAst:
-- StatementAst
-- Ast
+  - StatementAst
+  - Ast
 TypeConstraintAst:
-- AttributeBaseAst
-- Ast
+  - AttributeBaseAst
+  - Ast
 TypeDefinitionAst:
-- StatementAst
-- Ast
+  - StatementAst
+  - Ast
 TypeExpressionAst:
-- ExpressionAst
-- CommandElementAst
-- Ast
+  - ExpressionAst
+  - CommandElementAst
+  - Ast
 UnaryExpressionAst:
-- ExpressionAst
-- CommandElementAst
-- Ast
+  - ExpressionAst
+  - CommandElementAst
+  - Ast
 UsingExpressionAst:
-- ExpressionAst
-- CommandElementAst
-- Ast
+  - ExpressionAst
+  - CommandElementAst
+  - Ast
 UsingStatementAst:
-- StatementAst
-- Ast
+  - StatementAst
+  - Ast
 VariableExpressionAst:
-- ExpressionAst
-- CommandElementAst
-- Ast
+  - ExpressionAst
+  - CommandElementAst
+  - Ast
 WhileStatementAst:
-- LoopStatementAst
-- LabeledStatementAst
-- StatementAst
-- Ast
+  - LoopStatementAst
+  - LabeledStatementAst
+  - StatementAst
+  - Ast

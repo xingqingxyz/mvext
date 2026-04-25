@@ -237,9 +237,7 @@ async function hello({ a }, [b]) {
 }
 // after
 const hello = async ({ a }, [b]) => (
-  console.log('hello'),
-  (a.b += 3),
-  a.b + c.d
+  console.log('hello'), (a.b += 3), a.b + c.d
 )
 //#endregion
 

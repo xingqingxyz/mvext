@@ -2,44 +2,44 @@ ArrayExpressionAst: []
 ArrayLiteralAst: []
 AssignmentStatementAst: []
 Ast:
-- AttributeBaseAst
-- CatchClauseAst
-- CommandElementAst
-- MemberAst
-- NamedAttributeArgumentAst
-- NamedBlockAst
-- ParamBlockAst
-- ParameterAst
-- RedirectionAst
-- ScriptBlockAst
-- StatementAst
-- StatementBlockAst
+  - AttributeBaseAst
+  - CatchClauseAst
+  - CommandElementAst
+  - MemberAst
+  - NamedAttributeArgumentAst
+  - NamedBlockAst
+  - ParamBlockAst
+  - ParameterAst
+  - RedirectionAst
+  - ScriptBlockAst
+  - StatementAst
+  - StatementBlockAst
 AttributeAst: []
 AttributeBaseAst:
-- AttributeAst
-- TypeConstraintAst
+  - AttributeAst
+  - TypeConstraintAst
 AttributedExpressionAst:
-- ConvertExpressionAst
+  - ConvertExpressionAst
 BaseCtorInvokeMemberExpressionAst: []
 BinaryExpressionAst: []
 BlockStatementAst: []
 BreakStatementAst: []
 CatchClauseAst: []
 ChainableAst:
-- PipelineAst
-- PipelineChainAst
+  - PipelineAst
+  - PipelineChainAst
 CommandAst: []
 CommandBaseAst:
-- CommandAst
-- CommandExpressionAst
+  - CommandAst
+  - CommandExpressionAst
 CommandElementAst:
-- CommandParameterAst
-- ExpressionAst
+  - CommandParameterAst
+  - ExpressionAst
 CommandExpressionAst: []
 CommandParameterAst: []
 ConfigurationDefinitionAst: []
 ConstantExpressionAst:
-- StringConstantExpressionAst
+  - StringConstantExpressionAst
 ContinueStatementAst: []
 ConvertExpressionAst: []
 DataStatementAst: []
@@ -51,24 +51,24 @@ ErrorStatementAst: []
 ExitStatementAst: []
 ExpandableStringExpressionAst: []
 ExpressionAst:
-- ArrayExpressionAst
-- ArrayLiteralAst
-- AttributedExpressionAst
-- BinaryExpressionAst
-- ConstantExpressionAst
-- ErrorExpressionAst
-- ExpandableStringExpressionAst
-- HashtableAst
-- IndexExpressionAst
-- MemberExpressionAst
-- ParenExpressionAst
-- ScriptBlockExpressionAst
-- SubExpressionAst
-- TernaryExpressionAst
-- TypeExpressionAst
-- UnaryExpressionAst
-- UsingExpressionAst
-- VariableExpressionAst
+  - ArrayExpressionAst
+  - ArrayLiteralAst
+  - AttributedExpressionAst
+  - BinaryExpressionAst
+  - ConstantExpressionAst
+  - ErrorExpressionAst
+  - ExpandableStringExpressionAst
+  - HashtableAst
+  - IndexExpressionAst
+  - MemberExpressionAst
+  - ParenExpressionAst
+  - ScriptBlockExpressionAst
+  - SubExpressionAst
+  - TernaryExpressionAst
+  - TypeExpressionAst
+  - UnaryExpressionAst
+  - UsingExpressionAst
+  - VariableExpressionAst
 FileRedirectionAst: []
 ForEachStatementAst: []
 ForStatementAst: []
@@ -78,21 +78,21 @@ HashtableAst: []
 IfStatementAst: []
 IndexExpressionAst: []
 InvokeMemberExpressionAst:
-- BaseCtorInvokeMemberExpressionAst
+  - BaseCtorInvokeMemberExpressionAst
 LabeledStatementAst:
-- LoopStatementAst
-- SwitchStatementAst
+  - LoopStatementAst
+  - SwitchStatementAst
 LoopStatementAst:
-- DoUntilStatementAst
-- DoWhileStatementAst
-- ForEachStatementAst
-- ForStatementAst
-- WhileStatementAst
+  - DoUntilStatementAst
+  - DoWhileStatementAst
+  - ForEachStatementAst
+  - ForStatementAst
+  - WhileStatementAst
 MemberAst:
-- FunctionMemberAst
-- PropertyMemberAst
+  - FunctionMemberAst
+  - PropertyMemberAst
 MemberExpressionAst:
-- InvokeMemberExpressionAst
+  - InvokeMemberExpressionAst
 MergingRedirectionAst: []
 NamedAttributeArgumentAst: []
 NamedBlockAst: []
@@ -101,36 +101,36 @@ ParameterAst: []
 ParenExpressionAst: []
 PipelineAst: []
 PipelineBaseAst:
-- AssignmentStatementAst
-- ChainableAst
-- ErrorStatementAst
+  - AssignmentStatementAst
+  - ChainableAst
+  - ErrorStatementAst
 PipelineChainAst: []
 PropertyMemberAst: []
 RedirectionAst:
-- FileRedirectionAst
-- MergingRedirectionAst
+  - FileRedirectionAst
+  - MergingRedirectionAst
 ReturnStatementAst: []
 ScriptBlockAst: []
 ScriptBlockExpressionAst: []
 StatementAst:
-- BlockStatementAst
-- BreakStatementAst
-- CommandBaseAst
-- ConfigurationDefinitionAst
-- ContinueStatementAst
-- DataStatementAst
-- DynamicKeywordStatementAst
-- ExitStatementAst
-- FunctionDefinitionAst
-- IfStatementAst
-- LabeledStatementAst
-- PipelineBaseAst
-- ReturnStatementAst
-- ThrowStatementAst
-- TrapStatementAst
-- TryStatementAst
-- TypeDefinitionAst
-- UsingStatementAst
+  - BlockStatementAst
+  - BreakStatementAst
+  - CommandBaseAst
+  - ConfigurationDefinitionAst
+  - ContinueStatementAst
+  - DataStatementAst
+  - DynamicKeywordStatementAst
+  - ExitStatementAst
+  - FunctionDefinitionAst
+  - IfStatementAst
+  - LabeledStatementAst
+  - PipelineBaseAst
+  - ReturnStatementAst
+  - ThrowStatementAst
+  - TrapStatementAst
+  - TryStatementAst
+  - TypeDefinitionAst
+  - UsingStatementAst
 StatementBlockAst: []
 StringConstantExpressionAst: []
 SubExpressionAst: []

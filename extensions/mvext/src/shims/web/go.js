@@ -1,3 +1,4 @@
+// oxlint-disable
 const encoder = new TextEncoder('utf-8')
 const decoder = new TextDecoder('utf-8')
 let reinterpretBuf = new DataView(new ArrayBuffer(8))

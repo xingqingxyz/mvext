@@ -1,23 +1,47 @@
 {
-  "activationEvents": [
-    "onStartupFinished"
+  "name": "mvext",
+  "displayName": "Make VSCode Extension",
+  "version": "0.24.0",
+  "private": true,
+  "description": "Make extension of completers, ast viewers, code launchers...",
+  "categories": [
+    "Formatters",
+    "Other",
+    "Programming Languages"
   ],
-  "author": "Ming Chen <cm.email@qq.com> (https://github.com/xingqingxyz)",
-  "browser": "./dist/extension.cjs",
+  "keywords": [
+    "ast",
+    "markdown",
+    "powershell",
+    "refactor",
+    "tree-sitter"
+  ],
   "bugs": {
     "url": "https://github.com/xingqingxyz/mvext/issues"
   },
-  "capabilities": {
-    "untrustedWorkspaces": {
-      "supported": true
-    },
-    "virtualWorkspaces": true
+  "license": "MIT",
+  "author": "Ming Chen <cm.email@qq.com> (https://github.com/xingqingxyz)",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/xingqingxyz/mvext"
   },
-  "categories": [
-    "Other",
-    "Formatters",
-    "Programming Languages"
-  ],
+  "publisher": "xingqingxyz",
+  "type": "module",
+  "main": "./dist/extension.js",
+  "browser": "./dist/extension.cjs",
+  "scripts": {
+    "extension:install": "vsce pack -o mvext.vsix && code --install-extension mvext.vsix",
+    "lint": "concurrently \"tsc --noEmit\" \"oxlint --type-aware --fix\"",
+    "postinstall": "node ./scripts/postinstall.ts",
+    "test": "mocha",
+    "vscode:prepublish": "concurrently \"dotnet build -c Release\" \"rolldown -c --environment NODE_ENV:production\" \"rolldown -c --environment NODE_ENV:production,PLATFORM:web\"",
+    "watch-web": "rolldown -c -w --environment PLATFORM:web",
+    "watch": "rolldown -c -w"
+  },
+  "devDependencies": {
+    "@johnnymorganz/stylua": "^2.4.0",
+    "sh-syntax": "^0.5.8"
+  },
   "contributes": {
     "commands": [
       {
@@ -530,14 +554,14 @@
       {
         "applyTo": "allDocuments",
         "fileLocation": "relative",
-        "label": "Rollup problem matcher",
-        "name": "rollup",
+        "label": "rolldown problem matcher",
+        "name": "rolldown",
         "pattern": {
           "message": 1,
           "regexp": "^\\[!\\] (.+)$"
         },
         "severity": "error",
-        "source": "rollup"
+        "source": "rolldown"
       },
       {
         "applyTo": "allDocuments",
@@ -549,11 +573,11 @@
             "regexp": "^\\[\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}\\] waiting for changes\\.{3}$"
           }
         },
-        "base": "$rollup",
+        "base": "$rolldown",
         "fileLocation": "relative",
-        "label": "Rollup watch problem matcher",
-        "name": "rollup-watch",
-        "source": "rollup"
+        "label": "rolldown watch problem matcher",
+        "name": "rolldown-watch",
+        "source": "rolldown"
       }
     ],
     "views": {
@@ -587,54 +611,26 @@
       }
     ]
   },
-  "description": "Make extension of completers, ast viewers, code launchers...",
-  "devDependencies": {
-    "@johnnymorganz/stylua": "^2.3.1",
-    "sh-syntax": "^0.5.8"
-  },
-  "displayName": "Make VSCode Extension",
-  "engines": {
-    "vscode": "^1.109.0"
-  },
+  "activationEvents": [
+    "onStartupFinished"
+  ],
   "extensionKind": [
     "ui",
     "workspace"
   ],
-  "keywords": [
-    "ast",
-    "tree-sitter",
-    "refactor",
-    "markdown",
-    "powershell"
-  ],
-  "license": "MIT",
-  "lint-staged": {
-    "*.{js,ts,json,md}": "prettier -w --cache",
-    "*.{js,ts}": "eslint --fix --cache"
-  },
-  "main": "./dist/extension.js",
   "mocha": {
     "extension": "ts",
     "require": "@swc-node/register/esm-register",
     "spec": "src/test/unit/**/*.test.ts",
     "watch-files": "src/**"
   },
-  "name": "mvext",
-  "private": true,
-  "publisher": "xingqingxyz",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/xingqingxyz/mvext"
+  "engines": {
+    "vscode": "^1.116.0"
   },
-  "scripts": {
-    "extension:install": "vsce pack -o mvext.vsix && code --install-extension mvext.vsix",
-    "lint": "concurrently \"tsc --noEmit\" \"eslint --cache --fix src\"",
-    "postinstall": "node ./scripts/postinstall.ts",
-    "test": "mocha",
-    "vscode:prepublish": "concurrently \"dotnet build -c Release\" \"rollup -c --environment NODE_ENV:production\" \"rollup -c --environment NODE_ENV:production,PLATFORM:web\"",
-    "watch": "rollup -c -w",
-    "watch-web": "rollup -c -w --environment PLATFORM:web"
-  },
-  "type": "module",
-  "version": "0.23.0"
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": true
+    },
+    "virtualWorkspaces": true
+  }
 }

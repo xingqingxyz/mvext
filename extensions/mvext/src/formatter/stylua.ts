@@ -31,7 +31,9 @@ import {
 } from 'vscode'
 
 export class StyluaFormatter
-  implements DocumentRangeFormattingEditProvider, DocumentFormattingEditProvider
+  implements
+    DocumentRangeFormattingEditProvider,
+    DocumentFormattingEditProvider
 {
   constructor(context: ExtensionContext) {
     context.subscriptions.push(
@@ -125,7 +127,9 @@ export class StyluaFormatter
 }
 
 export class StyluaFormatterWasm
-  implements DocumentRangeFormattingEditProvider, DocumentFormattingEditProvider
+  implements
+    DocumentRangeFormattingEditProvider,
+    DocumentFormattingEditProvider
 {
   private static makeConfig(options: FormattingOptions) {
     const config = Config.new()

@@ -21,11 +21,11 @@ async function copyAsJson() {
     'taplo/convertToJson',
     {
       text: selectedText,
-    }
+    },
   )
   if (res.error?.length ?? 0 !== 0) {
     client.outputChannel.appendLine(
-      `Failed to convert TOML to JSON: ${res.error}`
+      `Failed to convert TOML to JSON: ${res.error}`,
     )
     await showMessage('error', 'Copying has failed!')
     return
@@ -33,14 +33,14 @@ async function copyAsJson() {
   try {
     if (!res.text) {
       client.outputChannel.appendLine(
-        `The response shouldn't be empty, but it is.`
+        `The response shouldn't be empty, but it is.`,
       )
       await showMessage('error', 'Copying has failed!')
       return
     }
     await env.clipboard.writeText(res.text)
   } catch (e) {
-    client.outputChannel.appendLine(`Couldn't write to clipboard: ${e}`)
+    client.outputChannel.appendLine(`Couldn't write to clipboard: ${e as any}`)
     await showMessage('error', 'Copying has failed!')
     return
   }
@@ -59,15 +59,15 @@ async function copyAsToml() {
     'taplo/convertToToml',
     {
       text: selectedText,
-    }
+    },
   )
   if (res.error?.length ?? 0 !== 0) {
     client.outputChannel.appendLine(
-      `Failed to convert JSON to TOML: ${res.error}`
+      `Failed to convert JSON to TOML: ${res.error}`,
     )
     const show = await window.showErrorMessage(
       'Copying has failed!',
-      'Show Details'
+      'Show Details',
     )
     if (show) {
       client.outputChannel.show()
@@ -77,11 +77,11 @@ async function copyAsToml() {
   try {
     if (!res.text) {
       client.outputChannel.appendLine(
-        `The response shouldn't be empty, but it is.`
+        `The response shouldn't be empty, but it is.`,
       )
       const show = await window.showErrorMessage(
         'Copying has failed!',
-        'Show Details'
+        'Show Details',
       )
       if (show) {
         client.outputChannel.show()
@@ -90,10 +90,10 @@ async function copyAsToml() {
     }
     await env.clipboard.writeText(res.text)
   } catch (e) {
-    client.outputChannel.appendLine(`Couldn't write to clipboard: ${e}`)
+    client.outputChannel.appendLine(`Couldn't write to clipboard: ${e as any}`)
     const show = await window.showErrorMessage(
       'Copying has failed!',
-      'Show Details'
+      'Show Details',
     )
     if (show) {
       client.outputChannel.show()
@@ -108,10 +108,10 @@ async function pasteAsJson() {
   try {
     input = await env.clipboard.readText()
   } catch (e) {
-    client.outputChannel.appendLine(`Failed to read from clipboard:${e}`)
+    client.outputChannel.appendLine(`Failed to read from clipboard:${e as any}`)
     const show = await window.showErrorMessage(
       'Paste from clipboard has failed!',
-      'Show Details'
+      'Show Details',
     )
     if (show) {
       client.outputChannel.show()
@@ -122,13 +122,13 @@ async function pasteAsJson() {
     'taplo/convertToJson',
     {
       text: input,
-    }
+    },
   )
   if (res.error?.length ?? 0 !== 0) {
     client.outputChannel.appendLine(`Failed to convert to JSON: ${res.error}`)
     const show = await window.showErrorMessage(
       'Pasting JSON has failed!',
-      'Show Details'
+      'Show Details',
     )
     if (show) {
       client.outputChannel.show()
@@ -145,10 +145,10 @@ async function pasteAsToml() {
   try {
     input = await env.clipboard.readText()
   } catch (e) {
-    client.outputChannel.appendLine(`Failed to read from clipboard:${e}`)
+    client.outputChannel.appendLine(`Failed to read from clipboard:${e as any}`)
     const show = await window.showErrorMessage(
       'Paste from clipboard has failed!',
-      'Show Details'
+      'Show Details',
     )
     if (show) {
       client.outputChannel.show()
@@ -159,13 +159,13 @@ async function pasteAsToml() {
     'taplo/convertToToml',
     {
       text: input,
-    }
+    },
   )
   if (res.error?.length ?? 0 !== 0) {
     client.outputChannel.appendLine(`Failed to convert to TOML: ${res.error}`)
     const show = await window.showErrorMessage(
       'Paste from clipboard has failed!',
-      'Show Details'
+      'Show Details',
     )
     if (show) {
       client.outputChannel.show()
@@ -193,7 +193,7 @@ async function selectSchema() {
     'taplo/associatedSchema',
     {
       documentUri,
-    }
+    },
   )
   const selection = await window.showQuickPick<SchemaItem>(
     schemasResp.schemas.map((s) => ({
@@ -203,7 +203,7 @@ async function selectSchema() {
       picked: selectedSchema.schema?.url === s.url,
       url: s.url,
       meta: s.meta,
-    }))
+    })),
   )
   if (!selection) {
     return
@@ -218,7 +218,7 @@ async function selectSchema() {
   })
 }
 
-function schemaDescription(meta: any | undefined): string | undefined {
+function schemaDescription(meta: any): string | undefined {
   if (typeof meta?.description === 'string') {
     return meta.description
   } else {
@@ -237,6 +237,6 @@ export function registerCommands(context: ExtensionContext) {
     commands.registerCommand('toml.copyAsToml', copyAsToml),
     commands.registerCommand('toml.pasteAsJson', pasteAsJson),
     commands.registerCommand('toml.pasteAsToml', pasteAsToml),
-    commands.registerCommand('toml.selectSchema', selectSchema)
+    commands.registerCommand('toml.selectSchema', selectSchema),
   )
 }

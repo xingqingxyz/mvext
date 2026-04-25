@@ -1,0 +1,16 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["typescript", "unicorn", "oxc"],
+  "categories": {
+    "correctness": "error"
+  },
+  "rules": {},
+  "ignorePatterns": [
+    "*.js",
+    "extensions/mvext/src/components/treeSitter/language/*.ts",
+    "extensions/mvext/resources/vscode.d.ts"
+  ],
+  "env": {
+    "builtin": true
+  }
+}

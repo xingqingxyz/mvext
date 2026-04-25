@@ -27,9 +27,8 @@ before(async function () {
   this.parser = new Parser().setLanguage(
     await Language.load(
       fileURLToPath(
-        import.meta.resolve(
-          '@vscode/tree-sitter-wasm/wasm/tree-sitter-javascript.wasm',
-        ),
+        import.meta
+          .resolve('@vscode/tree-sitter-wasm/wasm/tree-sitter-javascript.wasm'),
       ),
     ),
   )

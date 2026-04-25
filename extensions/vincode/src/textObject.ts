@@ -11,11 +11,7 @@ export class TextObject {
   ae(document: TextDocument, position: Position): Range {
     return new Range(0, 0, document.lineCount, 0)
   }
-  aw(
-    document: TextDocument,
-    position: Position,
-    reWord: RegExp | undefined = undefined,
-  ): Range {
+  aw(document: TextDocument, position: Position, reWord?: RegExp): Range {
     const range = document.getWordRangeAtPosition(position, reWord)
     if (!range) {
       return new Range(position, position)
@@ -27,11 +23,7 @@ export class TextObject {
       .match(/^\s*/)![0].length
     return range.with(undefined, position.with(undefined, character))
   }
-  iw(
-    document: TextDocument,
-    position: Position,
-    reWord: RegExp | undefined = undefined,
-  ): Range {
+  iw(document: TextDocument, position: Position, reWord?: RegExp): Range {
     return (
       document.getWordRangeAtPosition(position, reWord) ??
       new Range(position, position)

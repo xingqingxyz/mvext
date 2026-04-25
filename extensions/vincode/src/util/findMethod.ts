@@ -48,7 +48,6 @@ export namespace findWord {
     keepLine?: boolean
     reverse?: boolean
   }
-  // eslint-disable-next-line prefer-const
   export let context: Context = {
     findType: 'f',
     findSequence: '',
@@ -78,9 +77,9 @@ export namespace findRegexp {
     findRegexp: RegExp
     reverse?: boolean
   }
-  // eslint-disable-next-line prefer-const
   export let context: Context = {
     findType: '/',
+    // oxlint-disable-next-line no-control-regex
     findRegexp: /\0/,
   }
 }

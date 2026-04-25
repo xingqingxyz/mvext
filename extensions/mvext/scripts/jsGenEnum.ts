@@ -1,3 +1,4 @@
+// oxlint-disable no-shadow-restricted-names
 import { appendFile } from 'fs/promises'
 
 export enum javascript {

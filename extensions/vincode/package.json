@@ -1,20 +1,32 @@
 {
-  "activationEvents": [
-    "onStartupFinished"
-  ],
-  "author": "Ming Chen <cm.email@qq.com> (https://github.com/xingqingxyz)",
-  "bugs": {
-    "url": "https://github.com/xingqingxyz/vincode/issues"
-  },
-  "capabilities": {
-    "untrustedWorkspaces": {
-      "supported": true
-    },
-    "virtualWorkspaces": true
-  },
+  "name": "vincode",
+  "displayName": "Morden Vim in VSCode",
+  "version": "0.3.0",
+  "private": true,
+  "description": "Bring benefits from Vim to VSCode.",
   "categories": [
     "Keymaps"
   ],
+  "bugs": {
+    "url": "https://github.com/xingqingxyz/vincode/issues"
+  },
+  "author": "Ming Chen <cm.email@qq.com> (https://github.com/xingqingxyz)",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/xingqingxyz/vincode"
+  },
+  "publisher": "xingqingxyz",
+  "type": "module",
+  "main": "./dist/extension.js",
+  "browser": "./dist/extension.cjs",
+  "scripts": {
+    "extension:install": "vsce pack -o vincode.vsix && code --install-extension vincode.vsix",
+    "lint": "concurrently \"tsc --noEmit\" \"oxlint --type-aware --fix\"",
+    "pretest": "rolldown -c --environment NODE_ENV:test",
+    "vscode:prepublish": "concurrently \"rolldown -c --environment NODE_ENV:production\" \"rolldown -c --environment NODE_ENV:production,PLATFORM:web\"",
+    "watch-web": "rolldown -c -w --environment PLATFORM:web",
+    "watch": "rolldown -c -w"
+  },
   "contributes": {
     "commands": [
       {
@@ -180,35 +192,19 @@
       }
     ]
   },
-  "description": "Bring benefits from Vim to VSCode.",
-  "displayName": "Morden Vim in VSCode",
-  "engines": {
-    "vscode": "^1.109.0"
-  },
+  "activationEvents": [
+    "onStartupFinished"
+  ],
   "extensionKind": [
     "ui"
   ],
-  "lint-staged": {
-    "*.{js,ts,json,md}": "prettier --cache -w",
-    "*.{js,ts}": "eslint --cache --fix"
+  "engines": {
+    "vscode": "^1.116.0"
   },
-  "main": "./dist/extension.js",
-  "name": "vincode",
-  "private": true,
-  "publisher": "xingqingxyz",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/xingqingxyz/vincode"
-  },
-  "scripts": {
-    "_esbuild": "esbuild --define:__DEV__=true --bundle --external:vscode --format=esm --outfile=dist/extension.js --platform=node --target=node22 src/extension.ts",
-    "extension:install": "vsce pack -o vincode.vsix && code --install-extension vincode.vsix",
-    "lint": "concurrently \"tsc --noEmit\" \"eslint --cache --fix src\"",
-    "pretest": "pnpm _esbuild --sourcemap && esbuild --format=esm --outdir=out/test --platform=node --target=node22 src/test/**/*.ts",
-    "test": "vscode-test",
-    "vscode:prepublish": "pnpm _esbuild --define:__DEV__=false --minify",
-    "watch": "pnpm _esbuild --sourcemap --watch"
-  },
-  "type": "module",
-  "version": "0.2.0"
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": true
+    },
+    "virtualWorkspaces": true
+  }
 }

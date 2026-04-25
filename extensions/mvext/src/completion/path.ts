@@ -110,6 +110,7 @@ export class PathCompleteProvider implements CompletionItemProvider {
     const text = document
       .lineAt(position)
       .text.slice(0, position.character)
+      // oxlint-disable-next-line no-control-regex
       .match(/(?:[-\w\\/.+,#$%{}[\]@!~=:]|[^\x00-\xff])+$/)?.[0]
     if (!text) {
       return

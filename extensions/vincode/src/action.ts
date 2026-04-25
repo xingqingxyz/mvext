@@ -11,9 +11,7 @@ class Action {
   }
   async R(count: number) {
     await modeController.setMode('insert')
-    await await commands.executeCommand(
-      'editor.action.toggleOvertypeInsertMode',
-    )
+    await commands.executeCommand('editor.action.toggleOvertypeInsertMode')
   }
   async u(count: number) {
     while (count--) {
@@ -340,7 +338,7 @@ export function* produceAction(): Generator<[string, ActionMeta]> {
           {
             kind: ActionHandlerKind.Immediate,
             handler(context) {
-              action[name as '~'](context.count ?? 1)
+              return action[name as '~'](context.count ?? 1)
             },
           },
         ]
@@ -352,7 +350,7 @@ export function* produceAction(): Generator<[string, ActionMeta]> {
             kind: ActionHandlerKind.Count,
             count: 1,
             handler(context) {
-              action[name as 'S'](context.count ?? 1, context.argStr!)
+              return action[name as 'S'](context.count ?? 1, context.argStr!)
             },
           },
         ]

@@ -10,8 +10,7 @@ async function symlinkWasm() {
     'tree-sitter-tsx': 'tree-sitter-typescriptreact',
   }
   const getBaseName = (file: string) => (
-    (file = path.basename(file, '.wasm')),
-    baseNameMap[file as 'main'] ?? file
+    (file = path.basename(file, '.wasm')), baseNameMap[file as 'main'] ?? file
   )
   await fs.rm('dist', { recursive: true, force: true })
   await fs.mkdir('dist')

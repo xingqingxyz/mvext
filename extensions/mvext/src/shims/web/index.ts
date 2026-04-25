@@ -6,3 +6,4 @@ declare const self: typeof globalThis & { Go: typeof Go }
 // vscode web worker
 self.process = process
 self.Go = Go
+console.log('Go WASM initialized in web worker')

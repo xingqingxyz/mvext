@@ -27,14 +27,13 @@ import { ShfmtFormatter, ShfmtFormatterWasm } from './formatter/shfmt'
 import { StyluaFormatter, StyluaFormatterWasm } from './formatter/stylua'
 import { logger } from './util/logger'
 import { transformCaseHelper } from './util/transformCaseHelper'
-
 export type { ExternalApi } from './ExternalApi'
 
 export async function activate(
   context: ExtensionContext,
 ): Promise<ExternalApi> {
   await initTSParser(context)
-  registerTerminalLaunch(context)
+  await registerTerminalLaunch(context)
   HexColorProvider.init(context)
   new TSTreeDataProvier(context)
   new TransformCodeActionProvider(context)

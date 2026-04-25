@@ -7,9 +7,8 @@ await Parser.init()
 const parser = new Parser().setLanguage(
   await Language.load(
     fileURLToPath(
-      import.meta.resolve(
-        '@vscode/tree-sitter-wasm/wasm/tree-sitter-typescript.wasm',
-      ),
+      import.meta
+        .resolve('@vscode/tree-sitter-wasm/wasm/tree-sitter-typescript.wasm'),
     ),
   ),
 )

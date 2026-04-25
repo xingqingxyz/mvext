@@ -72,7 +72,9 @@ class ActionTire {
       yield* child.values()
     }
   }
-  [Symbol.iterator] = this.keys
+  [Symbol.iterator]() {
+    return this.keys()
+  }
 }
 
 export const actionTire = new ActionTire()
