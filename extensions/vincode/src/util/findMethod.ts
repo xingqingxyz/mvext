@@ -7,18 +7,28 @@ import {
 } from './bracketLookup'
 import { logger } from './logger'
 
+export interface FindWordContext {
+  findType: 'f' | 'F' | 't' | 'T'
+  findSequence: string
+  keepLine?: boolean
+  reverse?: boolean
+}
+export let findWordContext: FindWordContext = {
+  findType: 'f',
+  findSequence: '',
+}
 export function findWord(
   document: TextDocument,
   position: Position,
   count: number,
-  context: findWord.Context,
+  context: FindWordContext,
 ): Position {
   if (!context.findSequence.length) {
     logger.debug('find sequence empty')
     return position
   }
   const savePosition = position
-  findWord.context = context
+  findWordContext = context
   for (position of (+(context.findType > 'a') ^ +!context.reverse
     ? preLookup
     : postLookup)(
@@ -41,26 +51,23 @@ export function findWord(
   return position
 }
 
-export namespace findWord {
-  export interface Context {
-    findType: 'f' | 'F' | 't' | 'T'
-    findSequence: string
-    keepLine?: boolean
-    reverse?: boolean
-  }
-  export let context: Context = {
-    findType: 'f',
-    findSequence: '',
-  }
+export interface FindRegexpContext {
+  findType: '/' | '?'
+  findRegexp: RegExp
+  reverse?: boolean
 }
-
+export let findRegexpContext: FindRegexpContext = {
+  findType: '/',
+  // oxlint-disable-next-line no-control-regex
+  findRegexp: /\0/,
+}
 export function findRegexp(
   document: TextDocument,
   position: Position,
   count: number,
-  context: findRegexp.Context,
+  context: FindRegexpContext,
 ) {
-  findRegexp.context = context
+  findRegexpContext = context
   for (position of (+(context.findType === '/') ^ +!context.reverse
     ? preLookupRegExp
     : postLookupRegExp)(document, position, context.findRegexp, true)) {
@@ -69,17 +76,4 @@ export function findRegexp(
     }
   }
   return position
-}
-
-export namespace findRegexp {
-  export interface Context {
-    findType: '/' | '?'
-    findRegexp: RegExp
-    reverse?: boolean
-  }
-  export let context: Context = {
-    findType: '/',
-    // oxlint-disable-next-line no-control-regex
-    findRegexp: /\0/,
-  }
 }

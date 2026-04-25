@@ -6,7 +6,7 @@ import {
   terminalEvalSelection,
   terminalFilterSelection,
 } from './commands/evalSelection'
-import { execScript } from './commands/execScript'
+import { execScript, setDtsPath } from './commands/execScript'
 import { HexColorProvider } from './commands/hexColor'
 import { copyJsonPath } from './commands/jsonPath'
 import { MarkdownBlockRunProvider } from './commands/markdownBlockRun'
@@ -57,7 +57,7 @@ export async function activate(
     if (getExtConfig('pwsh.astTreeView.enabled')) {
       new PwshAstTreeDataProvier(context)
     }
-    execScript.dtsPath = context.asAbsolutePath('resources/global.vscode.d.ts')
+    setDtsPath(context.asAbsolutePath('resources/global.vscode.d.ts'))
   }
   context.subscriptions.push(
     logger,

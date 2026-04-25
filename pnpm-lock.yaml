@@ -32,9 +32,6 @@ importers:
       '@vscode/test-electron':
         specifier: ^2.5.2
         version: 2.5.2
-      '@vscode/tree-sitter-wasm':
-        specifier: ^0.3.1
-        version: 0.3.1
       concurrently:
         specifier: ^9.2.1
         version: 9.2.1
@@ -77,24 +74,27 @@ importers:
       typescript:
         specifier: ^6.0.3
         version: 6.0.3
-      web-tree-sitter:
-        specifier: ^0.26.8
-        version: 0.26.8
       which:
         specifier: ^6.0.1
         version: 6.0.1
 
   extensions/mvext:
-    devDependencies:
+    dependencies:
       '@johnnymorganz/stylua':
         specifier: ^2.4.0
         version: 2.4.0
+      '@vscode/tree-sitter-wasm':
+        specifier: ^0.3.1
+        version: 0.3.1
       sh-syntax:
         specifier: ^0.5.8
         version: 0.5.8
+      web-tree-sitter:
+        specifier: ^0.26.8
+        version: 0.26.8
 
   extensions/toml:
-    devDependencies:
+    dependencies:
       vscode-languageclient:
         specifier: ^9.0.1
         version: 9.0.1
@@ -103,14 +103,13 @@ importers:
 
   extensions/vue:
     dependencies:
-      '@vue/typescript-plugin':
-        specifier: ^3.2.7
-        version: 3.2.7(typescript@6.0.3)
-    devDependencies:
       '@volar/vscode':
         specifier: ^2.4.28
         version: 2.4.28
       '@vue/language-server':
+        specifier: ^3.2.7
+        version: 3.2.7(typescript@6.0.3)
+      '@vue/typescript-plugin':
         specifier: ^3.2.7
         version: 3.2.7(typescript@6.0.3)
 

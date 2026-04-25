@@ -1,4 +1,3 @@
-import path from 'path'
 import { defineConfig } from 'rolldown'
 import { fileURLToPath } from 'url'
 import esbuildMinify from '../../internal/esbuildMinifyPlugin'
@@ -11,8 +10,10 @@ export default defineConfig({
   output: {
     file: isWeb ? 'dist/extension.cjs' : 'dist/extension.js',
     format: isWeb ? 'cjs' : 'es',
+    codeSplitting: !isWeb,
     sourcemap: !isProd,
   },
+  shimMissingExports: true,
   platform: isWeb ? 'browser' : 'node',
   external: ['vscode'],
   resolve: {
@@ -21,25 +22,30 @@ export default defineConfig({
           os: 'os-browserify',
           path: 'path-browserify',
           which: '@/shims/web/which.ts',
-          'web-tree-sitter': path.join(
-            fileURLToPath(import.meta.resolve('web-tree-sitter')),
-            '../tree-sitter.cjs',
-          ),
           ...[
             'child_process',
+            'crypto',
             'fs/promises',
             'fs',
             'module',
             'url',
             'util',
-            'crypto',
+            'vm',
           ].reduce(
-            (o, k) => ((o[k] = '@/shims/empty'), o),
+            (o, k) => (
+              (o[k] = fileURLToPath(
+                import.meta.resolve('../../internal/empty'),
+              )),
+              o
+            ),
             {} as Record<string, string>,
           ),
         }
       : ['sh-syntax', '@johnnymorganz/stylua/web', '@/shims/web'].reduce(
-          (o, k) => ((o[k] = '@/shims/empty'), o),
+          (o, k) => (
+            (o[k] = fileURLToPath(import.meta.resolve('../../internal/empty'))),
+            o
+          ),
           {} as Record<string, string>,
         ),
   },
@@ -51,8 +57,12 @@ export default defineConfig({
     },
     dropLabels: isProd ? ['DEBUG'] : undefined,
     typescript: isProd
-      ? { declaration: {}, optimizeConstEnums: true, optimizeEnums: true }
+      ? {
+          declaration: { sourcemap: true, stripInternal: true },
+          optimizeConstEnums: true,
+          optimizeEnums: true,
+        }
       : undefined,
   },
-  plugins: [isProd && esbuildMinify],
+  plugins: [isProd && esbuildMinify({ keepNames: true })],
 })

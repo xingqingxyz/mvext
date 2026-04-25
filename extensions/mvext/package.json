@@ -38,9 +38,11 @@
     "watch-web": "rolldown -c -w --environment PLATFORM:web",
     "watch": "rolldown -c -w"
   },
-  "devDependencies": {
+  "dependencies": {
     "@johnnymorganz/stylua": "^2.4.0",
-    "sh-syntax": "^0.5.8"
+    "@vscode/tree-sitter-wasm": "^0.3.1",
+    "sh-syntax": "^0.5.8",
+    "web-tree-sitter": "^0.26.8"
   },
   "contributes": {
     "commands": [
@@ -192,12 +194,12 @@
           "default": {
             "bat": "cmd /d /c",
             "javascript": "node -p",
-            "javascriptreact": "tsx -p",
+            "javascriptreact": "node -p",
             "powershell": "pwsh -nop -c",
             "python": "python -c",
             "shellscript": "bash -c",
-            "typescript": "tsx -p",
-            "typescriptreact": "tsx -p"
+            "typescript": "node -p",
+            "typescriptreact": "node -p"
           },
           "markdownDescription": "Map of language to excutable command for eval selections.",
           "type": "object"
@@ -281,7 +283,7 @@
             "powershell": "pwsh -nop",
             "python": "python",
             "shellscript": "bash",
-            "typescript": "tsx"
+            "typescript": "node"
           },
           "markdownDescription": "Languages launch command line definitions.",
           "type": "object"
@@ -331,27 +333,23 @@
         },
         "mvext.treeSitter.syncedLanguages": {
           "default": [
-            "css",
-            "go",
-            "javascript",
-            "javascriptreact",
-            "python",
-            "typescript",
-            "typescriptreact"
-          ],
-          "examples": [
             "cpp",
+            "csharp",
             "css",
             "go",
             "ini",
             "java",
             "javascript",
             "javascriptreact",
-            "typescript",
-            "typescriptreact",
+            "php",
+            "powershell",
             "python",
+            "regex",
+            "ruby",
             "rust",
-            "shellscript"
+            "shellscript",
+            "typescript",
+            "typescriptreact"
           ],
           "items": {
             "type": "string"
@@ -554,14 +552,14 @@
       {
         "applyTo": "allDocuments",
         "fileLocation": "relative",
-        "label": "rolldown problem matcher",
-        "name": "rolldown",
+        "label": "rollup problem matcher",
+        "name": "rollup",
         "pattern": {
           "message": 1,
           "regexp": "^\\[!\\] (.+)$"
         },
         "severity": "error",
-        "source": "rolldown"
+        "source": "rollup"
       },
       {
         "applyTo": "allDocuments",
@@ -573,11 +571,11 @@
             "regexp": "^\\[\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}\\] waiting for changes\\.{3}$"
           }
         },
-        "base": "$rolldown",
+        "base": "$rollup",
         "fileLocation": "relative",
-        "label": "rolldown watch problem matcher",
-        "name": "rolldown-watch",
-        "source": "rolldown"
+        "label": "rollup watch problem matcher",
+        "name": "rollup-watch",
+        "source": "rollup"
       }
     ],
     "views": {
@@ -632,5 +630,8 @@
       "supported": true
     },
     "virtualWorkspaces": true
+  },
+  "vsce": {
+    "dependencies": false
   }
 }

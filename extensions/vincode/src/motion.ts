@@ -14,7 +14,12 @@ import {
   preLookup,
   preLookupRegExp,
 } from './util/bracketLookup'
-import { findRegexp, findWord } from './util/findMethod'
+import {
+  findRegexp,
+  findRegexpContext,
+  findWord,
+  findWordContext,
+} from './util/findMethod'
 
 export class Motion {
   //#region keepLine
@@ -86,7 +91,7 @@ export class Motion {
   ): Position {
     if (!findSequence.length) {
       return findRegexp(document, position, count, {
-        findRegexp: findRegexp.context.findRegexp,
+        findRegexp: findRegexpContext.findRegexp,
         findType,
       })
     }
@@ -109,13 +114,13 @@ export class Motion {
   }
   n(document: TextDocument, position: Position, count: number): Position {
     return findRegexp(document, position, count, {
-      ...findRegexp.context,
+      ...findRegexpContext,
       reverse: false,
     })
   }
   N(document: TextDocument, position: Position, count: number): Position {
     return findRegexp(document, position, count, {
-      ...findRegexp.context,
+      ...findRegexpContext,
       reverse: true,
     })
   }
@@ -296,11 +301,11 @@ export class Motion {
     })
   }
   ';'(document: TextDocument, position: Position, count: number): Position {
-    return findWord(document, position, count, findWord.context)
+    return findWord(document, position, count, findWordContext)
   }
   ','(document: TextDocument, position: Position, count: number): Position {
     return findWord(document, position, count, {
-      ...findWord.context,
+      ...findWordContext,
       reverse: true,
     })
   }

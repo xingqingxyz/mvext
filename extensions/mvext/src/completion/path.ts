@@ -27,7 +27,10 @@ export class PathCompleteProvider implements CompletionItemProvider {
         break
       }
     }
-    if (text.startsWith('/') && document.languageId.endsWith('ignore')) {
+    if (
+      (text.startsWith('/') || text.startsWith('!')) &&
+      document.languageId.endsWith('ignore')
+    ) {
       return Uri.joinPath(document.uri, '..' + text)
     }
     if (path.isAbsolute(text)) {
@@ -121,7 +124,6 @@ export class PathCompleteProvider implements CompletionItemProvider {
     return await workspace.fs.readDirectory(uri).then(
       (dirent) =>
         dirent.map(([name, type]) => {
-          const index = name.indexOf('.') + 1
           let kind
           switch (type) {
             case FileType.Directory:
@@ -143,9 +145,8 @@ export class PathCompleteProvider implements CompletionItemProvider {
             kind,
             commitCharacters,
             sortText: '10',
-            // prevents dobule dot to accept, but keep the first
-            filterText:
-              name.slice(0, index) + name.slice(index).replaceAll('.', ''),
+            // keep first dot only
+            filterText: name.replace(/(?<=\..*)\./g, ''),
           } as CompletionItem
         }),
       noop,

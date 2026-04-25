@@ -1,22 +1,28 @@
-import { formatMessages, transform } from 'esbuild'
+import { formatMessages, transform, type TransformOptions } from 'esbuild'
 import type { Plugin } from 'rolldown'
 
-const esbuildMinify: Plugin = {
-  name: 'esbuild-minify',
-
-  async renderChunk(contents, _, { format, sourcemap }) {
-    const { code, map, warnings } = await transform(contents, {
-      format: format === 'cjs' ? 'cjs' : 'esm',
-      platform: format === 'cjs' ? 'browser' : 'node',
-      target: 'node22',
-      loader: 'js',
-      minify: true,
-      sourcemap: sourcemap === 'hidden' ? false : sourcemap,
-      logLevel: 'warning',
-      logLimit: 10,
-    })
-
-    if (warnings.length > 0) {
+export default function esbuildMinify(opts: TransformOptions = {}): Plugin {
+  return {
+    name: 'esbuild-minify',
+    outputOptions(options) {
+      options.minify = false
+      return options
+    },
+    async renderChunk(contents, _, { format, sourcemap }) {
+      const { code, map, warnings } = await transform(contents, {
+        ...opts,
+        format: format === 'cjs' ? 'cjs' : 'esm',
+        platform: format === 'cjs' ? 'browser' : 'node',
+        target: 'node22',
+        loader: 'js',
+        minify: true,
+        sourcemap: sourcemap === 'hidden' ? false : sourcemap,
+        logLevel: 'warning',
+        logLimit: 10,
+      })
+      if (!warnings.length) {
+        return { code, map }
+      }
       const messages = await formatMessages(warnings, {
         kind: 'warning',
         color: true,
@@ -34,9 +40,7 @@ const esbuildMinify: Plugin = {
             : undefined,
         })
       }
-    }
-
-    return { code, map }
-  },
+      return { code, map }
+    },
+  }
 }
-export default esbuildMinify

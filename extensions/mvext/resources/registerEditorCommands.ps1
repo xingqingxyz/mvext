@@ -13,7 +13,7 @@ function newRandomName {
 }
 
 $ErrorActionPreference = 'Stop'
-Add-Type -LiteralPath $PSScriptRoot/../VisitAst/bin/Release/net9.0/VisitAst.dll
+Add-Type -LiteralPath $PSScriptRoot/../VisitAst/bin/Release/net10.0/VisitAst.dll
 
 PowerShellEditorServices.Commands\Register-EditorCommand -Name 'mvext.sendAstTreeJson' -DisplayName (newRandomName) -ScriptBlock {
   $fileContext = $psEditor.GetEditorContext().CurrentFile

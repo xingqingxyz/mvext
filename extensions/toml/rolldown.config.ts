@@ -24,5 +24,5 @@ export default defineConfig({
       ? { declaration: {}, optimizeConstEnums: true, optimizeEnums: true }
       : undefined,
   },
-  plugins: [isProd && esbuildMinify],
+  plugins: [isProd && esbuildMinify()],
 })

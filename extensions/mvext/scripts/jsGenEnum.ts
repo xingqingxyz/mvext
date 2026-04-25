@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 // oxlint-disable no-shadow-restricted-names
 import { appendFile } from 'fs/promises'
 

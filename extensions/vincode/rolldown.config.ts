@@ -21,8 +21,13 @@ export default defineConfig({
     },
     dropLabels: isProd ? ['DEBUG'] : undefined,
     typescript: isProd
-      ? { declaration: {}, optimizeConstEnums: true, optimizeEnums: true }
-      : undefined,
+      ? {
+          declaration: {},
+          optimizeConstEnums: true,
+          optimizeEnums: true,
+          allowNamespaces: true,
+        }
+      : { allowNamespaces: true },
   },
-  plugins: [isProd && esbuildMinify],
+  plugins: [isProd && esbuildMinify()],
 })

@@ -9,13 +9,13 @@
     "Programming Languages"
   ],
   "bugs": {
-    "url": "https://github.com/xingqingxyz/vue/issues"
+    "url": "https://github.com/xingqingxyz/mvext/issues"
   },
   "license": "MIT",
   "author": "Ming Chen <cm.email@qq.com> (https://github.com/xingqingxyz)",
   "repository": {
     "type": "git",
-    "url": "https://github.com/xingqingxyz/vue"
+    "url": "https://github.com/xingqingxyz/mvext"
   },
   "publisher": "xingqingxyz",
   "type": "module",
@@ -25,18 +25,15 @@
     "extension:install": "node ./scripts/pack.ts && code --install-extension vue.vsix",
     "extension:publish": "node ./scripts/pack.ts && vsce publish -i vue.vsix",
     "lint": "concurrently \"tsc --noEmit\" \"oxlint --type-aware --fix\"",
-    "postinstall": "rolldown -c --environment PREBUILD:1",
+    "postinstall": "rolldown -c --environment NODE_ENV:production,PREBUILD:1",
     "pretest": "rolldown -c --environment NODE_ENV:test",
-    "vscode:prepublish": "concurrently \"rolldown -c --environment NODE_ENV:production\" \"rolldown -c --environment NODE_ENV:production,PLATFORM:web\"",
     "watch-web": "rolldown -c -w --environment PLATFORM:web",
     "watch": "rolldown -c -w"
   },
   "dependencies": {
-    "@vue/typescript-plugin": "^3.2.7"
-  },
-  "devDependencies": {
     "@volar/vscode": "^2.4.28",
-    "@vue/language-server": "^3.2.7"
+    "@vue/language-server": "^3.2.7",
+    "@vue/typescript-plugin": "^3.2.7"
   },
   "contributes": {
     "breakpoints": [

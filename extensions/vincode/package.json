@@ -1,6 +1,6 @@
 {
   "name": "vincode",
-  "displayName": "Morden Vim in VSCode",
+  "displayName": "Vim in VSCode",
   "version": "0.3.0",
   "private": true,
   "description": "Bring benefits from Vim to VSCode.",
@@ -8,12 +8,12 @@
     "Keymaps"
   ],
   "bugs": {
-    "url": "https://github.com/xingqingxyz/vincode/issues"
+    "url": "https://github.com/xingqingxyz/mvext/issues"
   },
   "author": "Ming Chen <cm.email@qq.com> (https://github.com/xingqingxyz)",
   "repository": {
     "type": "git",
-    "url": "https://github.com/xingqingxyz/vincode"
+    "url": "https://github.com/xingqingxyz/mvext"
   },
   "publisher": "xingqingxyz",
   "type": "module",
@@ -206,5 +206,8 @@
       "supported": true
     },
     "virtualWorkspaces": true
+  },
+  "vsce": {
+    "dependencies": false
   }
 }

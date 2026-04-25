@@ -3,6 +3,11 @@ import { constants, runInNewContext } from 'vm'
 import * as vscode from 'vscode'
 import { Position, window } from 'vscode'
 
+export let dtsPath: string
+export function setDtsPath(path: string) {
+  dtsPath = path
+}
+
 export async function execScript() {
   const editor = window.activeTextEditor
   if (!editor) {
@@ -11,10 +16,7 @@ export async function execScript() {
   const text = editor.document.getText()
   if (!text.startsWith('/// <reference path="')) {
     await editor.edit((edit) =>
-      edit.insert(
-        new Position(0, 0),
-        `/// <reference path="${execScript.dtsPath}" />\n`,
-      ),
+      edit.insert(new Position(0, 0), `/// <reference path="${dtsPath}" />\n`),
     )
     logger.info('exec script no reference types, inserted, canceled')
     return
@@ -31,8 +33,4 @@ export async function execScript() {
   } catch (e) {
     logger.error('exec script with vscode api failed:', e)
   }
-}
-
-export namespace execScript {
-  export let dtsPath: string
 }

@@ -9,13 +9,13 @@
     "Programming Languages"
   ],
   "bugs": {
-    "url": "https://github.com/xingqingxyz/toml/issues"
+    "url": "https://github.com/xingqingxyz/mvext/issues"
   },
   "license": "MIT",
   "author": "Ming Chen <cm.email@qq.com> (https://github.com/xingqingxyz)",
   "repository": {
     "type": "git",
-    "url": "https://github.com/xingqingxyz/toml"
+    "url": "https://github.com/xingqingxyz/mvext"
   },
   "publisher": "xingqingxyz",
   "type": "module",
@@ -29,7 +29,7 @@
     "watch-web": "rolldown -c -w --environment PLATFORM:web",
     "watch": "rolldown -c -w"
   },
-  "devDependencies": {
+  "dependencies": {
     "vscode-languageclient": "^9.0.1"
   },
   "contributes": {
@@ -84,14 +84,14 @@
     "grammars": [
       {
         "language": "toml",
-        "path": "./syntax/toml.tmLanguage.json",
+        "path": "./syntaxes/toml.tmLanguage.json",
         "scopeName": "source.toml"
       },
       {
         "injectTo": [
           "text.html.markdown"
         ],
-        "path": "./syntax/toml.frontmatter.tmLanguage.json",
+        "path": "./syntaxes/toml.frontmatter.tmLanguage.json",
         "scopeName": "markdown.toml.frontmatter.codeblock"
       },
       {
@@ -101,7 +101,7 @@
         "injectTo": [
           "text.html.markdown"
         ],
-        "path": "./syntax/toml.markdown.tmLanguage.json",
+        "path": "./syntaxes/toml.markdown.tmLanguage.json",
         "scopeName": "markdown.toml.codeblock"
       }
     ],
@@ -157,5 +157,8 @@
       "supported": true
     },
     "virtualWorkspaces": true
+  },
+  "vsce": {
+    "dependencies": false
   }
 }

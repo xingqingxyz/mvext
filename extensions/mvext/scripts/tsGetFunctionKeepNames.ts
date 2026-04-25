@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 import { readFile } from 'fs/promises'
 import { fileURLToPath } from 'url'
 import { Language, Parser } from 'web-tree-sitter'

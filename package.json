@@ -9,9 +9,6 @@
   ],
   "license": "MIT",
   "author": "Ming Chen <cm.email@qq.com> (https://github.com/xingqingxyz)",
-  "workspaces": [
-    "extensions/*"
-  ],
   "type": "module",
   "scripts": {
     "extension:install": "pnpm run -r extension:install",
@@ -27,7 +24,6 @@
     "@types/which": "^3.0.4",
     "@vscode/test-cli": "^0.0.12",
     "@vscode/test-electron": "^2.5.2",
-    "@vscode/tree-sitter-wasm": "^0.3.1",
     "concurrently": "^9.2.1",
     "esbuild": "^0.28.0",
     "jsonc-parser": "^3.3.1",
@@ -42,7 +38,6 @@
     "simple-git-hooks": "^2.13.1",
     "strip-ansi": "^7.2.0",
     "typescript": "^6.0.3",
-    "web-tree-sitter": "^0.26.8",
     "which": "^6.0.1"
   },
   "simple-git-hooks": {
