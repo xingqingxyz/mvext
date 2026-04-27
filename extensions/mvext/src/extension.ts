@@ -16,8 +16,8 @@ import {
   transformCase,
   transformCaseWithPicker,
 } from './commands/transformCase'
-import { InvokeCompleteProvider } from './completion'
-import { PathCompleteProvider } from './completion/path'
+import { InvokeCompletionItemProvider } from './completion'
+import { PathCompletionItemProvider } from './completion/path'
 import { PwshAstTreeDataProvier } from './components/powershell/astTreeView'
 import { getParser, initTSParser } from './components/treeSitter/parser'
 import { TSTreeDataProvier } from './components/treeSitter/treeView'
@@ -37,8 +37,8 @@ export async function activate(
   HexColorProvider.init(context)
   new TSTreeDataProvier(context)
   new TransformCodeActionProvider(context)
-  new InvokeCompleteProvider(context)
-  new PathCompleteProvider(context)
+  new InvokeCompletionItemProvider(context)
+  new PathCompletionItemProvider(context)
   new MarkdownBlockRunProvider(context)
   if (__WEB__) {
     if (getExtConfig('shfmt.enabled')) {

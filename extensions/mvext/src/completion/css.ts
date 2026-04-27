@@ -11,7 +11,7 @@ import {
 } from 'vscode'
 import type { Node } from 'web-tree-sitter'
 
-export class CssCompleteProvider implements CompletionItemProvider {
+export class CSSCompletionItemProvider implements CompletionItemProvider {
   private static readonly languageIds = Object.freeze([
     'css',
     'scss',
@@ -27,7 +27,7 @@ export class CssCompleteProvider implements CompletionItemProvider {
     token: CancellationToken,
     context: CompletionContext,
   ) {
-    if (!CssCompleteProvider.languageIds.includes(document.languageId)) {
+    if (!CSSCompletionItemProvider.languageIds.includes(document.languageId)) {
       return
     }
     const range = document.getWordRangeAtPosition(position)

@@ -18,7 +18,7 @@ import {
 import { getExtConfig } from '../config'
 import { noop, setTimeoutPm } from '../util'
 
-export class PathCompleteProvider implements CompletionItemProvider {
+export class PathCompletionItemProvider implements CompletionItemProvider {
   private static expandPath(text: string, document: TextDocument) {
     const prefixMap = getExtConfig('pathComplete.prefixMap', document)
     for (const [lhs, rhs] of Object.entries(prefixMap)) {
@@ -110,15 +110,22 @@ export class PathCompleteProvider implements CompletionItemProvider {
     if (token.isCancellationRequested) {
       return
     }
-    const text = document
-      .lineAt(position)
-      .text.slice(0, position.character)
-      // oxlint-disable-next-line no-control-regex
-      .match(/(?:[-\w\\/.+,#$%{}[\]@!~=:]|[^\x00-\xff])+$/)?.[0]
+    let text
+    text = document.lineAt(position).text
+    text = text
+      .slice(0, position.character)
+      .match(
+        new RegExp(
+          (text.length > position.character &&
+          '\'"`'.includes(text[position.character])
+            ? String.raw`(?<=${text[position.character]}).*|`
+            : '') + String.raw`(?:[-\w\\/.+,#$%{}[\]@!~=:]|[^\x00-\xff])+$`,
+        ),
+      )?.[0]
     if (!text) {
       return
     }
-    const uri = PathCompleteProvider.expandPath(text, document)
+    const uri = PathCompletionItemProvider.expandPath(text, document)
     const prefix = uri + (uri.path.endsWith('/') ? '' : '/')
     const commitCharacters = [context.triggerCharacter!]
     return await workspace.fs.readDirectory(uri).then(

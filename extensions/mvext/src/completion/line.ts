@@ -10,7 +10,7 @@ import {
   type TextDocument,
 } from 'vscode'
 
-export class LineCompleteProvider implements CompletionItemProvider {
+export class LineCompletionItemProvider implements CompletionItemProvider {
   *filterDocumentLines(
     document: TextDocument,
     needle: string,

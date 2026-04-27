@@ -12,21 +12,21 @@ import {
   type ProviderResult,
   type TextDocument,
 } from 'vscode'
-import { CssCompleteProvider } from './css'
-import { DictCompleteProvider } from './dict'
-import { LineCompleteProvider } from './line'
-import { UserCompleteProvider } from './user'
+import { CSSCompletionItemProvider } from './css'
+import { DictCompletionItemProvider } from './dict'
+import { LineCompletionItemProvider } from './line'
+import { UserCompletionItemProvider } from './user'
 
 type InvokeCompleteKind = 'css' | 'dict' | 'line' | 'user' | 'none'
 
-export class InvokeCompleteProvider implements CompletionItemProvider {
+export class InvokeCompletionItemProvider implements CompletionItemProvider {
   private kind: InvokeCompleteKind = 'none'
-  private css = new CssCompleteProvider()
+  private css = new CSSCompletionItemProvider()
   private dict: CompletionItemProvider
-  private line = new LineCompleteProvider()
-  private user = new UserCompleteProvider()
+  private line = new LineCompletionItemProvider()
+  private user = new UserCompletionItemProvider()
   constructor(context: ExtensionContext) {
-    this.dict = new DictCompleteProvider(context)
+    this.dict = new DictCompletionItemProvider(context)
     context.subscriptions.push(
       commands.registerCommand(
         'mvext.invokeComplete',

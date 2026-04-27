@@ -152,10 +152,13 @@ export async function initTSParser(context: ExtensionContext) {
   void ({ extensionUri } = context)
   let syncedLanguages: string[]
   await Parser.init({
-    wasmBinary: await workspace.fs.readFile(
-      Uri.joinPath(extensionUri, 'dist/tree-sitter.wasm'),
-    ),
-  } as unknown as EmscriptenModule)
+    wasmBinary: (await workspace.fs.readFile(
+      Uri.joinPath(extensionUri, 'dist/web-tree-sitter.wasm'),
+    )) as unknown as ArrayBuffer,
+    locateFile(url, scriptDirectory) {
+      return Uri.joinPath(extensionUri, scriptDirectory + url).toString()
+    },
+  })
   await setSyncedLanguages(
     (syncedLanguages = getExtConfig('treeSitter.syncedLanguages')),
   )

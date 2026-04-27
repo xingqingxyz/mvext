@@ -22,6 +22,9 @@ export default defineConfig({
           os: 'os-browserify',
           path: 'path-browserify',
           which: '@/shims/web/which.ts',
+          'web-tree-sitter': fileURLToPath(
+            import.meta.resolve('web-tree-sitter'),
+          ),
           ...[
             'child_process',
             'crypto',
@@ -41,13 +44,18 @@ export default defineConfig({
             {} as Record<string, string>,
           ),
         }
-      : ['sh-syntax', '@johnnymorganz/stylua/web', '@/shims/web'].reduce(
+      : [
+          'sh-syntax',
+          '@johnnymorganz/stylua/web',
+          fileURLToPath(import.meta.resolve('./src/shims/web')),
+        ].reduce(
           (o, k) => (
             (o[k] = fileURLToPath(import.meta.resolve('../../internal/empty'))),
             o
           ),
           {} as Record<string, string>,
         ),
+    mainFields: (isWeb ? ['browser'] : []).concat(['module', 'main']),
   },
   transform: {
     target: 'node22',

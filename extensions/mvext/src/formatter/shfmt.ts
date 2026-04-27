@@ -63,10 +63,11 @@ export class ShfmtFormatterWasm implements DocumentFormattingEditProvider {
   private processor: ReturnType<typeof getProcessor>
   constructor(context: ExtensionContext) {
     // non disposable processor, so prevent to leak wasm memory
-    this.processor ??= getProcessor(() =>
-      workspace.fs.readFile(
-        Uri.joinPath(context.extensionUri, 'dist/shfmt.wasm'),
-      ),
+    this.processor ??= getProcessor(
+      () =>
+        workspace.fs.readFile(
+          Uri.joinPath(context.extensionUri, 'dist/shfmt.wasm'),
+        ) as unknown as Promise<ArrayBuffer>,
     )
     context.subscriptions.push(
       languages.registerDocumentFormattingEditProvider(

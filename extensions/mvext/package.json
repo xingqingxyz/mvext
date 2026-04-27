@@ -1,7 +1,7 @@
 {
   "name": "mvext",
   "displayName": "Make VSCode Extension",
-  "version": "0.24.0",
+  "version": "0.24.1",
   "private": true,
   "description": "Make extension of completers, ast viewers, code launchers...",
   "categories": [
@@ -35,8 +35,8 @@
     "postinstall": "node ./scripts/postinstall.ts",
     "test": "mocha",
     "vscode:prepublish": "concurrently \"dotnet build -c Release\" \"rolldown -c --environment NODE_ENV:production\" \"rolldown -c --environment NODE_ENV:production,PLATFORM:web\"",
-    "watch-web": "rolldown -c -w --environment PLATFORM:web",
-    "watch": "rolldown -c -w"
+    "watch": "rolldown -c -w",
+    "watch-web": "rolldown -c -w --environment PLATFORM:web"
   },
   "dependencies": {
     "@johnnymorganz/stylua": "^2.4.0",
@@ -257,7 +257,7 @@
           "type": "object"
         },
         "mvext.stylua.enabled": {
-          "default": false,
+          "default": true,
           "markdownDescription": "Enable stylua formatter for `lua`, requires reload.",
           "type": "boolean"
         },
@@ -558,7 +558,6 @@
           "message": 1,
           "regexp": "^\\[!\\] (.+)$"
         },
-        "severity": "error",
         "source": "rollup"
       },
       {
@@ -576,6 +575,41 @@
         "label": "rollup watch problem matcher",
         "name": "rollup-watch",
         "source": "rollup"
+      },
+      {
+        "applyTo": "allDocuments",
+        "fileLocation": "relative",
+        "label": "rolldown problem matcher",
+        "name": "rolldown",
+        "pattern": [
+          {
+            "column": 3,
+            "file": 1,
+            "line": 2,
+            "message": 5,
+            "regexp": "^(\\S+) \\((\\d+):(\\d+)\\) \\[[^\\]]+\\] (\\w+): (.+)$",
+            "severity": 4
+          }
+        ],
+        "source": "rolldown"
+      },
+      {
+        "applyTo": "allDocuments",
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": {
+            "file": 1,
+            "regexp": "Found ([^,\\s]+)(, [^,\\s]+)* changed, rebuilding..."
+          },
+          "endsPattern": {
+            "regexp": "✔ Rebuilt \\S+ in \\d+\\.\\d+ \\w+."
+          }
+        },
+        "base": "$rolldown",
+        "fileLocation": "relative",
+        "label": "rolldown watch problem matcher",
+        "name": "rolldown-watch",
+        "source": "rolldown"
       }
     ],
     "views": {
@@ -618,7 +652,7 @@
   ],
   "mocha": {
     "extension": "ts",
-    "require": "@swc-node/register/esm-register",
+    "require": "@oxc-node/core/register",
     "spec": "src/test/unit/**/*.test.ts",
     "watch-files": "src/**"
   },

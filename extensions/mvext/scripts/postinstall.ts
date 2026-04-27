@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import fs from 'fs'
 import path from 'path'
+import { fileURLToPath } from 'url'
 
 const excluded: string[] = []
 const baseNameMap = {
@@ -16,11 +17,14 @@ const getBaseName = (file: string) => (
 fs.rmSync('dist', { recursive: true, force: true })
 fs.mkdirSync('dist')
 fs.globSync('node_modules/@vscode/tree-sitter-wasm/wasm/*.wasm', {
-  exclude: [`**/*{${excluded.join(',')}}.wasm`],
+  exclude: ['**/tree-sitter.wasm', `**/*{${excluded.join(',')}}.wasm`],
 })
   .concat(
-    'node_modules/@johnnymorganz/stylua/stylua_lib_bg.wasm',
-    'node_modules/sh-syntax/main.wasm',
+    [
+      'web-tree-sitter/web-tree-sitter.wasm',
+      '@johnnymorganz/stylua/stylua_lib_bg.wasm',
+      'sh-syntax/main.wasm',
+    ].map((id) => fileURLToPath(import.meta.resolve(id))),
   )
   .forEach((file) =>
     fs.symlinkSync(

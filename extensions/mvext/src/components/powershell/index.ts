@@ -38,7 +38,10 @@ export async function registerPowershellExtension(context: ExtensionContext) {
     )
     powershellExtension = extensions.getExtension<IPowerShellExtensionClient>(
       'ms-vscode.powershell',
-    )!
+    )
+    if (!powershellExtension) {
+      return
+    }
   }
   if (!powershellExtension.isActive) {
     await powershellExtension.activate()

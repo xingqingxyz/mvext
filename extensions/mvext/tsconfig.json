@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
     "allowJs": true,
+    "lib": ["ESNext", "WebWorker"],
     "paths": {
       "@/*": ["./src/*"]
     }

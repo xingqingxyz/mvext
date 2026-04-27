@@ -11,7 +11,7 @@ import {
   type TextDocument,
 } from 'vscode'
 
-export class UserCompleteProvider implements CompletionItemProvider {
+export class UserCompletionItemProvider implements CompletionItemProvider {
   async provideCompletionItems(document: TextDocument, position: Position) {
     const needle = document.getText(
       document.getWordRangeAtPosition(position) ??

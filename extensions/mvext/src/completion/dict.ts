@@ -10,7 +10,7 @@ import {
   type TextDocument,
 } from 'vscode'
 
-export class DictCompleteProvider implements CompletionItemProvider {
+export class DictCompletionItemProvider implements CompletionItemProvider {
   private searchDict?: SearchDict
   constructor(context: ExtensionContext) {
     if (__WEB__ || isWin32) {
