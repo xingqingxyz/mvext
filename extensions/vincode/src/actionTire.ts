@@ -12,8 +12,13 @@ export interface ActionHandlerContext {
   argStr?: string
 }
 
+export type ActionHandler = (
+  context: ActionHandlerContext,
+  ...args: unknown[]
+) => PromiseOr<void>
+
 export type ActionMeta = {
-  handler: (context: ActionHandlerContext) => PromiseOr<void>
+  handler: ActionHandler
 } & (
   | {
       kind: ActionHandlerKind.Immediate

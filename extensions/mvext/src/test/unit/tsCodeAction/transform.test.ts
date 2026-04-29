@@ -1,23 +1,4 @@
-import {
-  arrowToFunction,
-  arrowToFunctionExpression,
-  binaryToIf,
-  concatToTemplate,
-  doWhileToWhile,
-  functionExpressionToArrow,
-  functionToArrow,
-  ifToBinary,
-  ifToSwitch,
-  ifToSwitchLeft,
-  ifToTernary,
-  splitDeclaration,
-  swapTernary,
-  templateToConcat,
-  ternaryToIf,
-  ternaryToSwitch,
-  ternaryToSwitchLeft,
-  whileToDoWhile,
-} from '@/codeActions/javascript/transform'
+import { Transform } from '@/codeActions/javascript/transform'
 import assert from 'assert/strict'
 import { fileURLToPath } from 'url'
 import { Language, Parser } from 'web-tree-sitter'
@@ -34,7 +15,7 @@ before(async function () {
   )
 })
 
-describe(templateToConcat.name, function () {
+describe(Transform.templateToConcat.name, function () {
   const beforeCode = {
     expr: '`abc${a + 3}cde`',
   }
@@ -45,12 +26,12 @@ describe(templateToConcat.name, function () {
     it('should handle ' + key, function () {
       const tree = (this.parser as Parser).parse(value)!
       const node = tree.rootNode.firstNamedChild!.firstNamedChild!
-      assert.equal(templateToConcat(node), afterCode[key as 'expr'])
+      assert.equal(Transform.templateToConcat(node), afterCode[key as 'expr'])
     })
   }
 })
 
-describe(concatToTemplate.name, function () {
+describe(Transform.concatToTemplate.name, function () {
   const beforeCode = {
     expr: "'abc' + (a + 3) + 'c' + `${a}de`",
   }
@@ -61,12 +42,12 @@ describe(concatToTemplate.name, function () {
     it('should handle ' + key, function () {
       const tree = (this.parser as Parser).parse(value)!
       const node = tree.rootNode.firstNamedChild!.firstNamedChild!
-      assert.equal(concatToTemplate(node), afterCode[key as 'expr'])
+      assert.equal(Transform.concatToTemplate(node), afterCode[key as 'expr'])
     })
   }
 })
 
-describe(binaryToIf.name, function () {
+describe(Transform.binaryToIf.name, function () {
   const beforeCode = {
     and: `(expr) && ((a++), (a = 1))`,
     or: `expr || (a = 3)`,
@@ -83,12 +64,12 @@ a = 3
     it('should handle ' + key, function () {
       const tree = (this.parser as Parser).parse(value)!
       const node = tree.rootNode.firstNamedChild!.firstNamedChild!
-      assert.equal(binaryToIf(node), afterCode[key as 'and'])
+      assert.equal(Transform.binaryToIf(node), afterCode[key as 'and'])
     })
   }
 })
 
-describe(ifToBinary.name, function () {
+describe(Transform.ifToBinary.name, function () {
   const beforeCode = {
     and: `if (expr) {
     a++
@@ -104,12 +85,12 @@ describe(ifToBinary.name, function () {
     it('should handle ' + key, function () {
       const tree = (this.parser as Parser).parse(value)!
       const node = tree.rootNode.firstNamedChild!
-      assert.equal(ifToBinary(node), afterCode[key as 'and'])
+      assert.equal(Transform.ifToBinary(node), afterCode[key as 'and'])
     })
   }
 })
 
-describe(ifToTernary.name, function () {
+describe(Transform.ifToTernary.name, function () {
   const beforeCode = {
     expr: `if (expr1) {
   expr11
@@ -127,12 +108,12 @@ describe(ifToTernary.name, function () {
     it('should handle ' + key, function () {
       const tree = (this.parser as Parser).parse(value)!
       const node = tree.rootNode.firstNamedChild!
-      assert.equal(ifToTernary(node), afterCode[key as 'expr'])
+      assert.equal(Transform.ifToTernary(node), afterCode[key as 'expr'])
     })
   }
 })
 
-describe(ifToSwitch.name, function () {
+describe(Transform.ifToSwitch.name, function () {
   const beforeCode = {
     expr: `if (a && b) {
   a++
@@ -162,12 +143,12 @@ default: {function abc() {};break}
     it('should handle ' + key, function () {
       const tree = (this.parser as Parser).parse(value)!
       const node = tree.rootNode.firstNamedChild!
-      assert.equal(ifToSwitch(node), afterCode[key as 'expr'])
+      assert.equal(Transform.ifToSwitch(node), afterCode[key as 'expr'])
     })
   }
 })
 
-describe(ifToSwitchLeft.name, function () {
+describe(Transform.ifToSwitchLeft.name, function () {
   const beforeCode = {
     expr: `if (a == 3) {
   a++
@@ -188,12 +169,12 @@ default: console.log('abc');break
     it('should handle ' + key, function () {
       const tree = (this.parser as Parser).parse(value)!
       const node = tree.rootNode.firstNamedChild!
-      assert.equal(ifToSwitchLeft(node), afterCode[key as 'expr'])
+      assert.equal(Transform.ifToSwitchLeft(node), afterCode[key as 'expr'])
     })
   }
 })
 
-describe(ternaryToIf.name, function () {
+describe(Transform.ternaryToIf.name, function () {
   const beforeCode = {
     expr: `expr1 ? (v1 = 2) : expr2 ? (console.log('hello'), v2) : v3`,
   }
@@ -210,12 +191,12 @@ v3
     it('should handle ' + key, function () {
       const tree = (this.parser as Parser).parse(value)!
       const node = tree.rootNode.firstNamedChild!.firstNamedChild!
-      assert.equal(ternaryToIf(node), afterCode[key as 'expr'])
+      assert.equal(Transform.ternaryToIf(node), afterCode[key as 'expr'])
     })
   }
 })
 
-describe(ternaryToSwitch.name, function () {
+describe(Transform.ternaryToSwitch.name, function () {
   const beforeCode = {
     expr: `a ? a++ : 2 > 3 ? (b = 3) : console.log('hello')`,
   }
@@ -230,12 +211,12 @@ default: console.log('hello');break
     it('should handle ' + key, function () {
       const tree = (this.parser as Parser).parse(value)!
       const node = tree.rootNode.firstNamedChild!.firstNamedChild!
-      assert.equal(ternaryToSwitch(node), afterCode[key as 'expr'])
+      assert.equal(Transform.ternaryToSwitch(node), afterCode[key as 'expr'])
     })
   }
 })
 
-describe(ternaryToSwitchLeft.name, function () {
+describe(Transform.ternaryToSwitchLeft.name, function () {
   const beforeCode = {
     expr: `a == 3 ? a++ : a === 4 ? (b = 3) : console.log('hello')`,
   }
@@ -250,12 +231,15 @@ default: console.log('hello');break
     it('should handle ' + key, function () {
       const tree = (this.parser as Parser).parse(value)!
       const node = tree.rootNode.firstNamedChild!.firstNamedChild!
-      assert.equal(ternaryToSwitchLeft(node), afterCode[key as 'expr'])
+      assert.equal(
+        Transform.ternaryToSwitchLeft(node),
+        afterCode[key as 'expr'],
+      )
     })
   }
 })
 
-describe(whileToDoWhile.name, function () {
+describe(Transform.whileToDoWhile.name, function () {
   const beforeCode = {
     expr: `while (a + 3 > 3) {
   console.log('hello')
@@ -270,12 +254,12 @@ describe(whileToDoWhile.name, function () {
     it('should handle ' + key, function () {
       const tree = (this.parser as Parser).parse(value)!
       const node = tree.rootNode.firstNamedChild!
-      assert.equal(whileToDoWhile(node), afterCode[key as 'expr'])
+      assert.equal(Transform.whileToDoWhile(node), afterCode[key as 'expr'])
     })
   }
 })
 
-describe(doWhileToWhile.name, function () {
+describe(Transform.doWhileToWhile.name, function () {
   const beforeCode = {
     expr: `do {
   console.log('hello')
@@ -290,12 +274,12 @@ describe(doWhileToWhile.name, function () {
     it('should handle ' + key, function () {
       const tree = (this.parser as Parser).parse(value)!
       const node = tree.rootNode.firstNamedChild!
-      assert.equal(doWhileToWhile(node), afterCode[key as 'expr'])
+      assert.equal(Transform.doWhileToWhile(node), afterCode[key as 'expr'])
     })
   }
 })
 
-describe(swapTernary.name, function () {
+describe(Transform.swapTernary.name, function () {
   const beforeCode = {
     expr: `a + 3 ? 3 + 3 : a + b`,
   }
@@ -306,12 +290,12 @@ describe(swapTernary.name, function () {
     it('should handle ' + key, function () {
       const tree = (this.parser as Parser).parse(value)!
       const node = tree.rootNode.firstNamedChild!.firstNamedChild!
-      assert.equal(swapTernary(node), afterCode[key as 'expr'])
+      assert.equal(Transform.swapTernary(node), afterCode[key as 'expr'])
     })
   }
 })
 
-describe(arrowToFunctionExpression.name, function () {
+describe(Transform.arrowToFunctionExpression.name, function () {
   const beforeCode = {
     dec: `async (a, b = 3) => {
   const msg = 'hello ' + b
@@ -332,12 +316,15 @@ a.b + c.d;return 3 + 4 === 5
     it('should handle ' + key, function () {
       const tree = (this.parser as Parser).parse(value)!
       const node = tree.rootNode.firstNamedChild!.firstNamedChild!
-      assert.equal(arrowToFunctionExpression(node), afterCode[key as 'expr'])
+      assert.equal(
+        Transform.arrowToFunctionExpression(node),
+        afterCode[key as 'expr'],
+      )
     })
   }
 })
 
-describe(arrowToFunction.name, function () {
+describe(Transform.arrowToFunction.name, function () {
   const beforeCode = {
     dec: `const hello = async (a, b = 3) => {
   const msg = 'hello ' + b
@@ -358,12 +345,12 @@ a.b + c.d;return 3 + 4 === 5
     it('should handle ' + key, function () {
       const tree = (this.parser as Parser).parse(value)!
       const node = tree.rootNode.firstNamedChild!
-      assert.equal(arrowToFunction(node), afterCode[key as 'expr'])
+      assert.equal(Transform.arrowToFunction(node), afterCode[key as 'expr'])
     })
   }
 })
 
-describe(functionExpressionToArrow.name, function () {
+describe(Transform.functionExpressionToArrow.name, function () {
   const items = [
     {
       name: 'dec',
@@ -390,12 +377,12 @@ describe(functionExpressionToArrow.name, function () {
     it('should handle ' + name, function () {
       const tree = (this.parser as Parser).parse(before)!
       const node = tree.rootNode.firstNamedChild!.firstNamedChild!
-      assert.equal(functionExpressionToArrow(node), after)
+      assert.equal(Transform.functionExpressionToArrow(node), after)
     })
   }
 })
 
-describe(functionToArrow.name, function () {
+describe(Transform.functionToArrow.name, function () {
   const items = [
     {
       name: 'dec',
@@ -422,12 +409,12 @@ describe(functionToArrow.name, function () {
     it('should handle ' + name, function () {
       const tree = (this.parser as Parser).parse(before)!
       const node = tree.rootNode.firstNamedChild!
-      assert.equal(functionToArrow(node), after)
+      assert.equal(Transform.functionToArrow(node), after)
     })
   }
 })
 
-describe(splitDeclaration.name, function () {
+describe(Transform.splitDeclaration.name, function () {
   const items = [
     {
       name: 'dec',
@@ -441,7 +428,7 @@ var b = 3`,
     it('should handle ' + name, function () {
       const tree = (this.parser as Parser).parse(before)!
       const node = tree.rootNode.firstNamedChild!
-      assert.equal(splitDeclaration(node), after)
+      assert.equal(Transform.splitDeclaration(node), after)
     })
   }
 })

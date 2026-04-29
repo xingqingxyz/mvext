@@ -1,28 +1,30 @@
 import { commands, env, Selection, window, type ExtensionContext } from 'vscode'
-import { produceAction } from './action'
+import { Action } from './action'
 import {
   ActionHandlerKind,
   actionTire,
+  type ActionHandler,
   type ActionHandlerContext,
 } from './actionTire'
 import { Leap } from './leap'
 import { modeController } from './modeController'
-import { Motion, produceMeta } from './motion'
+import { Motion } from './motion'
 import { statusBarItem } from './statusBarItem'
-import { produceKey, TextObject } from './textObject'
+import { TextObject } from './textObject'
+import { reverseCase } from './util'
 import { logger } from './util/logger'
 
 const enum SequenceKind {
   Init,
-  Command,
   Digit,
+  Command,
   ArgStr,
   Invoke,
 }
 
 class ConsumerSequence {
-  [SequenceKind.Command] = '';
   [SequenceKind.Digit] = '';
+  [SequenceKind.Command] = '';
   [SequenceKind.ArgStr] = ''
   kind = SequenceKind.Init
   toString() {
@@ -35,14 +37,14 @@ class ConsumerSequence {
 }
 
 export class Consumer {
-  inComposition = false
-  compositionSequence = ''
-  actionTireNode = actionTire
-  sequence = new ConsumerSequence()
-  handler = this.handleSequence()
+  private inComposition = false
+  private compositionSequence = ''
+  private actionTireNode = actionTire
+  private sequence = new ConsumerSequence()
   constructor(context: ExtensionContext) {
+    const handler = this.handleSequence()
     const leap = new Leap(context)
-    this.handler.next()
+    handler.next()
     this.setupActionTire()
     context.subscriptions.push(
       commands.registerCommand('type', (arg: { text: string }) => {
@@ -53,43 +55,42 @@ export class Consumer {
             return leap.nextChar(arg.text)
           case 'insert':
             return commands.executeCommand('default:type', arg)
-          default:
+          case 'normal':
+          case 'visual':
             if (this.inComposition) {
               this.compositionSequence += arg.text
-              return
+            } else {
+              handler.next(arg.text)
             }
-            this.handler.next(arg.text)
             return
         }
       }),
       commands.registerCommand('compositionStart', (arg) => {
-        if (modeController.mode === 'insert') {
-          return commands.executeCommand('default:compositionStart', arg)
+        switch (modeController.mode) {
+          case 'insert':
+            return commands.executeCommand('default:compositionStart', arg)
+          case 'normal':
+          case 'visual':
+            this.inComposition = true
+            return
         }
-        this.inComposition = true
-        return
       }),
       commands.registerCommand('compositionEnd', async (arg) => {
-        if (modeController.mode === 'insert') {
-          if (this.compositionSequence.length) {
-            // returns received text
-            await commands.executeCommand('default:compositionStart', {})
-            for (const text of this.compositionSequence) {
-              await commands.executeCommand('default:type', { text })
+        switch (modeController.mode) {
+          case 'insert':
+            return commands.executeCommand('default:compositionEnd', arg)
+          case 'normal':
+          case 'visual':
+            this.inComposition = false
+            for (const key of this.compositionSequence) {
+              handler.next(key)
             }
             this.compositionSequence = ''
-          }
-          return commands.executeCommand('default:compositionEnd', arg)
+            return
         }
-        this.inComposition = false
-        for (const key of this.compositionSequence) {
-          this.handler.next(key)
-        }
-        this.compositionSequence = ''
-        return
       }),
       commands.registerCommand('vincode.nextSequence', (key) =>
-        this.handler.next(key),
+        handler.next(key),
       ),
       commands.registerCommand(
         'vincode.toggleVimMode',
@@ -105,74 +106,96 @@ export class Consumer {
     )
   }
   setupActionTire() {
-    const motion = new Motion()
-    const motionHandlers = {
-      '': motion.cursorMove.bind(motion),
-      c: async (context: ActionHandlerContext) => {
-        await window.activeTextEditor!.edit((edit) =>
-          edit.delete(motion.getSeletion(context)),
-        )
+    const handlers: Record<string, ActionHandler> & ThisType<typeof Motion> = {
+      ''(context) {
+        const editor = window.activeTextEditor!
+        editor.revealRange((editor.selection = this.getRanges(context)[0]))
+      },
+      async c(context: ActionHandlerContext) {
+        await handlers.d(context)
         await modeController.setMode('insert')
       },
-      d: async (context: ActionHandlerContext) => {
-        await window.activeTextEditor!.edit((edit) =>
-          edit.delete(motion.getSeletion(context)),
+      async d(context: ActionHandlerContext) {
+        await window.activeTextEditor!.edit((edit) => {
+          for (const range of this.getRanges(context)) {
+            if (!range.isEmpty) {
+              edit.delete(range)
+            }
+          }
+        })
+      },
+      async y(context: ActionHandlerContext) {
+        const { document } = window.activeTextEditor!
+        await env.clipboard.writeText(
+          this.getRanges(context)
+            .map((range) => document.getText(range))
+            .join('\n'),
         )
       },
-      y: async (context: ActionHandlerContext) => {
-        const range = motion.getSeletion(context)
-        if (!range.isEmpty) {
-          await env.clipboard.writeText(
-            window.activeTextEditor!.document.getText(range),
-          )
-        }
+      async gs(context: ActionHandlerContext) {
+        const { document } = window.activeTextEditor!
+        await env.clipboard.writeText(
+          this.getRanges(context)
+            .map((range) => document.getText(range))
+            .join('\n'),
+        )
+      },
+      async gu(context: ActionHandlerContext, lower = true) {
+        const editor = window.activeTextEditor!
+        const { document } = editor
+        await editor.edit((edit) => {
+          for (const range of this.getRanges(context)) {
+            if (!range.isEmpty) {
+              edit.replace(
+                range,
+                document
+                  .getText(range)
+                  [`toLocale${lower ? 'Low' : 'Upp'}erCase`](),
+              )
+            }
+          }
+        })
+      },
+      gU(context) {
+        return handlers.gu(context, false)
+      },
+      async '~'(context: ActionHandlerContext, forward = true) {
+        const editor = window.activeTextEditor!
+        const { document } = editor
+        await editor.edit((edit) => {
+          for (const range of this.getRanges(context)) {
+            if (!range.isEmpty) {
+              edit.replace(range, reverseCase(document.getText(range)))
+            }
+          }
+        })
+        editor.revealRange(
+          (editor.selection = new Selection(
+            editor.selection.anchor,
+            document.validatePosition(
+              editor.selection.active.translate(undefined, forward ? 1 : -1),
+            ),
+          )),
+        )
+      },
+      'g~'(context) {
+        return handlers['~'](context, false)
       },
     }
-    for (const [key, meta] of produceMeta()) {
-      for (const [prefix, handler] of Object.entries(motionHandlers)) {
+    for (const [key, meta] of Motion) {
+      for (const [prefix, handler] of Object.entries(handlers)) {
         actionTire.add(prefix + key, { ...meta, handler })
       }
     }
-    const textObject = new TextObject()
-    const textObjectHandlers = {
-      '': (context: ActionHandlerContext) => {
-        if (modeController.mode === 'visual') {
-          const range = textObject.getRange(context)
-          window.activeTextEditor!.selection = new Selection(
-            range.start,
-            range.end,
-          )
-        }
-      },
-      c: async (context: ActionHandlerContext) => {
-        await window.activeTextEditor!.edit((edit) =>
-          edit.delete(textObject.getRange(context)),
-        )
-        await modeController.setMode('insert')
-      },
-      d: async (context: ActionHandlerContext) => {
-        await window.activeTextEditor!.edit((edit) =>
-          edit.delete(textObject.getRange(context)),
-        )
-      },
-      y: async (context: ActionHandlerContext) => {
-        const range = textObject.getRange(context)
-        if (!range.isEmpty) {
-          await env.clipboard.writeText(
-            window.activeTextEditor!.document.getText(range),
-          )
-        }
-      },
-    }
-    for (const key of produceKey()) {
-      for (const [prefix, handler] of Object.entries(textObjectHandlers)) {
+    for (const key of TextObject) {
+      for (const [prefix, handler] of Object.entries(handlers)) {
         actionTire.add(prefix + key, {
           kind: ActionHandlerKind.Immediate,
           handler,
         })
       }
     }
-    for (const [key, meta] of produceAction()) {
+    for (const [key, meta] of Action) {
       actionTire.add(key, meta)
     }
     console.log(Array.from(actionTire))
@@ -271,10 +294,9 @@ export class Consumer {
     }
     return false
   }
-  *handleSequence() {
-    let key: string
+  *handleSequence(): Generator<void, void, string> {
     while (true) {
-      key = yield
+      const key = yield
       try {
         while (this.nextSequence(key)) {}
         this.updateStatusBarItem()

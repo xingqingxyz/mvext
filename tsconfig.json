@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "lib": ["ESNext"],
+    "lib": ["ESNext", "WebWorker"],
     "types": ["node", "mocha", "emscripten"],
     "module": "ESNext",
     "noEmit": true,

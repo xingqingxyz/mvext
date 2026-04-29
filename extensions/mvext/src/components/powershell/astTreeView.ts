@@ -66,7 +66,7 @@ function rangeContains(
   )
 }
 
-export class PwshAstTreeDataProvier implements TreeDataProvider<Node> {
+export class PowerShellAstTreeDataProvier implements TreeDataProvider<Node> {
   //#region api
   private _onDidChangeTreeData = new EventEmitter<Node[] | undefined>()
   onDidChangeTreeData = this._onDidChangeTreeData.event

@@ -126,12 +126,22 @@
         "when": "editorTextFocus && vincode.mode == less"
       },
       {
-        "command": "vincode.cursorHalfPageDown",
+        "args": {
+          "to": "down",
+          "by": "halfPage",
+          "revealCursor": true
+        },
+        "command": "editorScroll",
         "key": "d",
         "when": "editorTextFocus && vincode.mode == less"
       },
       {
-        "command": "vincode.cursorHalfPageUp",
+        "args": {
+          "to": "up",
+          "by": "halfPage",
+          "revealCursor": true
+        },
+        "command": "editorScroll",
         "key": "u",
         "when": "editorTextFocus && vincode.mode == less"
       },

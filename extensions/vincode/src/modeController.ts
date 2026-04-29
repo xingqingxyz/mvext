@@ -39,8 +39,8 @@ class ModeController {
   public async setMode(mode: Mode) {
     this.prevMode = this._mode
     this[(this._mode + 'Leave') as 'normalLeave']?.fire()
-    this[((this._mode = mode) + 'Enter') as 'normalLeave']?.fire()
     await this._updateMode()
+    this[((this._mode = mode) + 'Enter') as 'normalLeave']?.fire()
   }
   public async restoreMode() {
     await this.setMode(this.prevMode)

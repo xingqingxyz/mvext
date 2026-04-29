@@ -18,7 +18,7 @@ import {
 } from './commands/transformCase'
 import { InvokeCompletionItemProvider } from './completion'
 import { PathCompletionItemProvider } from './completion/path'
-import { PwshAstTreeDataProvier } from './components/powershell/astTreeView'
+import { PowerShellAstTreeDataProvier } from './components/powershell/astTreeView'
 import { getParser, initTSParser } from './components/treeSitter/parser'
 import { TSTreeDataProvier } from './components/treeSitter/treeView'
 import { getExtConfig } from './config'
@@ -55,7 +55,7 @@ export async function activate(
       new StyluaFormatter(context)
     }
     if (getExtConfig('pwsh.astTreeView.enabled')) {
-      new PwshAstTreeDataProvier(context)
+      new PowerShellAstTreeDataProvier(context)
     }
     setDtsPath(context.asAbsolutePath('resources/global.vscode.d.ts'))
   }

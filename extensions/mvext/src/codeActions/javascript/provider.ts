@@ -8,9 +8,7 @@ import {
 import {
   CodeActionKind,
   CodeActionTriggerKind,
-  CompletionItemKind,
   languages,
-  SnippetString,
   SnippetTextEdit,
   TextEdit,
   WorkspaceEdit,
@@ -26,35 +24,13 @@ import {
   type Uri,
 } from 'vscode'
 import type { Node, Tree } from 'web-tree-sitter'
-import {
-  arrowToFunction,
-  arrowToFunctionExpression,
-  binaryToIf,
-  concatToTemplate,
-  doWhileToWhile,
-  functionExpressionToArrow,
-  functionToArrow,
-  ifToBinary,
-  ifToSwitch,
-  ifToSwitchLeft,
-  ifToTernary,
-  splitDeclaration,
-  swapIf,
-  swapTernary,
-  templateToConcat,
-  ternaryToIf,
-  ternaryToSwitch,
-  ternaryToSwitchLeft,
-  whileToDoWhile,
-} from './transform'
-import { callWrap, cast } from './transform.snippets'
+import { Transform } from './transform'
 
 interface CodeActionWithData extends CodeAction {
   data: {
-    kind: CompletionItemKind
-    uri: Uri
+    methodName: keyof typeof Transform
     node: Node
-    callback: (root: Node) => string | SnippetString | undefined
+    uri: Uri
   }
 }
 
@@ -103,7 +79,7 @@ export class TransformCodeActionProvider implements CodeActionProvider {
   }
   resolveCodeAction(codeAction: CodeAction): ProviderResult<CodeAction> {
     const { data } = codeAction as CodeActionWithData
-    const newText = data.callback(data.node)
+    const newText = Transform[data.methodName as 'ifToSwitch'](data.node)
     if (!newText) {
       return
     }
@@ -134,63 +110,63 @@ export class TransformCodeActionProvider implements CodeActionProvider {
     )
   }
   private getActions(orderedTypePath: Node[], uri: Uri) {
-    const actions: [typeof ifToBinary | typeof cast, Node][] = []
+    const actions: [keyof typeof Transform, Node][] = []
     for (const node of orderedTypePath) {
       switch (node.type) {
         case $.arrow_function:
-          actions.push([arrowToFunctionExpression, node])
+          actions.push(['arrowToFunctionExpression', node])
           break
         case $.if_statement:
           actions.push(
-            [ifToSwitchLeft, node],
-            [ifToSwitch, node],
-            [ifToTernary, node],
-            [ifToBinary, node],
-            [swapIf, node],
+            ['ifToSwitchLeft', node],
+            ['ifToSwitch', node],
+            ['ifToTernary', node],
+            ['ifToBinary', node],
+            ['swapIf', node],
           )
           break
         case $.binary_expression:
-          actions.push([binaryToIf, node], [concatToTemplate, node])
+          actions.push(['binaryToIf', node], ['concatToTemplate', node])
           break
         case $.ternary_expression:
           actions.push(
-            [ternaryToSwitchLeft, node],
-            [ternaryToSwitch, node],
-            [ternaryToIf, node],
-            [swapTernary, node],
+            ['ternaryToSwitchLeft', node],
+            ['ternaryToSwitch', node],
+            ['ternaryToIf', node],
+            ['swapTernary', node],
           )
           break
         case $.template_string:
-          actions.push([templateToConcat, node])
+          actions.push(['templateToConcat', node])
           break
         case $.while_statement:
-          actions.push([whileToDoWhile, node])
+          actions.push(['whileToDoWhile', node])
           break
         case $.do_statement:
-          actions.push([doWhileToWhile, node])
+          actions.push(['doWhileToWhile', node])
           break
         case $.lexical_declaration:
         case $.variable_declaration:
-          actions.push([arrowToFunction, node], [splitDeclaration, node])
+          actions.push(['arrowToFunction', node], ['splitDeclaration', node])
           break
         case $.function_expression:
-          actions.push([functionExpressionToArrow, node])
+          actions.push(['functionExpressionToArrow', node])
           break
         case $.function_declaration:
-          actions.push([functionToArrow, node])
+          actions.push(['functionToArrow', node])
           break
       }
       if (node.type.includes('expression')) {
-        actions.push([cast, node], [callWrap, node])
+        actions.push(['cast', node], ['callWrap', node])
       }
     }
     return actions.map(
-      ([callback, node]) =>
+      ([methodName, node]) =>
         ({
-          title: `${callback.name}(${node.type})`,
+          title: `${methodName}(${node.type})`,
           kind: CodeActionKind.RefactorRewrite,
-          data: { uri, node, callback },
-        }) as CodeAction,
+          data: { uri, methodName, node },
+        }) as CodeActionWithData,
     )
   }
 }

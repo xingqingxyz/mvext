@@ -33,7 +33,6 @@
     "extension:install": "vsce pack -o mvext.vsix && code --install-extension mvext.vsix",
     "lint": "concurrently \"tsc --noEmit\" \"oxlint --type-aware --fix\"",
     "postinstall": "node ./scripts/postinstall.ts",
-    "test": "mocha",
     "vscode:prepublish": "concurrently \"dotnet build -c Release\" \"rolldown -c --environment NODE_ENV:production\" \"rolldown -c --environment NODE_ENV:production,PLATFORM:web\"",
     "watch": "rolldown -c -w",
     "watch-web": "rolldown -c -w --environment PLATFORM:web"

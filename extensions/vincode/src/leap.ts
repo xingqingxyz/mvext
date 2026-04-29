@@ -83,6 +83,7 @@ export class Leap {
       }
     }
   }
+  //#region commands
   start = async () => {
     const editor = window.activeTextEditor!
     editor.setDecorations(
@@ -114,4 +115,5 @@ export class Leap {
     this.decorations = undefined
     await modeController.restoreMode()
   }
+  //#endregion
 }

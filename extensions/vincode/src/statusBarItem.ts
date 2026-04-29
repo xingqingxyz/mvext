@@ -5,5 +5,5 @@ export const statusBarItem = window.createStatusBarItem(
   StatusBarAlignment.Left,
   9,
 )
-statusBarItem.name = 'Vincode Mode Line'
+statusBarItem.name = 'Vim in VSCode'
 statusBarItem.tooltip = 'mode & enqueued keys'

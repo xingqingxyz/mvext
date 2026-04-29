@@ -23,25 +23,41 @@ import {
 
 export class Motion {
   //#region keepLine
-  '0'(document: TextDocument, position: Position, count: number): Position {
+  static '0'(
+    document: TextDocument,
+    position: Position,
+    count: number,
+  ): Position {
     return position.with(undefined, 0)
   }
-  '|'(document: TextDocument, position: Position, count: number): Position {
+  static '|'(
+    document: TextDocument,
+    position: Position,
+    count: number,
+  ): Position {
     return document.validatePosition(position.with(undefined, count - 1))
   }
   //#endregion
-  _(document: TextDocument, position: Position, count: number): Position {
+  static _(
+    document: TextDocument,
+    position: Position,
+    count: number,
+  ): Position {
     return new Position(
       Math.max(0, position.line - count + 1),
       document.lineAt(position).firstNonWhitespaceCharacterIndex,
     )
   }
-  $(document: TextDocument, position: Position, count: number): Position {
+  static $(
+    document: TextDocument,
+    position: Position,
+    count: number,
+  ): Position {
     return document.lineAt(
       Math.min(document.lineCount - 1, position.line + count - 1),
     ).range.end
   }
-  '*'(
+  static '*'(
     document: TextDocument,
     position: Position,
     count: number,
@@ -67,10 +83,18 @@ export class Motion {
     }
     return position
   }
-  '#'(document: TextDocument, position: Position, count: number): Position {
+  static '#'(
+    document: TextDocument,
+    position: Position,
+    count: number,
+  ): Position {
     return this['*'](document, position, count, true)
   }
-  '%'(document: TextDocument, position: Position, count: number): Position {
+  static '%'(
+    document: TextDocument,
+    position: Position,
+    count: number,
+  ): Position {
     const savePosition = position
     // please keep regexp char order
     for (position of preLookupRegExp(document, position, /[([{<]/g)) {
@@ -82,7 +106,7 @@ export class Motion {
       ? bracketPairLookup(document, position)
       : position
   }
-  '/'(
+  static '/'(
     document: TextDocument,
     position: Position,
     count: number,
@@ -104,7 +128,7 @@ export class Motion {
       return position
     }
   }
-  '?'(
+  static '?'(
     document: TextDocument,
     position: Position,
     count: number,
@@ -112,22 +136,34 @@ export class Motion {
   ): Position {
     return this['/'](document, position, count, findSequence, '?')
   }
-  n(document: TextDocument, position: Position, count: number): Position {
+  static n(
+    document: TextDocument,
+    position: Position,
+    count: number,
+  ): Position {
     return findRegexp(document, position, count, {
       ...findRegexpContext,
       reverse: false,
     })
   }
-  N(document: TextDocument, position: Position, count: number): Position {
+  static N(
+    document: TextDocument,
+    position: Position,
+    count: number,
+  ): Position {
     return findRegexp(document, position, count, {
       ...findRegexpContext,
       reverse: true,
     })
   }
-  '('(document: TextDocument, position: Position, count: number): Position {
+  static '('(
+    document: TextDocument,
+    position: Position,
+    count: number,
+  ): Position {
     return this[')'](document, position, count, true)
   }
-  ')'(
+  static ')'(
     document: TextDocument,
     position: Position,
     count: number,
@@ -152,10 +188,14 @@ export class Motion {
     }
     return position
   }
-  '{'(document: TextDocument, position: Position, count: number): Position {
+  static '{'(
+    document: TextDocument,
+    position: Position,
+    count: number,
+  ): Position {
     return this['}'](document, position, count, true)
   }
-  '}'(
+  static '}'(
     document: TextDocument,
     position: Position,
     count: number,
@@ -175,13 +215,21 @@ export class Motion {
     }
     return position
   }
-  '[['(document: TextDocument, position: Position, count: number): Position {
+  static '[['(
+    document: TextDocument,
+    position: Position,
+    count: number,
+  ): Position {
     throw new Error('Function not implemented.')
   }
-  ']]'(document: TextDocument, position: Position, count: number): Position {
+  static ']]'(
+    document: TextDocument,
+    position: Position,
+    count: number,
+  ): Position {
     throw new Error('Function not implemented.')
   }
-  w(
+  static w(
     document: TextDocument,
     position: Position,
     count: number,
@@ -200,7 +248,7 @@ export class Motion {
     }
     return position
   }
-  W(
+  static W(
     document: TextDocument,
     position: Position,
     count: number,
@@ -208,13 +256,21 @@ export class Motion {
   ): Position {
     return this.w(document, position, count, false, true)
   }
-  b(document: TextDocument, position: Position, count: number): Position {
+  static b(
+    document: TextDocument,
+    position: Position,
+    count: number,
+  ): Position {
     return this.w(document, position, count, true, false)
   }
-  B(document: TextDocument, position: Position, count: number): Position {
+  static B(
+    document: TextDocument,
+    position: Position,
+    count: number,
+  ): Position {
     return this.w(document, position, count, true, true)
   }
-  e(
+  static e(
     document: TextDocument,
     position: Position,
     count: number,
@@ -237,26 +293,38 @@ export class Motion {
     }
     return position
   }
-  E(document: TextDocument, position: Position, count: number): Position {
+  static E(
+    document: TextDocument,
+    position: Position,
+    count: number,
+  ): Position {
     return this.e(document, position, count, false, true)
   }
-  ge(document: TextDocument, position: Position, count: number): Position {
+  static ge(
+    document: TextDocument,
+    position: Position,
+    count: number,
+  ): Position {
     return this.e(document, position, count, true, false)
   }
-  gE(document: TextDocument, position: Position, count: number): Position {
+  static gE(
+    document: TextDocument,
+    position: Position,
+    count: number,
+  ): Position {
     return this.e(document, position, count, true, true)
   }
-  G(
+  static G(
     document: TextDocument,
     position: Position,
     count = document.lineCount,
   ): Position {
     return document.validatePosition(new Position(count - 1, 0))
   }
-  gg(document: TextDocument, position: Position, count = 1): Position {
+  static gg(document: TextDocument, position: Position, count = 1): Position {
     return document.validatePosition(new Position(count - 1, 0))
   }
-  f(
+  static f(
     document: TextDocument,
     position: Position,
     count: number,
@@ -267,7 +335,7 @@ export class Motion {
       findSequence,
     })
   }
-  F(
+  static F(
     document: TextDocument,
     position: Position,
     count: number,
@@ -278,7 +346,7 @@ export class Motion {
       findSequence,
     })
   }
-  t(
+  static t(
     document: TextDocument,
     position: Position,
     count: number,
@@ -289,7 +357,7 @@ export class Motion {
       findSequence,
     })
   }
-  T(
+  static T(
     document: TextDocument,
     position: Position,
     count: number,
@@ -300,85 +368,122 @@ export class Motion {
       findSequence,
     })
   }
-  ';'(document: TextDocument, position: Position, count: number): Position {
+  static ';'(
+    document: TextDocument,
+    position: Position,
+    count: number,
+  ): Position {
     return findWord(document, position, count, findWordContext)
   }
-  ','(document: TextDocument, position: Position, count: number): Position {
+  static ','(
+    document: TextDocument,
+    position: Position,
+    count: number,
+  ): Position {
     return findWord(document, position, count, {
       ...findWordContext,
       reverse: true,
     })
   }
-  h(document: TextDocument, position: Position, count: number): Position {
+  static h(
+    document: TextDocument,
+    position: Position,
+    count: number,
+  ): Position {
     return position.with(undefined, Math.max(0, position.character - count))
   }
-  j(document: TextDocument, position: Position, count: number): Position {
+  static j(
+    document: TextDocument,
+    position: Position,
+    count: number,
+  ): Position {
     return document.validatePosition(position.translate(count))
   }
-  k(document: TextDocument, position: Position, count: number): Position {
+  static k(
+    document: TextDocument,
+    position: Position,
+    count: number,
+  ): Position {
     return document.validatePosition(position.translate(-count))
   }
-  l(document: TextDocument, position: Position, count: number): Position {
+  static l(
+    document: TextDocument,
+    position: Position,
+    count: number,
+  ): Position {
     return document.validatePosition(position.translate(undefined, +count))
   }
-  H(document: TextDocument, position: Position, count: number): Position {
+  static H(
+    document: TextDocument,
+    position: Position,
+    count: number,
+  ): Position {
     return window.activeTextEditor!.visibleRanges[0].start.with(undefined, 0)
   }
-  M(document: TextDocument, position: Position, count: number): Position {
+  static M(
+    document: TextDocument,
+    position: Position,
+    count: number,
+  ): Position {
     const range = window.activeTextEditor!.visibleRanges[0]
     return new Position((range.start.line + range.end.line) >> 1, 0)
   }
-  L(document: TextDocument, position: Position, count: number): Position {
+  static L(
+    document: TextDocument,
+    position: Position,
+    count: number,
+  ): Position {
     return window.activeTextEditor!.visibleRanges[0].end.with(undefined, 0)
   }
-  getSeletion(context: ActionHandlerContext) {
+  static getRanges(context: ActionHandlerContext) {
     const editor = window.activeTextEditor!
+    if (modeController.mode === 'visual') {
+      return editor.selections
+    }
     const command =
       this[context.command as '?'] ?? this[context.command.slice(1) as '?']
-    const position = command.call(
-      this,
-      editor.document,
-      editor.selection.active,
-      command.length === 2 ? context.count! : (context.count ?? 1),
-      context.argStr!,
-    )
-    return new Selection(
-      modeController.mode === 'visual' ? editor.selection.anchor : position,
-      position,
-    )
+    const count = command.length === 2 ? context.count! : (context.count ?? 1)
+    return editor.selections.map((selection) => {
+      const position = command.call(
+        this,
+        editor.document,
+        selection.active,
+        count,
+        context.argStr!,
+      )
+      return new Selection(
+        selection.isEmpty ? position : selection.anchor,
+        position,
+      )
+    })
   }
-  cursorMove(context: ActionHandlerContext) {
-    const editor = window.activeTextEditor!
-    editor.revealRange((editor.selection = this.getSeletion(context)))
-  }
-}
-
-export function* produceMeta(): Generator<[string, ActionMeta]> {
-  let meta: ActionMeta
-  for (const key of Object.getOwnPropertyNames(Motion.prototype) as 'n'[]) {
-    switch (Motion.prototype[key].length) {
-      case 2:
-      case 3:
-      case 5:
-        meta = { kind: ActionHandlerKind.Immediate, handler: noop }
-        break
-      case 4:
-        meta = '/?'.includes(key)
-          ? {
-              kind: ActionHandlerKind.Terminator,
-              terminator: '\n',
-              handler: noop,
-            }
-          : {
-              kind: ActionHandlerKind.Count,
-              count: 1,
-              handler: noop,
-            }
-        break
-      default:
-        console.log('skipped motion key ' + key)
-        continue
+  static *[Symbol.iterator](): Generator<[string, ActionMeta]> {
+    let meta: ActionMeta
+    for (const key of Object.getOwnPropertyNames(this) as 'n'[]) {
+      switch (this[key].length) {
+        case 2:
+        case 3:
+        case 5:
+          meta = { kind: ActionHandlerKind.Immediate, handler: noop }
+          break
+        case 4:
+          meta = '/?'.includes(key)
+            ? {
+                kind: ActionHandlerKind.Terminator,
+                terminator: '\n',
+                handler: noop,
+              }
+            : {
+                kind: ActionHandlerKind.Count,
+                count: 1,
+                handler: noop,
+              }
+          break
+        default:
+          console.log('skipped motion key ' + key)
+          continue
+      }
+      yield [key, meta]
     }
-    yield [key, meta]
   }
 }

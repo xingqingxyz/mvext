@@ -2,35 +2,33 @@
 import { commands, env, Position, Range, Selection, window } from 'vscode'
 import { ActionHandlerKind, type ActionMeta } from './actionTire'
 import { modeController } from './modeController'
-import { reverseCase } from './util'
 
-class Action {
-  async r(count: number) {
+export class Action {
+  static async r(count: number) {
     await modeController.setMode('insert')
     await commands.executeCommand('editor.action.toggleOvertypeInsertMode')
   }
-  async R(count: number) {
-    await modeController.setMode('insert')
-    await commands.executeCommand('editor.action.toggleOvertypeInsertMode')
+  static R(count: number) {
+    return this.r(count)
   }
-  async u(count: number) {
+  static async u(count: number) {
     while (count--) {
       await commands.executeCommand('undo')
     }
   }
-  async U(count: number) {
+  static async U(count: number) {
     while (count--) {
       await commands.executeCommand('redo')
     }
   }
-  async i(count: number) {
+  static async i(count: number) {
     await modeController.setMode('insert')
   }
-  async I(count: number) {
+  static async I(count: number) {
     await modeController.setMode('insert')
     await commands.executeCommand('cursorHome')
   }
-  async a(count: number) {
+  static async a(count: number) {
     const editor = window.activeTextEditor!
     const position = editor.document.validatePosition(
       new Position(
@@ -41,26 +39,26 @@ class Action {
     editor.selection = new Selection(position, position)
     await modeController.setMode('insert')
   }
-  async A(count: number) {
+  static async A(count: number) {
     await modeController.setMode('insert')
     await commands.executeCommand('cursorEnd')
   }
-  async o(count: number) {
+  static async o(count: number) {
     await modeController.setMode('insert')
     await commands.executeCommand('editor.action.insertLineAfter')
   }
-  async O(count: number) {
+  static async O(count: number) {
     await modeController.setMode('insert')
     await commands.executeCommand('editor.action.insertLineBefore')
   }
-  async p(count: number) {
+  static async p(count: number) {
     const text = await env.clipboard.readText()
     const editor = window.activeTextEditor!
     await editor.edit((edit) =>
       edit.replace(editor.selection, text.repeat(count)),
     )
   }
-  async P(count: number) {
+  static async P(count: number) {
     const text = await env.clipboard.readText()
     const editor = window.activeTextEditor!
     if (editor.selection.isEmpty) {
@@ -69,14 +67,12 @@ class Action {
         Math.max(0, editor.selection.start.character - 1),
       )
       editor.selection = new Selection(position, position)
-      await editor.edit((edit) => edit.insert(position, text.repeat(count)))
-    } else {
-      await editor.edit((edit) =>
-        edit.replace(editor.selection, text.repeat(count)),
-      )
     }
+    await editor.edit((edit) =>
+      edit.replace(editor.selection, text.repeat(count)),
+    )
   }
-  async yy(count: number) {
+  static async yy(count: number) {
     const {
       document,
       selection: { active },
@@ -92,7 +88,7 @@ class Action {
       ),
     )
   }
-  async Y(count: number) {
+  static async Y(count: number) {
     const {
       document,
       selection: { active },
@@ -106,7 +102,7 @@ class Action {
       ),
     )
   }
-  async dd(count: number) {
+  static async dd(count: number) {
     const editor = window.activeTextEditor!
     const {
       document,
@@ -123,7 +119,7 @@ class Action {
       ),
     )
   }
-  async D(count: number) {
+  static async D(count: number) {
     const editor = window.activeTextEditor!
     const {
       document,
@@ -138,7 +134,7 @@ class Action {
       ),
     )
   }
-  async x(count: number) {
+  static async x(count: number) {
     const editor = window.activeTextEditor!
     const {
       selection: { start },
@@ -160,7 +156,7 @@ class Action {
       )
     }
   }
-  async X(count: number) {
+  static async X(count: number) {
     const editor = window.activeTextEditor!
     const {
       selection: { start },
@@ -180,15 +176,15 @@ class Action {
       )
     }
   }
-  async cc(count: number) {
-    await modeController.setMode('insert')
+  static async cc(count: number) {
     await this.dd(count)
-  }
-  async C(count: number) {
     await modeController.setMode('insert')
-    await this.D(count)
   }
-  V(count: number) {
+  static async C(count: number) {
+    await this.D(count)
+    await modeController.setMode('insert')
+  }
+  static V(count: number) {
     const editor = window.activeTextEditor!
     const {
       document,
@@ -199,7 +195,7 @@ class Action {
       new Position(Math.min(document.lineCount, active.line + count), 0),
     )
   }
-  async grr(count: number) {
+  static async grr(count: number) {
     const editor = window.activeTextEditor!
     const {
       document,
@@ -214,11 +210,11 @@ class Action {
           Math.min(document.lineCount, active.line + count),
           0,
         ),
-        text,
+        text + '\n',
       ),
     )
   }
-  async gR(count: number) {
+  static async grR(count: number) {
     const editor = window.activeTextEditor!
     const {
       document,
@@ -235,74 +231,17 @@ class Action {
       ),
     )
   }
-  async '~'(count: number) {
-    const editor = window.activeTextEditor!
-    const {
-      document,
-      selection: { start },
-    } = editor
-    if (editor.selection.isEmpty) {
-      const range = new Range(
-        start,
-        editor.document.validatePosition(
-          start.with(undefined, start.character + count),
-        ),
-      )
-      await editor.edit((edit) =>
-        edit.replace(range, reverseCase(document.getText(range))),
-      )
-    } else {
-      await editor.edit((edit) =>
-        editor.selections.forEach((selection) =>
-          edit.replace(selection, reverseCase(document.getText(selection))),
-        ),
-      )
-    }
-  }
-  async ' '(count: number) {}
-  async v(count: number) {
-    await modeController.setMode(
-      modeController.mode === 'visual' ? 'normal' : 'visual',
-    )
-  }
-  async '\\m'(count: number) {
+  static async ' '(count: number) {}
+  static async '\\k'(count: number) {
     await commands.executeCommand('vincode.manKeyword')
   }
-  async '\\w'(count: number) {
+  static async '\\w'(count: number) {
     await commands.executeCommand('vincode.leapToWordStart')
   }
-  async '\\l'(count: number) {
+  static async '\\l'(count: number) {
     await modeController.setMode('less')
   }
-  async gu(count: number) {
-    const editor = window.activeTextEditor!
-    if (editor.selection.isEmpty) {
-      return
-    }
-    await editor.edit((edit) =>
-      editor.selections.forEach((selection) =>
-        edit.replace(
-          selection,
-          editor.document.getText(selection).toLowerCase(),
-        ),
-      ),
-    )
-  }
-  async gU(count: number) {
-    const editor = window.activeTextEditor!
-    if (editor.selection.isEmpty) {
-      return
-    }
-    await editor.edit((edit) =>
-      editor.selections.forEach((selection) =>
-        edit.replace(
-          selection,
-          editor.document.getText(selection).toUpperCase(),
-        ),
-      ),
-    )
-  }
-  async S(count: number, char: string) {
+  static async S(count: number, char: string) {
     const editor = window.activeTextEditor!
     if (editor.selection.isEmpty) {
       return
@@ -326,38 +265,33 @@ class Action {
       ),
     )
   }
-}
-
-export function* produceAction(): Generator<[string, ActionMeta]> {
-  const action = new Action()
-  for (const name of Object.getOwnPropertyNames(Action.prototype)) {
-    switch (Action.prototype[name as '~'].length) {
-      case 1:
-        yield [
-          name,
-          {
-            kind: ActionHandlerKind.Immediate,
-            handler(context) {
-              return action[name as '~'](context.count ?? 1)
+  static *[Symbol.iterator](): Generator<[string, ActionMeta]> {
+    for (const name of Object.getOwnPropertyNames(this)) {
+      switch (this[name as 'C'].length) {
+        case 1:
+          yield [
+            name,
+            {
+              kind: ActionHandlerKind.Immediate,
+              handler: (context) => this[name as 'C'](context.count ?? 1),
             },
-          },
-        ]
-        break
-      case 2:
-        yield [
-          name,
-          {
-            kind: ActionHandlerKind.Count,
-            count: 1,
-            handler(context) {
-              return action[name as 'S'](context.count ?? 1, context.argStr!)
+          ]
+          break
+        case 2:
+          yield [
+            name,
+            {
+              kind: ActionHandlerKind.Count,
+              count: 1,
+              handler: (context) =>
+                this[name as 'S'](context.count ?? 1, context.argStr!),
             },
-          },
-        ]
-        break
-      default:
-        console.log('skipped action key ' + name)
-        break
+          ]
+          break
+        default:
+          console.log('skipped action key ' + name)
+          break
+      }
     }
   }
 }

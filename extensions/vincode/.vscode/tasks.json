@@ -4,23 +4,21 @@
     {
       "type": "npm",
       "script": "watch",
-      "isBackground": true,
       "group": {
         "kind": "build",
         "isDefault": true
       },
-      "problemMatcher": "$esbuild-watch",
-      "label": "npm: watch",
-      "detail": "pnpm _esbuild --sourcemap --watch"
+      "isBackground": true,
+      "problemMatcher": "$rolldown-watch"
     },
     {
       "type": "npm",
-      "script": "simple-mode",
-      "group": "build",
-      "problemMatcher": "$esbuild-watch",
-      "label": "npm: simple-mode",
-      "detail": "esbuild --bundle --external:vscode --format=esm --outfile=dist/extension.js --platform=node --target=node22 src/simple-mode/index.ts --sourcemap --watch",
-      "isBackground": true
+      "script": "watch-web",
+      "group": {
+        "kind": "build"
+      },
+      "isBackground": true,
+      "problemMatcher": ["$rolldown-watch"]
     }
   ]
 }

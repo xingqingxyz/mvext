@@ -72,5 +72,5 @@ export default defineConfig({
         }
       : undefined,
   },
-  plugins: [isProd && esbuildMinify({ keepNames: true })],
+  plugins: [isProd && esbuildMinify()],
 })

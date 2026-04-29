@@ -1,10 +1,10 @@
-// A launch configuration that compiles the extension and then opens it inside a new window
-// Use IntelliSense to learn about possible attributes.
-// Hover to view descriptions of existing attributes.
-// For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
 {
+  "version": "0.2.0",
   "configurations": [
     {
+      "name": "Run Extension",
+      "type": "extensionHost",
+      "request": "launch",
       "args": [
         "--extensionDevelopmentPath=${workspaceFolder}",
         "--disable-extensions",
@@ -12,27 +12,48 @@
         "xingqingxyz.vincode",
         "${workspaceFolder}/fixtures"
       ],
-      "name": "Run Extension",
-      "outFiles": ["${workspaceFolder}/dist/**/*.js"],
-      "preLaunchTask": "${defaultBuildTask}",
-      "request": "launch",
-      "type": "extensionHost"
+      "preLaunchTask": "${defaultBuildTask}"
     },
     {
+      "name": "Extension Tests",
+      "type": "extensionHost",
+      "request": "launch",
       "args": [
         "--extensionDevelopmentPath=${workspaceFolder}",
-        "--extensionTestsPath=${workspaceFolder}/src/test",
+        "--extensionTestsPath=${workspaceFolder}/dist/test/suite",
+        "--disable-extensions",
+        "--enable-proposed-api",
+        "xingqingxyz.vincode",
+        "${workspaceFolder}/fixtures"
+      ]
+    },
+    {
+      "name": "Run Web Extension",
+      "type": "extensionHost",
+      "request": "launch",
+      "args": [
+        "--extensionDevelopmentPath=${workspaceFolder}",
+        "--extensionDevelopmentKind=web",
         "--disable-extensions",
         "--enable-proposed-api",
         "xingqingxyz.vincode",
         "${workspaceFolder}/fixtures"
       ],
-      "name": "Extension Tests",
-      "outFiles": ["${workspaceFolder}/dist/**/*.js"],
-      "preLaunchTask": "npm: pretest",
+      "preLaunchTask": "npm: watch-web"
+    },
+    {
+      "name": "Web Extension Tests",
+      "type": "extensionHost",
       "request": "launch",
-      "type": "extensionHost"
+      "args": [
+        "--extensionDevelopmentPath=${workspaceFolder}",
+        "--extensionTestsPath=${workspaceFolder}/dist/test/suite",
+        "--extensionDevelopmentKind=web",
+        "--disable-extensions",
+        "--enable-proposed-api",
+        "xingqingxyz.vincode",
+        "${workspaceFolder}/fixtures"
+      ]
     }
-  ],
-  "version": "0.2.0"
+  ]
 }

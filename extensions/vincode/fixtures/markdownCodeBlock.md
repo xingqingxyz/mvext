@@ -15,8 +15,6 @@ if True:
         print(a + b >> 1)
 ```
 
-\ls
-
 ```js
 const a = 'a',
   b = 'c'
