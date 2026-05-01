@@ -14,13 +14,17 @@ export type Mode = 'normal' | 'insert' | 'leap' | 'less' | 'visual'
 
 class ModeController {
   //#region events
-  private normalLeave = new EventEmitter<void>()
-  public onNormalLeave(listener: () => unknown) {
-    return this.normalLeave.event(listener)
-  }
   private normalEnter = new EventEmitter<void>()
   public onNormalEnter(listener: () => unknown) {
     return this.normalEnter.event(listener)
+  }
+  private insertEnter = new EventEmitter<void>()
+  public onInsertEnter(listener: () => unknown) {
+    return this.insertEnter.event(listener)
+  }
+  private visualEnter = new EventEmitter<void>()
+  public onVisualEnter(listener: () => unknown) {
+    return this.visualEnter.event(listener)
   }
   private lessLeave = new EventEmitter<void>()
   public onLessLeave(listener: () => unknown) {
@@ -38,9 +42,9 @@ class ModeController {
   }
   public async setMode(mode: Mode) {
     this.prevMode = this._mode
-    this[(this._mode + 'Leave') as 'normalLeave']?.fire()
+    this[(this._mode + 'Leave') as 'normalEnter']?.fire()
     await this._updateMode()
-    this[((this._mode = mode) + 'Enter') as 'normalLeave']?.fire()
+    this[((this._mode = mode) + 'Enter') as 'normalEnter']?.fire()
   }
   public async restoreMode() {
     await this.setMode(this.prevMode)
@@ -55,7 +59,7 @@ class ModeController {
     editor.options.lineNumbers = TextEditorLineNumbersStyle.Relative
     editor.options.cursorStyle = TextEditorCursorStyle.Block
   }
-  private _onNormalLeave() {
+  private _onInsertEnter() {
     const editor = window.activeTextEditor!
     editor.options.lineNumbers =
       TextEditorLineNumbersStyle[
@@ -69,6 +73,11 @@ class ModeController {
           workspace.getConfiguration('editor').get<string>('cursorStyle')!,
         ) as 'Line'
       ]
+  }
+  private _onVisualEnter() {
+    const editor = window.activeTextEditor!
+    editor.options.lineNumbers = TextEditorLineNumbersStyle.Relative
+    editor.options.cursorStyle = TextEditorCursorStyle.Underline
   }
   private async _onLessEnter() {
     window.activeTextEditor!.options.cursorStyle = TextEditorCursorStyle.Block
@@ -86,7 +95,7 @@ class ModeController {
   constructor(context: ExtensionContext) {
     context.subscriptions.push(
       this.normalEnter.event(this._onNormalEnter.bind(this)),
-      this.normalLeave.event(this._onNormalLeave.bind(this)),
+      this.insertEnter.event(this._onInsertEnter.bind(this)),
       this.lessEnter.event(this._onLessEnter.bind(this)),
       this.lessLeave.event(this._onLessLeave.bind(this)),
     )

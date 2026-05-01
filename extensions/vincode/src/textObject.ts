@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { Position, Range, window, type TextDocument } from 'vscode'
 import { type ActionHandlerContext } from './actionTire'
-import { modeController } from './modeController'
 import {
   pairLookup,
   postLookupRegExp,
@@ -134,11 +133,11 @@ export class TextObject {
   }
   static getRanges(context: ActionHandlerContext) {
     const editor = window.activeTextEditor!
-    if (modeController.mode === 'visual') {
-      return editor.selections
-    }
     return editor.selections.map((selection) =>
-      this[context.command.slice(1) as 'iw'](editor.document, selection.active),
+      this[context.command.slice(-2) as 'iw'](
+        editor.document,
+        selection.active,
+      ),
     )
   }
   static *[Symbol.iterator](): Generator<string> {
@@ -146,7 +145,7 @@ export class TextObject {
       if (this[key].length >= 2) {
         yield key
       } else {
-        console.log('skipped textObject key ' + key)
+        console.log(`${this.name}: skipped key ${key}`)
       }
     }
   }

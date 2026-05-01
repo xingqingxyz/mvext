@@ -2,11 +2,10 @@
 import { Position, Selection, window, type TextDocument } from 'vscode'
 import {
   ActionHandlerKind,
+  type ActionHandler,
   type ActionHandlerContext,
   type ActionMeta,
 } from './actionTire'
-import { modeController } from './modeController'
-import { noop } from './util'
 import {
   bracketPairLookup,
   postLookup,
@@ -437,18 +436,25 @@ export class Motion {
   }
   static getRanges(context: ActionHandlerContext) {
     const editor = window.activeTextEditor!
-    if (modeController.mode === 'visual') {
-      return editor.selections
-    }
-    const command =
-      this[context.command as '?'] ?? this[context.command.slice(1) as '?']
-    const count = command.length === 2 ? context.count! : (context.count ?? 1)
     return editor.selections.map((selection) => {
-      const position = command.call(
-        this,
+      let method = context.command
+      switch (method.length) {
+        case 1:
+          break
+        case 2:
+          method = method in this ? method : method.slice(1)
+          break
+        case 3:
+        case 4:
+          method = method.slice(method.startsWith('g') ? 2 : 1)
+          break
+        default:
+          throw Error(`${this.name}: unknown method ${method}`)
+      }
+      const position = this[method as '?'](
         editor.document,
         selection.active,
-        count,
+        context.count ?? 1,
         context.argStr!,
       )
       return new Selection(
@@ -459,28 +465,32 @@ export class Motion {
   }
   static *[Symbol.iterator](): Generator<[string, ActionMeta]> {
     let meta: ActionMeta
+    const handler: ActionHandler = async (context) => {
+      window.activeTextEditor!.selections = this.getRanges(context)
+    }
     for (const key of Object.getOwnPropertyNames(this) as 'n'[]) {
       switch (this[key].length) {
         case 2:
         case 3:
         case 5:
-          meta = { kind: ActionHandlerKind.Immediate, handler: noop }
+          meta = { kind: ActionHandlerKind.Immediate, handler }
           break
         case 4:
           meta = '/?'.includes(key)
             ? {
                 kind: ActionHandlerKind.Terminator,
                 terminator: '\n',
-                handler: noop,
+                handler,
               }
             : {
                 kind: ActionHandlerKind.Count,
                 count: 1,
-                handler: noop,
+                handler,
               }
+          console.log(`${this.name}: registered handler ${key}: ${meta.kind}`)
           break
         default:
-          console.log('skipped motion key ' + key)
+          console.log(`${this.name}: skipped key ${key}`)
           continue
       }
       yield [key, meta]

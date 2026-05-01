@@ -5,8 +5,8 @@ import { modeController } from './modeController'
 
 export class Action {
   static async r(count: number) {
-    await modeController.setMode('insert')
     await commands.executeCommand('editor.action.toggleOvertypeInsertMode')
+    await modeController.setMode('insert')
   }
   static R(count: number) {
     return this.r(count)
@@ -25,8 +25,8 @@ export class Action {
     await modeController.setMode('insert')
   }
   static async I(count: number) {
-    await modeController.setMode('insert')
     await commands.executeCommand('cursorHome')
+    await modeController.setMode('insert')
   }
   static async a(count: number) {
     const editor = window.activeTextEditor!
@@ -40,16 +40,16 @@ export class Action {
     await modeController.setMode('insert')
   }
   static async A(count: number) {
-    await modeController.setMode('insert')
     await commands.executeCommand('cursorEnd')
+    await modeController.setMode('insert')
   }
   static async o(count: number) {
-    await modeController.setMode('insert')
     await commands.executeCommand('editor.action.insertLineAfter')
+    await modeController.setMode('insert')
   }
   static async O(count: number) {
-    await modeController.setMode('insert')
     await commands.executeCommand('editor.action.insertLineBefore')
+    await modeController.setMode('insert')
   }
   static async p(count: number) {
     const text = await env.clipboard.readText()
@@ -105,7 +105,6 @@ export class Action {
   static async dd(count: number) {
     const editor = window.activeTextEditor!
     const {
-      document,
       selection: { active },
     } = editor
     await editor.edit((edit) =>
@@ -113,7 +112,7 @@ export class Action {
         new Range(
           active.line,
           0,
-          Math.min(document.lineCount, active.line + count),
+          Math.min(editor.document.lineCount, active.line + count),
           0,
         ),
       ),
@@ -122,14 +121,16 @@ export class Action {
   static async D(count: number) {
     const editor = window.activeTextEditor!
     const {
-      document,
       selection: { active },
     } = editor
     await editor.edit((edit) =>
       edit.delete(
         new Range(
           active,
-          new Position(Math.min(document.lineCount, active.line + count), 0),
+          new Position(
+            Math.min(editor.document.lineCount, active.line + count),
+            0,
+          ),
         ),
       ),
     )
@@ -177,14 +178,43 @@ export class Action {
     }
   }
   static async cc(count: number) {
-    await this.dd(count)
+    const editor = window.activeTextEditor!
+    const {
+      selection: { active },
+    } = editor
+    await editor.edit((edit) =>
+      edit.replace(
+        new Range(
+          active.line,
+          0,
+          Math.min(editor.document.lineCount, active.line + count),
+          0,
+        ),
+        '\n',
+      ),
+    )
     await modeController.setMode('insert')
   }
   static async C(count: number) {
-    await this.D(count)
+    const editor = window.activeTextEditor!
+    const {
+      selection: { active },
+    } = editor
+    await editor.edit((edit) =>
+      edit.replace(
+        new Range(
+          active,
+          new Position(
+            Math.min(editor.document.lineCount, active.line + count),
+            0,
+          ),
+        ),
+        '\n',
+      ),
+    )
     await modeController.setMode('insert')
   }
-  static V(count: number) {
+  static async V(count: number) {
     const editor = window.activeTextEditor!
     const {
       document,
@@ -194,6 +224,7 @@ export class Action {
       active.with(undefined, 0),
       new Position(Math.min(document.lineCount, active.line + count), 0),
     )
+    await modeController.setMode('visual')
   }
   static async grr(count: number) {
     const editor = window.activeTextEditor!
@@ -241,11 +272,8 @@ export class Action {
   static async '\\l'(count: number) {
     await modeController.setMode('less')
   }
-  static async S(count: number, char: string) {
+  static async ss(count: number, char: string) {
     const editor = window.activeTextEditor!
-    if (editor.selection.isEmpty) {
-      return
-    }
     let rpair, index
     if ((index = '([{<'.indexOf(char)) !== -1) {
       char = char.repeat(count)
@@ -284,7 +312,7 @@ export class Action {
               kind: ActionHandlerKind.Count,
               count: 1,
               handler: (context) =>
-                this[name as 'S'](context.count ?? 1, context.argStr!),
+                this[name as 'ss'](context.count ?? 1, context.argStr!),
             },
           ]
           break

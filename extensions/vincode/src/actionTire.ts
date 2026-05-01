@@ -15,7 +15,7 @@ export interface ActionHandlerContext {
 export type ActionHandler = (
   context: ActionHandlerContext,
   ...args: unknown[]
-) => PromiseOr<void>
+) => Promise<void>
 
 export type ActionMeta = {
   handler: ActionHandler
@@ -33,7 +33,7 @@ export type ActionMeta = {
     }
 )
 
-class ActionTire {
+export class ActionTire {
   public children = Array<ActionTire | undefined>(128)
   public meta?: ActionMeta
   public add(this: ActionTire, s: string, meta: ActionMeta) {
@@ -81,5 +81,3 @@ class ActionTire {
     return this.keys()
   }
 }
-
-export const actionTire = new ActionTire()

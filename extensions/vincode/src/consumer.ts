@@ -2,7 +2,7 @@ import { commands, env, Selection, window, type ExtensionContext } from 'vscode'
 import { Action } from './action'
 import {
   ActionHandlerKind,
-  actionTire,
+  ActionTire,
   type ActionHandler,
   type ActionHandlerContext,
 } from './actionTire'
@@ -39,7 +39,8 @@ class ConsumerSequence {
 export class Consumer {
   private inComposition = false
   private compositionSequence = ''
-  private actionTireNode = actionTire
+  private actionTireRoot = new ActionTire()
+  private actionTireNode = this.actionTireRoot
   private sequence = new ConsumerSequence()
   constructor(context: ExtensionContext) {
     const handler = this.handleSequence()
@@ -105,14 +106,11 @@ export class Consumer {
       ),
     )
   }
-  setupActionTire() {
-    const handlers: Record<string, ActionHandler> & ThisType<typeof Motion> = {
-      ''(context) {
-        const editor = window.activeTextEditor!
-        editor.revealRange((editor.selection = this.getRanges(context)[0]))
-      },
+  private setupActionTire() {
+    const handlers: Record<string, ActionHandler> &
+      ThisType<typeof TextObject> = {
       async c(context: ActionHandlerContext) {
-        await handlers.d(context)
+        await handlers.d.call(this, context)
         await modeController.setMode('insert')
       },
       async d(context: ActionHandlerContext) {
@@ -124,15 +122,18 @@ export class Consumer {
           }
         })
       },
-      async y(context: ActionHandlerContext) {
-        const { document } = window.activeTextEditor!
-        await env.clipboard.writeText(
-          this.getRanges(context)
-            .map((range) => document.getText(range))
-            .join('\n'),
+      async v(context: ActionHandlerContext) {
+        const editor = window.activeTextEditor!
+        let selections = this.getRanges(context)
+        if (!(selections[0] instanceof Selection)) {
+          selections = selections.map((s) => new Selection(s.start, s.end))
+        }
+        editor.revealRange(
+          (editor.selections =
+            selections as unknown as readonly Selection[])[0],
         )
       },
-      async gs(context: ActionHandlerContext) {
+      async y(context: ActionHandlerContext) {
         const { document } = window.activeTextEditor!
         await env.clipboard.writeText(
           this.getRanges(context)
@@ -142,13 +143,12 @@ export class Consumer {
       },
       async gu(context: ActionHandlerContext, lower = true) {
         const editor = window.activeTextEditor!
-        const { document } = editor
         await editor.edit((edit) => {
           for (const range of this.getRanges(context)) {
             if (!range.isEmpty) {
               edit.replace(
                 range,
-                document
+                editor.document
                   .getText(range)
                   [`toLocale${lower ? 'Low' : 'Upp'}erCase`](),
               )
@@ -157,59 +157,98 @@ export class Consumer {
         })
       },
       gU(context) {
-        return handlers.gu(context, false)
+        return handlers.gu.call(this, context, false)
       },
       async '~'(context: ActionHandlerContext, forward = true) {
         const editor = window.activeTextEditor!
-        const { document } = editor
         await editor.edit((edit) => {
           for (const range of this.getRanges(context)) {
             if (!range.isEmpty) {
-              edit.replace(range, reverseCase(document.getText(range)))
+              edit.replace(range, reverseCase(editor.document.getText(range)))
             }
           }
         })
         editor.revealRange(
           (editor.selection = new Selection(
             editor.selection.anchor,
-            document.validatePosition(
+            editor.document.validatePosition(
               editor.selection.active.translate(undefined, forward ? 1 : -1),
             ),
           )),
         )
       },
       'g~'(context) {
-        return handlers['~'](context, false)
+        return handlers['~'].call(this, context, false)
       },
     }
-    for (const [key, meta] of Motion) {
-      for (const [prefix, handler] of Object.entries(handlers)) {
-        actionTire.add(prefix + key, { ...meta, handler })
+    async function surround(
+      this: typeof Motion | typeof TextObject,
+      context: ActionHandlerContext,
+    ) {
+      const editor = window.activeTextEditor!
+      const count = context.count ?? 1
+      let char = context.argStr!,
+        rpair,
+        index
+      if ((index = '([{<'.indexOf(char)) !== -1) {
+        char = char.repeat(count)
+        rpair = ')]}>'[index].repeat(count)
+      } else if ((index = ')]}>'.indexOf(char)) !== -1) {
+        rpair = ' ' + char.repeat(count)
+        char = '([{<'[index].repeat(count) + ' '
+      } else {
+        char = rpair = char.repeat(count)
       }
+      await editor.edit((edit) => {
+        for (const range of this.getRanges(context)) {
+          if (!range.isEmpty) {
+            edit.replace(range, char + editor.document.getText(range) + rpair)
+          }
+        }
+      })
+    }
+    for (const [key, meta] of Motion) {
+      this.actionTireRoot.add(key, meta)
+      for (const [prefix, handler] of Object.entries(handlers)) {
+        this.actionTireRoot.add(prefix + key, {
+          ...meta,
+          handler: handler.bind(Motion),
+        })
+      }
+      this.actionTireRoot.add('s' + key, {
+        kind: ActionHandlerKind.Count,
+        count: 1,
+        handler: surround.bind(Motion),
+      })
     }
     for (const key of TextObject) {
       for (const [prefix, handler] of Object.entries(handlers)) {
-        actionTire.add(prefix + key, {
+        this.actionTireRoot.add(prefix + key, {
           kind: ActionHandlerKind.Immediate,
-          handler,
+          handler: handler.bind(TextObject),
         })
       }
+      this.actionTireRoot.add('s' + key, {
+        kind: ActionHandlerKind.Count,
+        count: 1,
+        handler: surround.bind(TextObject),
+      })
     }
     for (const [key, meta] of Action) {
-      actionTire.add(key, meta)
+      this.actionTireRoot.add(key, meta)
     }
-    console.log(Array.from(actionTire))
+    console.log(Array.from(this.actionTireRoot))
   }
-  updateStatusBarItem() {
+  private updateStatusBarItem() {
     statusBarItem.text = `|-${modeController.mode.toUpperCase()}-| ${this.sequence.toString()}`
     statusBarItem.show()
   }
-  clear() {
+  private clear() {
     this.sequence = new ConsumerSequence()
-    this.actionTireNode = actionTire
+    this.actionTireNode = this.actionTireRoot
     this.updateStatusBarItem()
   }
-  nextSequence(key: string) {
+  private nextSequence(key: string) {
     switch (this.sequence.kind) {
       case SequenceKind.Init:
         switch (key) {
@@ -237,11 +276,11 @@ export class Consumer {
         break
       case SequenceKind.Command: {
         if (this.actionTireNode.meta) {
-          throw 'last sequence invoke or kind transform failed'
+          throw Error('last sequence invoke or kind transform failed')
         }
         const node = this.actionTireNode.children[key.charCodeAt(0)]
         if (!node) {
-          throw 'unknown key: ' + key
+          throw Error('unknown key: ' + key)
         }
         this.actionTireNode = node
         this.sequence[SequenceKind.Command] += key
@@ -259,7 +298,7 @@ export class Consumer {
       case SequenceKind.ArgStr:
         switch (this.actionTireNode.meta!.kind) {
           case ActionHandlerKind.Immediate:
-            throw 'last immediate invoke not cleared'
+            throw Error('last immediate invoke not cleared')
           case ActionHandlerKind.Count:
             if (
               this.actionTireNode.meta!.count ===
@@ -279,31 +318,33 @@ export class Consumer {
         }
         break
       case SequenceKind.Invoke:
-        try {
-          const digit = this.sequence[SequenceKind.Digit]
-          void this.actionTireNode.meta!.handler({
-            command: this.sequence[SequenceKind.Command],
+        const digit = this.sequence[SequenceKind.Digit]
+        void this.actionTireNode
+          .meta!.handler({
             count: digit.length ? +digit : undefined,
+            command: this.sequence[SequenceKind.Command],
             argStr: this.sequence[SequenceKind.ArgStr],
           })
-          this.clear()
-        } catch (e) {
-          throw `handler failed for ${this.sequence.toString()}: ${e as any}`
-        }
+          .then(
+            () => this.clear(),
+            (e) => {
+              logger.error(
+                `nextSequence: handler failed for ${this.sequence.toString()}: ${e as any}`,
+              )
+              this.clear()
+            },
+          )
         break
     }
     return false
   }
-  *handleSequence(): Generator<void, void, string> {
+  private *handleSequence(): Generator<void, void, string> {
     while (true) {
       const key = yield
       try {
         while (this.nextSequence(key)) {}
         this.updateStatusBarItem()
-      } catch (e) {
-        this.clear()
-        logger.error(`nextSequence: ${e as any}`)
-      }
+      } catch {}
     }
   }
 }
