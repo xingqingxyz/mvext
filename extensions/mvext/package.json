@@ -1,7 +1,7 @@
 {
   "name": "mvext",
   "displayName": "Make VSCode Extension",
-  "version": "0.24.1",
+  "version": "0.24.2",
   "private": true,
   "description": "Make extension of completers, ast viewers, code launchers...",
   "categories": [
@@ -47,18 +47,23 @@
     "commands": [
       {
         "category": "mvext",
-        "command": "mvext.transformCase",
-        "title": "Transform Case Default"
+        "command": "mvext.toggleClock",
+        "title": "Toggle Clock"
+      },
+      {
+        "category": "mvext",
+        "command": "mvext.addAlarm",
+        "title": "Clock Add Alarm"
+      },
+      {
+        "category": "mvext",
+        "command": "mvext.removeAlarm",
+        "title": "Clock Remove Alarm"
       },
       {
         "category": "mvext",
         "command": "mvext.transformCaseWithPicker",
         "title": "Transform Case with Picker"
-      },
-      {
-        "category": "mvext",
-        "command": "mvext.renameWithCase",
-        "title": "Rename with Case"
       },
       {
         "category": "mvext",
@@ -68,7 +73,7 @@
       {
         "category": "mvext",
         "command": "mvext.execScript",
-        "enablement": "!editorReadonly && editorLangId == javascript",
+        "enablement": "!editorReadonly && editorLangId =~ /(java|type)script/",
         "title": "Exec Script with VSCode API"
       },
       {
@@ -92,7 +97,7 @@
       {
         "category": "mvext",
         "command": "mvext.terminalLaunchArgs",
-        "icon": "$(debug-alt)",
+        "icon": "$(run)",
         "title": "Terminal Launch File with Arguments"
       },
       {
@@ -109,11 +114,6 @@
         "category": "mvext",
         "command": "mvext._copyCodeBlock",
         "title": "Copy Markdown Code Block"
-      },
-      {
-        "category": "mvext",
-        "command": "mvext.copyJsonPath",
-        "title": "Copy JSON Path at Selection"
       },
       {
         "category": "mvext",
@@ -176,15 +176,10 @@
     ],
     "configuration": {
       "properties": {
-        "mvext.copyJsonPath.defaultLanguageId": {
-          "default": "jq",
-          "enum": [
-            "jq",
-            "javascript",
-            "python"
-          ],
-          "markdownDescription": "The command `mvext.copyJsonPath` use this if first argument is undefined.",
-          "type": "string"
+        "mvext.clock.enabled": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "Whether to show clock per minute on the status bar."
         },
         "mvext.evalSelection.languageMap": {
           "additionalProperties": {
@@ -300,27 +295,6 @@
           "markdownDescription": "The default language fallback for command `mvext.terminalLaunch` or `mvext.terminalEvalSelection`.",
           "type": "string"
         },
-        "mvext.transformCase.defaultCase": {
-          "default": "camel",
-          "enum": [
-            "camel",
-            "constant",
-            "dot",
-            "header",
-            "kebab",
-            "lower",
-            "normal",
-            "pascal",
-            "path",
-            "sentence",
-            "snake",
-            "title",
-            "upper"
-          ],
-          "markdownDescription": "The command `mvext.transformCase` use this if first argument is undefined.",
-          "scope": "language-overridable",
-          "type": "string"
-        },
         "mvext.treeSitter.extraParserMap": {
           "additionalProperties": {
             "type": "string"
@@ -366,8 +340,18 @@
     },
     "keybindings": [
       {
-        "command": "mvext.transformCase",
-        "key": "alt+x d",
+        "command": "mvext.evalSelection",
+        "key": "ctrl+alt+e",
+        "when": "editorTextFocus && !editorReadonly && !inDebugMode"
+      },
+      {
+        "command": "mvext.terminalEvalSelection",
+        "key": "alt+x e",
+        "when": "editorTextFocus && !editorReadonly"
+      },
+      {
+        "command": "mvext.terminalFilterSelection",
+        "key": "alt+x f",
         "when": "editorTextFocus && !editorReadonly"
       },
       {
@@ -376,47 +360,8 @@
         "when": "editorTextFocus && !editorReadonly"
       },
       {
-        "command": "mvext.renameWithCase",
-        "key": "alt+x r",
-        "when": "editorTextFocus && !editorReadonly"
-      },
-      {
-        "command": "mvext.evalSelection",
-        "key": "ctrl+alt+e",
-        "when": "editorTextFocus && !editorReadonly && !inDebugMode"
-      },
-      {
-        "command": "mvext.terminalEvalSelection",
-        "key": "alt+e",
-        "when": "editorTextFocus && !editorReadonly"
-      },
-      {
-        "command": "mvext.terminalFilterSelection",
-        "key": "alt+t",
-        "when": "editorTextFocus && !editorReadonly"
-      },
-      {
-        "args": "css",
         "command": "mvext.invokeComplete",
-        "key": "alt+c ctrl+space",
-        "when": "editorTextFocus && !editorReadonly"
-      },
-      {
-        "args": "dict",
-        "command": "mvext.invokeComplete",
-        "key": "alt+d ctrl+space",
-        "when": "editorTextFocus && !editorReadonly"
-      },
-      {
-        "args": "line",
-        "command": "mvext.invokeComplete",
-        "key": "alt+l ctrl+space",
-        "when": "editorTextFocus && !editorReadonly"
-      },
-      {
-        "args": "user",
-        "command": "mvext.invokeComplete",
-        "key": "alt+u ctrl+space",
+        "key": "alt+x space",
         "when": "editorTextFocus && !editorReadonly"
       }
     ],
@@ -429,27 +374,22 @@
           ".regex"
         ],
         "id": "regex"
+      },
+      {
+        "id": "go",
+        "configuration": "./resources/go-language-configuration.json"
       }
     ],
     "menus": {
       "commandPalette": [
         {
-          "command": "mvext.renameWithCase"
-        },
-        {
-          "command": "mvext.transformCase"
+          "command": "mvext.toggleClock"
         },
         {
           "command": "mvext.transformCaseWithPicker"
         },
         {
           "command": "mvext.hexColor.toggleLanguage"
-        },
-        {
-          "command": "mvext.copyJsonPath"
-        },
-        {
-          "command": "mvext.terminalLaunch"
         },
         {
           "command": "mvext.terminalLaunchArgs"
@@ -656,7 +596,7 @@
     "watch-files": "src/**"
   },
   "engines": {
-    "vscode": "^1.116.0"
+    "vscode": "^1.118.0"
   },
   "capabilities": {
     "untrustedWorkspaces": {
