@@ -30,12 +30,13 @@
   "main": "./dist/extension.js",
   "browser": "./dist/extension.cjs",
   "scripts": {
+    "clean": "node ./scripts/clean.ts",
     "extension:install": "vsce pack -o mvext.vsix && code --install-extension mvext.vsix",
     "lint": "concurrently \"tsc --noEmit\" \"oxlint --type-aware --fix\"",
     "postinstall": "node ./scripts/postinstall.ts",
-    "vscode:prepublish": "concurrently \"dotnet build -c Release\" \"rolldown -c --environment NODE_ENV:production\" \"rolldown -c --environment NODE_ENV:production,PLATFORM:web\"",
-    "watch": "rolldown -c -w",
-    "watch-web": "rolldown -c -w --environment PLATFORM:web"
+    "vscode:prepublish": "node --run clean && concurrently \"dotnet build -c Release\" \"rolldown -c --environment NODE_ENV:production\" \"rolldown -c --environment NODE_ENV:production,PLATFORM:web\"",
+    "watch-web": "rolldown -c -w --environment PLATFORM:web",
+    "watch": "rolldown -c -w"
   },
   "dependencies": {
     "@johnnymorganz/stylua": "^2.4.0",
@@ -177,9 +178,9 @@
     "configuration": {
       "properties": {
         "mvext.clock.enabled": {
-          "type": "boolean",
           "default": true,
-          "markdownDescription": "Whether to show clock per minute on the status bar."
+          "markdownDescription": "Whether to show clock per minute on the status bar.",
+          "type": "boolean"
         },
         "mvext.evalSelection.languageMap": {
           "additionalProperties": {
@@ -376,8 +377,8 @@
         "id": "regex"
       },
       {
-        "id": "go",
-        "configuration": "./resources/go-language-configuration.json"
+        "configuration": "./resources/go-language-configuration.json",
+        "id": "go"
       }
     ],
     "menus": {
@@ -396,6 +397,15 @@
         },
         {
           "command": "mvext.execScript"
+        },
+        {
+          "command": "mvext.toggleClock"
+        },
+        {
+          "command": "mvext.addAlarm"
+        },
+        {
+          "command": "mvext.removeAlarm"
         }
       ],
       "editor/context": [

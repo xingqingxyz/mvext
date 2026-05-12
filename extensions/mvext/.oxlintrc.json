@@ -1,0 +1,4 @@
+{
+  "extends": ["../../.oxlintrc.json"],
+  "ignorePatterns": ["*.js", "src/components/treeSitter/language/*.ts"]
+}

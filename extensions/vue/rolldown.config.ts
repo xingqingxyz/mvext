@@ -22,13 +22,9 @@ export default defineConfig({
       }
     : resolve('./src/extension.ts'),
   output: {
-    file: isPrebuild
-      ? undefined
-      : isWeb
-        ? 'dist/extension.cjs'
-        : 'dist/extension.js',
-    entryFileNames: '[name].js',
-    chunkFileNames: '[name]-[hash].js',
+    entryFileNames: '[name].' + (isWeb ? 'cjs' : 'js'),
+    chunkFileNames: '[name]-[hash].' + (isWeb ? 'cjs' : 'js'),
+    codeSplitting: !isWeb,
     format: isWeb ? 'cjs' : 'es',
     sourcemap: !isProd,
   },

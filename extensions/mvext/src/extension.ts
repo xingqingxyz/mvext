@@ -28,6 +28,11 @@ export type { ExternalApi } from './ExternalApi'
 export async function activate(
   context: ExtensionContext,
 ): Promise<ExternalApi> {
+  if (typeof Temporal === 'undefined') {
+    const { Temporal } = await import('@js-temporal/polyfill')
+    // @ts-expect-error polyfill
+    globalThis.Temporal = Temporal
+  }
   await initTSParser(context)
   await registerTerminalLaunch(context)
   registerClock(context)

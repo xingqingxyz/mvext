@@ -7,10 +7,7 @@
   "rules": {
     "no-unused-labels": "off"
   },
-  "ignorePatterns": [
-    "*.js",
-    "extensions/mvext/src/components/treeSitter/language/*.ts"
-  ],
+  "ignorePatterns": ["*.js"],
   "env": {
     "builtin": true
   }

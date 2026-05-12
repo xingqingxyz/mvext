@@ -33,4 +33,7 @@ export async function execScript() {
   } catch (e) {
     logger.error('exec script with vscode api failed:', e)
   }
+  await vscode.commands.executeCommand(
+    'workbench.action.output.show.xingqingxyz.mvext.Make VSCode Extension.log',
+  )
 }

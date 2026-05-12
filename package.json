@@ -16,6 +16,7 @@
     "postinstall": "simple-git-hooks"
   },
   "devDependencies": {
+    "@js-temporal/polyfill": "^0.5.1",
     "@oxc-node/core": "^0.1.0",
     "@types/emscripten": "^1.41.5",
     "@types/mocha": "^10.0.10",
@@ -42,5 +43,5 @@
   "simple-git-hooks": {
     "pre-commit": "oxlint --type-aware --type-check --fix && oxfmt && git add . && pnpm run -r --if-present test"
   },
-  "packageManager": "pnpm@11.0.9"
+  "packageManager": "pnpm@11.1.0"
 }

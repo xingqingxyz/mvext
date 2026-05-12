@@ -9,7 +9,8 @@ const isWeb = process.env.PLATFORM === 'web'
 export default defineConfig({
   input: 'src/extension.ts',
   output: {
-    file: isWeb ? 'dist/extension.cjs' : 'dist/extension.js',
+    entryFileNames: '[name].' + (isWeb ? 'cjs' : 'js'),
+    chunkFileNames: '[name]-[hash].' + (isWeb ? 'cjs' : 'js'),
     format: isWeb ? 'cjs' : 'es',
     codeSplitting: !isWeb,
     sourcemap: !isProd,
