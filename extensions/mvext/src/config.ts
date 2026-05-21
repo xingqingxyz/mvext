@@ -1,10 +1,9 @@
 import type { ShOptions } from 'sh-syntax'
 import { workspace, type ConfigurationScope } from 'vscode'
 import type { TerminalRunLanguageIds } from './util/terminalRunCode'
-import type { WordCase } from './util/transformCaseHelper'
 
 export type MvextConfig = {
-  'copyJsonPath.defaultLanguageId': 'jq' | 'javascript' | 'python'
+  'clock.enabled': boolean
   'evalSelection.languageMap': Record<string, string>
   'pathComplete.debounceTimeMs': number
   'pathComplete.prefixMap': Record<string, string>
@@ -17,16 +16,12 @@ export type MvextConfig = {
   'stylua.extraArgs': string[]
   'terminalLaunch.languageMap': Record<string, string>
   'terminalRunCode.defaultLanguageId': TerminalRunLanguageIds
-  'transformCase.defaultCase': WordCase
   'treeSitter.extraParserMap': Record<string, string>
   'treeSitter.syncedLanguages': string[]
   'treeSitter.treeView.enabled': boolean
 }
 
-type ScopedConfigKey =
-  | 'copyJsonPath.defaultLanguageId'
-  | 'pathComplete.prefixMap'
-  | 'transformCase.defaultCase'
+type ScopedConfigKey = 'pathComplete.prefixMap'
 
 export function getExtConfig<const T extends ScopedConfigKey>(
   key: T,

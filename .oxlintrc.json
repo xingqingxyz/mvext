@@ -4,12 +4,10 @@
   "categories": {
     "correctness": "error"
   },
-  "rules": {},
-  "ignorePatterns": [
-    "*.js",
-    "extensions/mvext/src/components/treeSitter/language/*.ts",
-    "extensions/mvext/resources/vscode.d.ts"
-  ],
+  "rules": {
+    "no-unused-labels": "off"
+  },
+  "ignorePatterns": ["*.js"],
   "env": {
     "builtin": true
   }

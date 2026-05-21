@@ -8,7 +8,6 @@ $parentsMap = [ordered]@{}
     $type.Name
   }
 }
-# .Ast -eq $null
 $parentsMap.Ast = @()
 $parentsMap | ConvertTo-Yaml > $PSScriptRoot/astParents.yml
 

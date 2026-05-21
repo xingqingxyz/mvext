@@ -8,16 +8,12 @@ import {
 } from './commands/evalSelection'
 import { execScript, setDtsPath } from './commands/execScript'
 import { HexColorProvider } from './commands/hexColor'
-import { copyJsonPath } from './commands/jsonPath'
 import { MarkdownBlockRunProvider } from './commands/markdownBlockRun'
 import { registerTerminalLaunch } from './commands/terminalLaunch'
-import {
-  renameWithCase,
-  transformCase,
-  transformCaseWithPicker,
-} from './commands/transformCase'
+import { transformCaseWithPicker } from './commands/transformCase'
 import { InvokeCompletionItemProvider } from './completion'
 import { PathCompletionItemProvider } from './completion/path'
+import { registerClock } from './components/clock'
 import { PowerShellAstTreeDataProvier } from './components/powershell/astTreeView'
 import { getParser, initTSParser } from './components/treeSitter/parser'
 import { TSTreeDataProvier } from './components/treeSitter/treeView'
@@ -32,8 +28,14 @@ export type { ExternalApi } from './ExternalApi'
 export async function activate(
   context: ExtensionContext,
 ): Promise<ExternalApi> {
+  if (typeof Temporal === 'undefined') {
+    const { Temporal } = await import('@js-temporal/polyfill')
+    // @ts-expect-error polyfill
+    globalThis.Temporal = Temporal
+  }
   await initTSParser(context)
   await registerTerminalLaunch(context)
+  registerClock(context)
   HexColorProvider.init(context)
   new TSTreeDataProvier(context)
   new TransformCodeActionProvider(context)
@@ -57,19 +59,17 @@ export async function activate(
     if (getExtConfig('pwsh.astTreeView.enabled')) {
       new PowerShellAstTreeDataProvier(context)
     }
-    setDtsPath(context.asAbsolutePath('resources/global.vscode.d.ts'))
+    setDtsPath(context.asAbsolutePath('dist/global.vscode.d.ts'))
   }
   context.subscriptions.push(
     logger,
     commands.registerCommand('mvext._copyCodeBlock', (text: string) =>
       env.clipboard.writeText(text),
     ),
-    commands.registerTextEditorCommand('mvext.transformCase', transformCase),
     commands.registerCommand(
       'mvext.transformCaseWithPicker',
       transformCaseWithPicker,
     ),
-    commands.registerCommand('mvext.renameWithCase', renameWithCase),
     commands.registerCommand(
       'mvext.terminalEvalSelection',
       terminalEvalSelection,
@@ -78,7 +78,6 @@ export async function activate(
       'mvext.terminalFilterSelection',
       terminalFilterSelection,
     ),
-    commands.registerCommand('mvext.copyJsonPath', copyJsonPath),
     ...(__WEB__
       ? []
       : [

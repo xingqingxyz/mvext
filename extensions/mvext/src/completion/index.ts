@@ -4,12 +4,10 @@ import {
   type CompletionContext,
   type CompletionItem,
   type CompletionItemProvider,
-  type CompletionList,
   CompletionTriggerKind,
   type ExtensionContext,
   languages,
   type Position,
-  type ProviderResult,
   type TextDocument,
 } from 'vscode'
 import { CSSCompletionItemProvider } from './css'
@@ -17,25 +15,22 @@ import { DictCompletionItemProvider } from './dict'
 import { LineCompletionItemProvider } from './line'
 import { UserCompletionItemProvider } from './user'
 
-type InvokeCompleteKind = 'css' | 'dict' | 'line' | 'user' | 'none'
-
 export class InvokeCompletionItemProvider implements CompletionItemProvider {
-  private kind: InvokeCompleteKind = 'none'
-  private css = new CSSCompletionItemProvider()
-  private dict: CompletionItemProvider
-  private line = new LineCompletionItemProvider()
-  private user = new UserCompletionItemProvider()
+  private active = false
+  private providers: CompletionItemProvider[]
   constructor(context: ExtensionContext) {
-    this.dict = new DictCompletionItemProvider(context)
+    this.providers = [
+      new DictCompletionItemProvider(context),
+      new CSSCompletionItemProvider(),
+      new LineCompletionItemProvider(),
+      new UserCompletionItemProvider(),
+    ]
     context.subscriptions.push(
-      commands.registerCommand(
-        'mvext.invokeComplete',
-        async (kind: InvokeCompleteKind) => {
-          this.kind = kind
-          await commands.executeCommand('editor.action.triggerSuggest')
-          this.kind = 'none'
-        },
-      ),
+      commands.registerCommand('mvext.invokeComplete', async () => {
+        this.active = true
+        await commands.executeCommand('editor.action.triggerSuggest')
+        this.active = false
+      }),
       languages.registerCompletionItemProvider(
         [
           { scheme: 'file', pattern: '**' },
@@ -46,23 +41,27 @@ export class InvokeCompletionItemProvider implements CompletionItemProvider {
       ),
     )
   }
-  provideCompletionItems(
+  async provideCompletionItems(
     document: TextDocument,
     position: Position,
     token: CancellationToken,
     context: CompletionContext,
-  ): ProviderResult<CompletionItem[] | CompletionList> {
-    if (
-      context.triggerKind !== CompletionTriggerKind.Invoke ||
-      this.kind === 'none'
-    ) {
+  ) {
+    if (!this.active || context.triggerKind !== CompletionTriggerKind.Invoke) {
       return
     }
-    return this[this.kind].provideCompletionItems(
-      document,
-      position,
-      token,
-      context,
-    )
+    const items: CompletionItem[] = []
+    for (const provider of this.providers) {
+      const it = (await provider.provideCompletionItems(
+        document,
+        position,
+        token,
+        context,
+      )) as CompletionItem[]
+      if (it) {
+        items.push(...it)
+      }
+    }
+    return items
   }
 }

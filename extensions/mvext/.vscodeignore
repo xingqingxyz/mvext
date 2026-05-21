@@ -1,5 +1,5 @@
 **
-!dist/*.{js,cjs,ts,wasm}
+!dist/*.{js,cjs,d.ts,wasm}
 !resources
 !CHANGELOG.md
 !LICENSE

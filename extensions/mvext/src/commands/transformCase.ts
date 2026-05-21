@@ -1,18 +1,13 @@
-import { getExtConfig } from '@/config'
 import {
   transformCaseHelper,
   WordCaseShort,
   type WordCase,
 } from '@/util/transformCaseHelper'
 import {
-  commands,
   window,
-  workspace,
   type QuickPickItem,
-  type Range,
   type TextEditor,
   type TextEditorEdit,
-  type WorkspaceEdit,
 } from 'vscode'
 
 function transformCaseAtSelections(
@@ -64,18 +59,6 @@ async function pickWordCase({ document, selection }: TextEditor) {
   }
 }
 
-export function transformCase(
-  editor: TextEditor,
-  edit: TextEditorEdit,
-  wc?: WordCase,
-) {
-  transformCaseAtSelections(
-    editor,
-    edit,
-    wc ?? getExtConfig('transformCase.defaultCase', editor.document),
-  )
-}
-
 export async function transformCaseWithPicker() {
   const editor = window.activeTextEditor
   if (!editor) {
@@ -86,37 +69,4 @@ export async function transformCaseWithPicker() {
     return
   }
   await editor.edit((edit) => transformCaseAtSelections(editor, edit, wc))
-}
-
-/**
- * Display a picker to select case to rename current / multiselected symbol
- */
-export async function renameWithCase(wc?: WordCase) {
-  const editor = window.activeTextEditor
-  if (!editor) {
-    return
-  }
-  wc ??= await pickWordCase(editor)
-  if (!wc) {
-    return
-  }
-  const {
-    document: { uri },
-  } = editor
-  for (const { active } of editor.selections) {
-    try {
-      const { placeholder } = await commands.executeCommand<{
-        range: Range
-        placeholder: string
-      }>('vscode.prepareRename', uri, active)
-      await workspace.applyEdit(
-        await commands.executeCommand<WorkspaceEdit>(
-          'vscode.executeDocumentRenameProvider',
-          uri,
-          active,
-          transformCaseHelper(placeholder, wc),
-        ),
-      )
-    } catch {}
-  }
 }

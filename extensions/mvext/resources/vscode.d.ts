@@ -1,1 +1,0 @@
-../../../node_modules/.pnpm/@types+vscode@1.116.0/node_modules/@types/vscode/index.d.ts

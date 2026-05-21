@@ -1,6 +1,7 @@
 import { rmSync } from 'fs'
 import { defineConfig } from 'rolldown'
 import { fileURLToPath } from 'url'
+import empty from '../../internal/emptyPlugin'
 import esbuildMinify from '../../internal/esbuildMinifyPlugin'
 
 const isPrebuild = !!process.env.PREBUILD
@@ -21,13 +22,9 @@ export default defineConfig({
       }
     : resolve('./src/extension.ts'),
   output: {
-    file: isPrebuild
-      ? undefined
-      : isWeb
-        ? 'dist/extension.cjs'
-        : 'dist/extension.js',
-    entryFileNames: '[name].js',
-    chunkFileNames: '[name]-[hash].js',
+    entryFileNames: '[name].' + (isWeb ? 'cjs' : 'js'),
+    chunkFileNames: '[name]-[hash].' + (isWeb ? 'cjs' : 'js'),
+    codeSplitting: !isWeb,
     format: isWeb ? 'cjs' : 'es',
     sourcemap: !isProd,
   },
@@ -38,23 +35,6 @@ export default defineConfig({
       ? {
           os: 'os-browserify',
           path: 'path-browserify',
-          ...[
-            'child_process',
-            'fs/promises',
-            'fs',
-            'module',
-            'url',
-            'util',
-            'crypto',
-          ].reduce(
-            (o, k) => (
-              (o[k] = fileURLToPath(
-                import.meta.resolve('../../internal/empty'),
-              )),
-              o
-            ),
-            {} as Record<string, string>,
-          ),
         }
       : undefined,
   },
@@ -69,5 +49,17 @@ export default defineConfig({
       ? { declaration: {}, optimizeConstEnums: true, optimizeEnums: true }
       : undefined,
   },
-  plugins: [isProd && esbuildMinify()],
+  plugins: [
+    isWeb &&
+      empty([
+        'child_process',
+        'fs/promises',
+        'fs',
+        'module',
+        'url',
+        'util',
+        'crypto',
+      ]),
+    isProd && esbuildMinify(),
+  ],
 })

@@ -118,7 +118,7 @@ export class PathCompletionItemProvider implements CompletionItemProvider {
         new RegExp(
           (text.length > position.character &&
           '\'"`'.includes(text[position.character])
-            ? String.raw`(?<=${text[position.character]}).*|`
+            ? String.raw`(?<=${text[position.character]})(?!.*[^\`\\]${text[position.character]}).*|`
             : '') + String.raw`(?:[-\w\\/.+,#$%{}[\]@!~=:]|[^\x00-\xff])+$`,
         ),
       )?.[0]

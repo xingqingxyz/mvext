@@ -150,7 +150,7 @@
     "workspace"
   ],
   "engines": {
-    "vscode": "^1.116.0"
+    "vscode": "^1.118.0"
   },
   "capabilities": {
     "untrustedWorkspaces": {

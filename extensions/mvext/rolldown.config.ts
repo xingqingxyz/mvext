@@ -1,5 +1,6 @@
 import { defineConfig } from 'rolldown'
 import { fileURLToPath } from 'url'
+import empty from '../../internal/emptyPlugin'
 import esbuildMinify from '../../internal/esbuildMinifyPlugin'
 
 const isProd = process.env.NODE_ENV === 'production'
@@ -8,7 +9,8 @@ const isWeb = process.env.PLATFORM === 'web'
 export default defineConfig({
   input: 'src/extension.ts',
   output: {
-    file: isWeb ? 'dist/extension.cjs' : 'dist/extension.js',
+    entryFileNames: '[name].' + (isWeb ? 'cjs' : 'js'),
+    chunkFileNames: '[name]-[hash].' + (isWeb ? 'cjs' : 'js'),
     format: isWeb ? 'cjs' : 'es',
     codeSplitting: !isWeb,
     sourcemap: !isProd,
@@ -25,36 +27,8 @@ export default defineConfig({
           'web-tree-sitter': fileURLToPath(
             import.meta.resolve('web-tree-sitter'),
           ),
-          ...[
-            'child_process',
-            'crypto',
-            'fs/promises',
-            'fs',
-            'module',
-            'url',
-            'util',
-            'vm',
-          ].reduce(
-            (o, k) => (
-              (o[k] = fileURLToPath(
-                import.meta.resolve('../../internal/empty'),
-              )),
-              o
-            ),
-            {} as Record<string, string>,
-          ),
         }
-      : [
-          'sh-syntax',
-          '@johnnymorganz/stylua/web',
-          fileURLToPath(import.meta.resolve('./src/shims/web')),
-        ].reduce(
-          (o, k) => (
-            (o[k] = fileURLToPath(import.meta.resolve('../../internal/empty'))),
-            o
-          ),
-          {} as Record<string, string>,
-        ),
+      : {},
     mainFields: (isWeb ? ['browser'] : []).concat(['module', 'main']),
   },
   transform: {
@@ -66,11 +40,26 @@ export default defineConfig({
     dropLabels: isProd ? ['DEBUG'] : undefined,
     typescript: isProd
       ? {
-          declaration: { sourcemap: true, stripInternal: true },
           optimizeConstEnums: true,
           optimizeEnums: true,
         }
       : undefined,
   },
-  plugins: [isProd && esbuildMinify()],
+  plugins: [
+    empty(
+      isWeb
+        ? [
+            'child_process',
+            'crypto',
+            'fs/promises',
+            'fs',
+            'module',
+            'url',
+            'util',
+            'vm',
+          ]
+        : ['sh-syntax', '@johnnymorganz/stylua/web', '@/shims/web'],
+    ),
+    isProd && esbuildMinify(),
+  ],
 })
