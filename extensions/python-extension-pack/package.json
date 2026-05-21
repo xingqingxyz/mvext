@@ -17,6 +17,9 @@
     "url": "https://github.com/xingqingxyz/mvext"
   },
   "publisher": "xingqingxyz",
+  "scripts": {
+    "extension:install": "vsce pack -o py.vsix && code --install-extension py.vsix"
+  },
   "extensionPack": [
     "charliermarsh.ruff",
     "ms-python.debugpy",

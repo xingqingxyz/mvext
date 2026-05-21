@@ -2,17 +2,55 @@ import { noop } from '@/util'
 import { homedir } from 'os'
 import {
   CompletionItemKind,
+  CompletionTriggerKind,
+  languages,
   Range,
   Uri,
   workspace,
+  type CancellationToken,
+  type CompletionContext,
   type CompletionItem,
   type CompletionItemProvider,
+  type CompletionList,
+  type ExtensionContext,
   type Position,
   type TextDocument,
 } from 'vscode'
 
 export class UserCompletionItemProvider implements CompletionItemProvider {
-  async provideCompletionItems(document: TextDocument, position: Position) {
+  constructor(context: ExtensionContext) {
+    context.subscriptions.push(
+      languages.registerCompletionItemProvider(
+        [
+          {
+            pattern: '**',
+            scheme: 'file',
+          },
+          {
+            pattern: '**',
+            scheme: 'untitled',
+          },
+          {
+            pattern: '**',
+            scheme: 'vscode-vfs',
+          },
+        ],
+        this,
+      ),
+    )
+  }
+  async provideCompletionItems(
+    document: TextDocument,
+    position: Position,
+    token: CancellationToken,
+    context: CompletionContext,
+  ) {
+    if (
+      context.triggerKind !==
+      CompletionTriggerKind.TriggerForIncompleteCompletions
+    ) {
+      return { isIncomplete: true } as CompletionList
+    }
     const needle = document.getText(
       document.getWordRangeAtPosition(position) ??
         new Range(position, position),

@@ -1,6 +1,5 @@
 import '@/shims/web'
 import { commands, env, type ExtensionContext } from 'vscode'
-import { TransformCodeActionProvider } from './codeActions/javascript/provider'
 import {
   evalSelection,
   terminalEvalSelection,
@@ -11,8 +10,10 @@ import { HexColorProvider } from './commands/hexColor'
 import { MarkdownBlockRunProvider } from './commands/markdownBlockRun'
 import { registerTerminalLaunch } from './commands/terminalLaunch'
 import { transformCaseWithPicker } from './commands/transformCase'
-import { InvokeCompletionItemProvider } from './completion'
+import { CSSCompletionItemProvider } from './completion/css'
+import { DictCompletionItemProvider } from './completion/dict'
 import { PathCompletionItemProvider } from './completion/path'
+import { UserCompletionItemProvider } from './completion/user'
 import { registerClock } from './components/clock'
 import { PowerShellAstTreeDataProvier } from './components/powershell/astTreeView'
 import { getParser, initTSParser } from './components/treeSitter/parser'
@@ -30,17 +31,17 @@ export async function activate(
 ): Promise<ExternalApi> {
   if (typeof Temporal === 'undefined') {
     const { Temporal } = await import('@js-temporal/polyfill')
-    // @ts-expect-error polyfill
-    globalThis.Temporal = Temporal
+    globalThis.Temporal = Temporal as any
   }
   await initTSParser(context)
   await registerTerminalLaunch(context)
   registerClock(context)
   HexColorProvider.init(context)
   new TSTreeDataProvier(context)
-  new TransformCodeActionProvider(context)
-  new InvokeCompletionItemProvider(context)
+  new CSSCompletionItemProvider(context)
+  new DictCompletionItemProvider(context)
   new PathCompletionItemProvider(context)
+  new UserCompletionItemProvider(context)
   new MarkdownBlockRunProvider(context)
   if (__WEB__) {
     if (getExtConfig('shfmt.enabled')) {

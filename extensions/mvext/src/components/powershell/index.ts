@@ -62,7 +62,7 @@ export async function registerPowershellExtension(context: ExtensionContext) {
   await Array.fromAsync(
     terminal
       .shellIntegration!.executeCommand('&', [
-        context.asAbsolutePath('resources/registerEditorCommands.ps1'),
+        context.asAbsolutePath('resources/Register-EditorCommands.ps1'),
         '-IpcPath',
         ipcPath,
       ])
@@ -79,7 +79,7 @@ export async function registerPowershellExtension(context: ExtensionContext) {
           }
           event.dispose()
           e.shellIntegration.executeCommand('&', [
-            context.asAbsolutePath('resources/registerEditorCommands.ps1'),
+            context.asAbsolutePath('resources/Register-EditorCommands.ps1'),
             '-IpcPath',
             ipcPath,
           ])

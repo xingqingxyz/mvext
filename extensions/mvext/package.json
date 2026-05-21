@@ -118,12 +118,6 @@
       },
       {
         "category": "mvext",
-        "command": "mvext.invokeComplete",
-        "shortTitle": "Invoke Special Complete",
-        "title": "Invoke Complete (css,dict,line,user)"
-      },
-      {
-        "category": "mvext",
         "command": "mvext.ts.treeViewReveal",
         "title": "Reveal Selection in Tree-Sitter Tree View"
       },
@@ -328,7 +322,7 @@
           "items": {
             "type": "string"
           },
-          "markdownDescription": "Tree-Sitter synced languages for code actions and completions.",
+          "markdownDescription": "Tree-Sitter synced languages.",
           "type": "array"
         },
         "mvext.treeSitter.treeView.enabled": {
@@ -358,11 +352,6 @@
       {
         "command": "mvext.transformCaseWithPicker",
         "key": "alt+x t",
-        "when": "editorTextFocus && !editorReadonly"
-      },
-      {
-        "command": "mvext.invokeComplete",
-        "key": "alt+x space",
         "when": "editorTextFocus && !editorReadonly"
       }
     ],

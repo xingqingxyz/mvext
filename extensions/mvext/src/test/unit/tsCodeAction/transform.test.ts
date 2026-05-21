@@ -1,4 +1,4 @@
-import { Transform } from '@/codeActions/javascript/transform'
+import { Transform } from '@/_codeActions/javascript/transform'
 import assert from 'assert/strict'
 import { fileURLToPath } from 'url'
 import { Language, Parser } from 'web-tree-sitter'
