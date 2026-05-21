@@ -1,6 +1,9 @@
 packages:
   - extensions/*
 
-onlyBuiltDependencies:
-  - esbuild
-  - simple-git-hooks
+allowBuilds:
+  esbuild: true
+  simple-git-hooks: true
+
+minimumReleaseAgeExclude:
+  - mocha@11.7.6

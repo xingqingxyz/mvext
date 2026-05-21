@@ -1,0 +1,35 @@
+{
+  "name": "python-extension-pack",
+  "displayName": "Python Extension Pack",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Morden python extension pack.",
+  "categories": [
+    "Extension Packs"
+  ],
+  "bugs": {
+    "url": "https://github.com/xingqingxyz/mvext/issues"
+  },
+  "license": "MIT",
+  "author": "Ming Chen <cm.email@qq.com> (https://github.com/xingqingxyz)",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/xingqingxyz/mvext"
+  },
+  "publisher": "xingqingxyz",
+  "extensionPack": [
+    "charliermarsh.ruff",
+    "ms-python.debugpy",
+    "ms-python.python",
+    "ms-python.vscode-pylance",
+    "ms-toolsai.jupyter",
+    "ms-toolsai.jupyter-keymap",
+    "ms-toolsai.jupyter-renderers",
+    "ms-toolsai.vscode-jupyter-cell-tags",
+    "ms-toolsai.vscode-jupyter-slideshow"
+  ],
+  "icon": "icon.png",
+  "engines": {
+    "vscode": "^1.120.0"
+  }
+}

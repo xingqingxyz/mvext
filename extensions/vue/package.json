@@ -32,8 +32,8 @@
   },
   "dependencies": {
     "@volar/vscode": "^2.4.28",
-    "@vue/language-server": "^3.2.7",
-    "@vue/typescript-plugin": "^3.2.7"
+    "@vue/language-server": "^3.3.1",
+    "@vue/typescript-plugin": "^3.3.1"
   },
   "contributes": {
     "breakpoints": [

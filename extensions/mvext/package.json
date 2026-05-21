@@ -38,10 +38,10 @@
     "watch-web": "rolldown -c -w --environment PLATFORM:web"
   },
   "dependencies": {
-    "@johnnymorganz/stylua": "^2.4.0",
+    "@johnnymorganz/stylua": "^2.5.2",
     "@vscode/tree-sitter-wasm": "^0.3.1",
     "sh-syntax": "^0.5.8",
-    "web-tree-sitter": "^0.26.8"
+    "web-tree-sitter": "^0.26.9"
   },
   "contributes": {
     "commands": [

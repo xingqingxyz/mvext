@@ -12,7 +12,8 @@ const baseNameMap = {
   'tree-sitter-tsx': 'tree-sitter-typescriptreact',
 }
 const getBaseName = (file: string) => (
-  (file = path.basename(file, '.wasm')), baseNameMap[file as 'main'] ?? file
+  (file = path.basename(file, '.wasm')),
+  baseNameMap[file as 'main'] ?? file
 )
 fs.rmSync('dist', { recursive: true, force: true })
 fs.mkdirSync('dist')
