@@ -3,7 +3,7 @@
   "displayName": "Vue",
   "version": "0.2.0",
   "private": true,
-  "description": "Vue language supports based on @vue/language-server.",
+  "description": "Vue language support based on @vue/language-server.",
   "categories": [
     "Formatters",
     "Programming Languages"
@@ -44,7 +44,7 @@
     "commands": [
       {
         "category": "Vue",
-        "command": "vue.action.restartLanguageServer",
+        "command": "vue.restartLanguageServer",
         "title": "Restart Vue Language Server"
       }
     ],
@@ -395,7 +395,7 @@
     "workspace"
   ],
   "engines": {
-    "vscode": "^1.118.0"
+    "vscode": "^1.120.0"
   },
   "capabilities": {
     "untrustedWorkspaces": {

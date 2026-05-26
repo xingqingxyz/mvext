@@ -1,4 +1,3 @@
-import fs from 'fs/promises'
 import { type ExtensionContext, languages, window, workspace } from 'vscode'
 import { LanguageClient } from 'vscode-languageclient/node'
 import which from 'which'
@@ -22,24 +21,29 @@ export async function createClient(context: ExtensionContext) {
     command: 'toml.selectSchema',
     title: 'Select Schema',
   }
-  let taploPath = getExtConfig('taplo.path')
-  try {
-    await fs.access(taploPath, fs.constants.X_OK)
-  } catch {
-    taploPath = await which('taplo')
+  const serverPath = await which(getExtConfig('taplo.path'))
+    .catch(() => which('taplo'))
+    .catch(() => window.showErrorMessage('Taplo executable not found'))
+  // no error to keep syntax highlighting
+  if (!serverPath) {
+    return
   }
   client = new LanguageClient(
     'toml',
     'TOML',
     {
-      command: taploPath,
-      args: ['lsp', 'stdio', ...getExtConfig('taplo.extraArgs')],
+      command: serverPath,
+      args: ['lsp', 'stdio'].concat(getExtConfig('taplo.extraArgs')),
     },
     {
       documentSelector: [{ scheme: 'file', language: 'toml' }],
       initializationOptions: {
         configurationSection: 'toml',
         cachePath: context.globalStorageUri.fsPath,
+      },
+      markdown: {
+        isTrusted: true,
+        supportHtml: true,
       },
     },
   )

@@ -1,0 +1,155 @@
+{
+  "name": "nushell",
+  "displayName": "Nushell",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Nushell language support based on `nu --lsp`.",
+  "categories": [
+    "Programming Languages"
+  ],
+  "keywords": [
+    "nu",
+    "nushell",
+    "scripting",
+    "shell"
+  ],
+  "bugs": {
+    "url": "https://github.com/xingqingxyz/mvext/issues"
+  },
+  "license": "MIT",
+  "author": "Ming Chen <cm.email@qq.com> (https://github.com/xingqingxyz)",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/xingqingxyz/mvext"
+  },
+  "publisher": "xingqingxyz",
+  "main": "dist/extension.js",
+  "scripts": {
+    "extension:install": "vsce pack -o nushell.vsix && code --install-extension nushell.vsix",
+    "lint": "concurrently \"tsc --noEmit\" \"oxlint --type-aware --fix\"",
+    "pretest": "rolldown -c --environment NODE_ENV:test",
+    "vscode:prepublish": "rolldown -c --environment NODE_ENV:production",
+    "watch": "rolldown -c -w",
+    "test:grammar": "vscode-tmgrammar-snap fixtures/grammars/*"
+  },
+  "devDependencies": {
+    "vscode-languageclient": "^9.0.1",
+    "vscode-tmgrammar-test": "0.1.3"
+  },
+  "contributes": {
+    "commands": [
+      {
+        "command": "nushell.restartLanguageServer",
+        "title": "Restart Nushell Language Server"
+      }
+    ],
+    "configuration": {
+      "title": "Nushell",
+      "properties": {
+        "nushell.diagnostics.limit": {
+          "type": "number",
+          "default": 100,
+          "description": "Lsp diagnostics limit."
+        },
+        "nushell.inlayHints.showInferredTypes": {
+          "type": "boolean",
+          "default": true,
+          "description": "Display types inferred by nushell."
+        },
+        "nushell.server.path": {
+          "type": "string",
+          "default": "nu",
+          "description": "The path to the nushell executable."
+        },
+        "nushell.server.extraArgs": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [],
+          "markdownDescription": "Extra nushell args passed with `nu --lsp`."
+        },
+        "nushell.server.includeDirs": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [],
+          "description": "The directories to include in the nushell environment."
+        },
+        "nushell.server.invocationTimeout": {
+          "type": "number",
+          "default": 120000,
+          "description": "Invocation timeout."
+        },
+        "nushell.server.trace": {
+          "type": "string",
+          "enum": [
+            "off",
+            "messages",
+            "compact",
+            "verbose"
+          ],
+          "default": "messages",
+          "description": "Traces the communication between VS Code and the language server."
+        }
+      }
+    },
+    "languages": [
+      {
+        "id": "nushell",
+        "aliases": [
+          "Nushell",
+          "nu"
+        ],
+        "extensions": [
+          ".nu"
+        ],
+        "icon": {
+          "light": "assets/nu.svg",
+          "dark": "assets/nu.svg"
+        },
+        "firstLine": "^#!\\s*/.+?/nu($|\\s)",
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "nushell",
+        "scopeName": "source.nushell",
+        "path": "./syntaxes/nushell.tmLanguage.json"
+      },
+      {
+        "scopeName": "markdown.nushell.codeblock",
+        "path": "./syntaxes/markdown-nushell.tmLanguage.json",
+        "injectTo": [
+          "text.html.markdown"
+        ],
+        "embeddedLanguages": {
+          "meta.embedded.block.nushell": "nushell"
+        }
+      }
+    ],
+    "terminal": {
+      "profiles": [
+        {
+          "title": "Nushell",
+          "id": "nushell"
+        }
+      ]
+    }
+  },
+  "extensionKind": [
+    "workspace"
+  ],
+  "icon": "assets/nushell.ico",
+  "engines": {
+    "vscode": "^1.120.0"
+  },
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": true
+    },
+    "virtualWorkspaces": true
+  }
+}

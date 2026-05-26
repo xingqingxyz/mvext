@@ -20,6 +20,7 @@ export async function activate(context: ExtensionContext) {
       workspace.getConfiguration('typescript').get<string>('tsdk'),
     ) ?? path.join(env.appRoot, 'extensions/node_modules/typescript/lib')
   const client = new LanguageClient(
+    'vue',
     'Vue',
     {
       run: {
@@ -64,7 +65,7 @@ export async function activate(context: ExtensionContext) {
     ),
     activateAutoInsertion({ language: 'vue', scheme: 'file' }, client),
     activateDocumentDropEdit({ language: 'vue', scheme: 'file' }, client),
-    commands.registerCommand('vue.action.restartLanguageServer', async () => {
+    commands.registerCommand('vue.restartLanguageServer', async () => {
       await commands.executeCommand('typescript.restartTsServer')
       if (client) {
         if (client.state === State.Running) {

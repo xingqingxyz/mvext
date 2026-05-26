@@ -3,7 +3,7 @@
   "displayName": "TOML",
   "version": "0.3.0",
   "private": true,
-  "description": "TOML language supports based on taplo.",
+  "description": "TOML language support based on taplo.",
   "categories": [
     "Formatters",
     "Programming Languages"
@@ -81,6 +81,22 @@
       },
       "title": "TOML"
     },
+    "languages": [
+      {
+        "id": "toml",
+        "aliases": [
+          "TOML"
+        ],
+        "configuration": "./language-configuration.json",
+        "extensions": [
+          ".toml"
+        ],
+        "filenames": [
+          "Cargo.lock",
+          "uv.lock"
+        ]
+      }
+    ],
     "grammars": [
       {
         "language": "toml",
@@ -103,22 +119,6 @@
         ],
         "path": "./syntaxes/toml.markdown.tmLanguage.json",
         "scopeName": "markdown.toml.codeblock"
-      }
-    ],
-    "languages": [
-      {
-        "aliases": [
-          "TOML"
-        ],
-        "configuration": "./language-configuration.json",
-        "extensions": [
-          ".toml"
-        ],
-        "filenames": [
-          "Cargo.lock",
-          "uv.lock"
-        ],
-        "id": "toml"
       }
     ],
     "semanticTokenScopes": [
@@ -150,7 +150,7 @@
     "workspace"
   ],
   "engines": {
-    "vscode": "^1.118.0"
+    "vscode": "^1.120.0"
   },
   "capabilities": {
     "untrustedWorkspaces": {

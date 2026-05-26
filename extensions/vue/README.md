@@ -1,3 +1,3 @@
 # Vue
 
-> Vue language supports based on @vue/language-server, pure setup.
+> Vue language support based on @vue/language-server, pure setup.

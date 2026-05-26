@@ -10,4 +10,4 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [0.1.0]
 
-- Feature: base lsp supports.
+- Feature: base lsp support.
